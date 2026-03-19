@@ -1031,7 +1031,7 @@ const MediaTable = ({citations,onSave,onDelete,currentUser,readOnly}) => {
       })()}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{overflowX:"auto"}}>
-          <div style={{minWidth:700}}>
+          <div style={{minWidth:"100%"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
               {["Date","Media","Reporter","Author","Topic",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
