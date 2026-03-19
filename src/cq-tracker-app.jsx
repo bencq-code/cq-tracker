@@ -428,14 +428,6 @@ const LoginScreen = ({onLogin}) => {
             {loading?<><Icons.Spin/>{isRegister?"CREATING…":"SIGNING IN…"}</>:isRegister?"CREATE ACCOUNT →":"SIGN IN →"}
           </button>
 
-          {!isRegister && (
-            <div style={{marginTop:20,padding:"14px",background:"var(--surface2)",borderRadius:10,border:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Default admin account</div>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",lineHeight:2}}>
-                Username: <span style={{color:"var(--accent)"}}>admin</span> &nbsp;·&nbsp; Password: <span style={{color:"var(--accent)"}}>admin123</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
