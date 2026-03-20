@@ -2807,14 +2807,19 @@ export default function App() {
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>No campaigns have been shared with your account yet. Contact your admin.</span>
               </div>
             ) : allowedClientCampaigns.length===1 ? (
-              <div style={{padding:"10px 16px",background:"rgba(26,58,92,0.04)",border:"1px solid rgba(26,58,92,0.15)",borderRadius:10,display:"flex",alignItems:"center",gap:10}}>
-                <Icons.Eye/>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>Read-only · <span style={{color:effectiveClient?.color||"var(--accent)"}}>{effectiveClient?.name||"your campaign"}</span></span>
+              <div style={{padding:"10px 16px",background:"rgba(26,58,92,0.04)",border:"1px solid rgba(26,58,92,0.15)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <Icons.Eye/>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>Read-only · <span style={{color:effectiveClient?.color||"var(--accent)"}}>{effectiveClient?.name||"your campaign"}</span></span>
+                </div>
+                {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
+                  <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
+                )}
               </div>
             ) : (
               <div>
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Your Campaigns</div>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
                   {allowedClientCampaigns.map(cl=>{
                     const ia=(clientActiveCid||allowedClientCampaigns[0]?.id)===cl.id;
                     return (
@@ -2825,6 +2830,11 @@ export default function App() {
                       </button>
                     );
                   })}
+                  {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
+                    <div style={{marginLeft:"auto"}}>
+                      <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
