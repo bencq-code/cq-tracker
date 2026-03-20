@@ -139,7 +139,7 @@ const hashPass = s => btoa(encodeURIComponent(s));
 //  CSS
 // ─────────────────────────────────────────────────────────
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 @keyframes spin    { to{transform:rotate(360deg)} }
 @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes rowIn   { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
@@ -148,17 +148,17 @@ const css = `
 @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
-  --bg:#e4e8ee;
-  --surface:#f4f6f9;
-  --surface2:#eaedf2;
-  --surface3:#e0e4eb;
-  --border:#c4cdd9;
-  --border2:#a8b5c4;
-  --text:#1e2d3d;
-  --muted:#3d5468;
-  --dim:#6a7f90;
+  --bg:#f0f2f6;
+  --surface:#ffffff;
+  --surface2:#f5f6f9;
+  --surface3:#eceef3;
+  --border:#dde1ea;
+  --border2:#c4ccd8;
+  --text:#111827;
+  --muted:#374151;
+  --dim:#6b7280;
   --accent:#1a3a5c;
-  --accent-light:#e8eef5;
+  --accent-light:#eef2f7;
   --purple:#1a3a5c;
   --green:#1a3a5c;
   --red:#c0272d;
@@ -168,12 +168,13 @@ const css = `
   --negative:#c0272d;
   --tag:#1a3a5c;
 }
-body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
-::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','Inter',sans-serif; min-height:100vh; font-size:14px; }
+.tabular { font-variant-numeric: tabular-nums; }
+::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 input,select,textarea { color-scheme:light; }
 input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.5}
 a { color:var(--accent); }
-button { font-family:'Inter',sans-serif; }
+button { font-family:'Plus Jakarta Sans','Inter',sans-serif; }
 input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:2px solid rgba(26,58,92,0.1) !important; }
 tr:hover td { background:var(--surface2) !important; transition:background .1s; }
 `
@@ -181,7 +182,7 @@ tr:hover td { background:var(--surface2) !important; transition:background .1s; 
 // ─────────────────────────────────────────────────────────
 //  DESIGN PRIMITIVES
 // ─────────────────────────────────────────────────────────
-const iStyle = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"10px 13px",outline:"none",width:"100%",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)",transition:"border-color .15s"};
+const iStyle = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"11px 14px",outline:"none",width:"100%",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.03)",transition:"border-color .15s",lineHeight:"1.4"};
 const lStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"};
 const Field = ({label,children,full}) => (
   <div style={{display:"flex",flexDirection:"column",gap:6,...(full?{gridColumn:"1/-1"}:{})}}>
@@ -241,7 +242,7 @@ const RowBtn = ({onClick,title,hb,hc,hbg,children}) => (
 );
 
 const StatCard = ({label,value,sub,c}) => (
-  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.06)"}}>
+  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
     <div style={{position:"absolute",top:0,left:0,width:3,height:"100%",background:c,opacity:.7,borderRadius:"0 2px 2px 0"}}/>
     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>{label}</div>
     <div style={{fontSize:28,fontWeight:500,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1}}>{value}</div>
@@ -312,126 +313,129 @@ const LoginScreen = ({onLogin}) => {
   const isRegister = mode === "register";
 
   return (
-    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#e8eef5 0%,#f0f2f5 50%,#e4eaf3 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:"-20%",left:"-10%",width:"60%",height:"60%",background:"radial-gradient(ellipse,rgba(26,58,92,0.06) 0%,transparent 70%)",pointerEvents:"none"}}/>
-      <div style={{position:"absolute",bottom:"-10%",right:"-10%",width:"50%",height:"50%",background:"radial-gradient(ellipse,rgba(26,58,92,0.06) 0%,transparent 70%)",pointerEvents:"none"}}/>
-      <div style={{width:"min(420px,100%)",animation:"fadeUp .6s ease both",position:"relative",zIndex:1}}>
+    <div style={{minHeight:"100vh",display:"flex",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}>
 
-        {/* Logo */}
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:32,justifyContent:"center"}}>
-          <img src="data:image/png;base64,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" alt="CQ" style={{width:40,height:40,borderRadius:12,objectFit:"contain",background:"#fff",padding:4}}/>
-          <span style={{fontSize:18,fontWeight:500,letterSpacing:"-0.01em",color:"var(--text)"}}>Crypto<span style={{color:"var(--accent)"}}>Quant</span></span>
+      {/* LEFT PANEL */}
+      <div style={{width:"42%",background:"#0d1f33",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"48px 56px",position:"relative",overflow:"hidden",flexShrink:0}}>
+        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",backgroundSize:"40px 40px",pointerEvents:"none"}}/>
+        <div style={{position:"relative",zIndex:1}}>
+          <img src="data:image/png;base64,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" alt="CryptoQuant" style={{width:52,height:52,objectFit:"contain",mixBlendMode:"screen",marginBottom:32}}/>
+          <div style={{fontSize:11,fontFamily:"'IBM Plex Mono',monospace",letterSpacing:"0.12em",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",marginBottom:12}}>CryptoQuant</div>
+          <div style={{fontSize:28,fontWeight:600,color:"#ffffff",lineHeight:1.25,letterSpacing:"-0.02em",marginBottom:16}}>Bounty Program<br/>Tracker</div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.6,maxWidth:280}}>Analytics suite for managing bounty programs, media citations, and campaign performance.</div>
         </div>
-
-        {/* Tab toggle */}
-        <div style={{display:"flex",gap:4,marginBottom:24,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:4}}>
-          {[{id:"signin",label:"Sign In"},{id:"register",label:"Create Account"}].map(t=>{
-            const ia = mode===t.id;
-            return (
-              <button key={t.id} onClick={()=>switchMode(t.id)} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px",borderRadius:9,border:`1px solid ${ia?"rgba(255,255,255,0.08)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?"var(--accent)":"var(--dim)",cursor:"pointer",letterSpacing:"0.04em",fontWeight:ia?700:400,transition:"all .2s"}}>
-                {t.label}
-              </button>
-            );
-          })}
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:"0.06em"}}>AUTHORIZED PERSONNEL ONLY</div>
         </div>
+      </div>
 
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:20,padding:32,boxShadow:"0 4px 24px rgba(0,0,0,0.12)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:8}}>
-            {isRegister?"// new account":"// secure access"}
-          </div>
-          <div style={{fontSize:22,fontWeight:500,marginBottom:4}}>{isRegister?"Create Account":"Welcome Back"}</div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",marginBottom:24}}>
-            {isRegister?"Choose your account type below. Admins can update roles at any time.":"Bounty Program Analytics Suite"}
+      {/* RIGHT PANEL */}
+      <div style={{flex:1,background:"#f5f6f9",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
+        <div style={{width:"min(400px,100%)",animation:"fadeUp .5s ease both"}}>
+
+          <div style={{marginBottom:32}}>
+            <div style={{fontSize:22,fontWeight:700,color:"var(--text)",letterSpacing:"-0.02em",marginBottom:6}}>{isRegister?"Create Account":"Sign In"}</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{isRegister?"Fill in your details to create an account.":"Enter your credentials to continue."}</div>
           </div>
 
-          <div style={{display:"flex",flexDirection:"column",gap:14}}>
-            <Field label="Username">
-              <div style={{position:"relative"}}>
-                <div style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",color:"var(--dim)"}}><Icons.User/></div>
-                <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your username"
-                  onKeyDown={e=>e.key==="Enter"&&(!isRegister?handleLogin():handleRegister())}
-                  style={{...iStyle,paddingLeft:38}}/>
-              </div>
-            </Field>
-
-            {isRegister && (
-              <Field label="Display Name (optional)">
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:28,boxShadow:"0 1px 3px rgba(0,0,0,0.06),0 8px 24px rgba(0,0,0,0.06)"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:14}}>
+              <Field label="Username">
                 <div style={{position:"relative"}}>
                   <div style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",color:"var(--dim)"}}><Icons.User/></div>
-                  <input value={displayName} onChange={e=>setDN(e.target.value)} placeholder="How your name appears on posts"
+                  <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your username"
+                    onKeyDown={e=>e.key==="Enter"&&(!isRegister?handleLogin():handleRegister())}
                     style={{...iStyle,paddingLeft:38}}/>
                 </div>
               </Field>
-            )}
 
-            {isRegister && (
-              <Field label="Account Type">
-                <div style={{display:"flex",gap:10}}>
-                  {[
-                    {id:"author", label:"Author",  desc:"Post & manage content", color:"var(--green)",  border:"rgba(22,163,74,0.4)",  bg:"rgba(26,58,92,0.07)"},
-                    {id:"client", label:"Client",  desc:"View campaign results", color:"var(--accent)", border:"rgba(26,58,92,0.25)",    bg:"rgba(26,58,92,0.07)"},
-                  ].map(r => {
-                    const active = regRole === r.id;
-                    return (
-                      <button key={r.id} onClick={()=>setRegRole(r.id)}
-                        style={{flex:1,padding:"10px 12px",borderRadius:9,border:`1px solid ${active?r.border:"var(--border)"}`,background:active?r.bg:"transparent",cursor:"pointer",textAlign:"left",transition:"all .15s"}}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:active?r.color:"var(--muted)",marginBottom:2}}>{r.label}</div>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{r.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </Field>
-            )}
+              {isRegister && (
+                <Field label="Display Name (optional)">
+                  <input value={displayName} onChange={e=>setDN(e.target.value)} placeholder="Your full name" style={iStyle}/>
+                </Field>
+              )}
 
-            {isRegister && regRole === "client" && (
-              <Field label="Company / Client Name">
-                <input value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="e.g. Binance"
-                  style={iStyle}/>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:4}}>Must match the client tag used in campaign entries.</div>
-              </Field>
-            )}
+              {isRegister && (
+                <Field label="Account Type">
+                  <div style={{display:"flex",gap:6}}>
+                    {[{id:"author",label:"Author",desc:"Submit bounties",color:"#1a3a5c"},{id:"admin",label:"Admin",desc:"Full access",color:"#7c3aed"},{id:"client",label:"Client",desc:"Read-only",color:"#0f766e"}].map(role=>{
+                      const active = regRole===role.id;
+                      return (
+                        <button key={role.id} onClick={()=>setRegRole(role.id)}
+                          style={{flex:1,padding:"8px 6px",borderRadius:7,border:`1px solid ${active?role.color+"60":"var(--border)"}`,background:active?role.color+"0d":"transparent",cursor:"pointer",textAlign:"center",transition:"all .15s"}}>
+                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:active?role.color:"var(--muted)",marginBottom:2}}>{role.label}</div>
+                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{role.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              )}
 
-            <Field label="Password">
-              <div style={{position:"relative"}}>
-                <div style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",color:"var(--dim)"}}><Icons.Lock/></div>
-                <input type={showPass?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)}
-                  placeholder={isRegister?"Min. 6 characters":"Enter your password"}
-                  onKeyDown={e=>e.key==="Enter"&&(!isRegister?handleLogin():handleRegister())}
-                  style={{...iStyle,paddingLeft:38,paddingRight:40}}/>
-                <button onClick={()=>setShowPass(v=>!v)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:showPass?"var(--accent)":"var(--dim)"}}>
-                  <Icons.Eye/>
-                </button>
-              </div>
-            </Field>
+              {isRegister && regRole === "client" && (
+                <Field label="Company / Client Name">
+                  <input value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="e.g. Binance" style={iStyle}/>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:4}}>Must match the client tag used in campaign entries.</div>
+                </Field>
+              )}
 
-            {isRegister && (
-              <Field label="Confirm Password">
+              <Field label="Password">
                 <div style={{position:"relative"}}>
                   <div style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",color:"var(--dim)"}}><Icons.Lock/></div>
-                  <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Re-enter your password"
-                    onKeyDown={e=>e.key==="Enter"&&handleRegister()}
-                    style={{...iStyle,paddingLeft:38, ...(confirm&&confirm!==password?{borderColor:"rgba(220,38,38,0.5)"}:{})}}/>
+                  <input type={showPass?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)}
+                    placeholder={isRegister?"Min. 6 characters":"Enter your password"}
+                    onKeyDown={e=>e.key==="Enter"&&(!isRegister?handleLogin():handleRegister())}
+                    style={{...iStyle,paddingLeft:38,paddingRight:40}}/>
+                  <button onClick={()=>setShowPass(v=>!v)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"transparent",border:"none",cursor:"pointer",color:showPass?"var(--accent)":"var(--dim)"}}>
+                    <Icons.Eye/>
+                  </button>
                 </div>
-                {confirm && confirm!==password && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--red)",marginTop:4}}>Passwords don't match</div>}
               </Field>
+
+              {isRegister && (
+                <Field label="Confirm Password">
+                  <div style={{position:"relative"}}>
+                    <div style={{position:"absolute",left:13,top:"50%",transform:"translateY(-50%)",color:"var(--dim)"}}><Icons.Lock/></div>
+                    <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Re-enter your password"
+                      onKeyDown={e=>e.key==="Enter"&&handleRegister()}
+                      style={{...iStyle,paddingLeft:38,...(confirm&&confirm!==password?{borderColor:"rgba(220,38,38,0.5)"}:{})}}/>
+                  </div>
+                  {confirm && confirm!==password && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--red)",marginTop:4}}>Passwords don't match</div>}
+                </Field>
+              )}
+            </div>
+
+            {error   && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--red)",  marginTop:14,padding:"8px 12px",background:"rgba(220,38,38,0.06)",border:"1px solid rgba(220,38,38,0.2)",borderRadius:7}}>{error}</div>}
+            {success && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--green)",marginTop:14,padding:"8px 12px",background:"rgba(22,163,74,0.06)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:7}}>{success}</div>}
+
+            <button onClick={isRegister?handleRegister:handleLogin} disabled={loading}
+              style={{width:"100%",marginTop:20,fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"13px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer",letterSpacing:"0.06em",fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s",opacity:loading?0.7:1}}
+              onMouseEnter={e=>e.currentTarget.style.background="#1a3a5c"}
+              onMouseLeave={e=>e.currentTarget.style.background="#0d1f33"}>
+              {loading?<><Icons.Spin/>{isRegister?"CREATING…":"SIGNING IN…"}</>:isRegister?"CREATE ACCOUNT →":"SIGN IN →"}
+            </button>
+          </div>
+
+          <div style={{textAlign:"center",marginTop:20}}>
+            {!isRegister ? (
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
+                Need an account?{" "}
+                <button onClick={()=>switchMode("register")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Request access</button>
+              </span>
+            ) : (
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
+                Already have an account?{" "}
+                <button onClick={()=>switchMode("signin")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Sign in</button>
+              </span>
             )}
           </div>
 
-          {error   && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--red)",  marginTop:14,padding:"8px 12px",background:"rgba(220,38,38,0.06)",border:"1px solid rgba(220,38,38,0.2)",borderRadius:7}}>{error}</div>}
-          {success && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--green)",marginTop:14,padding:"8px 12px",background:"rgba(22,163,74,0.06)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:7}}>{success}</div>}
-
-          <button onClick={isRegister?handleRegister:handleLogin} disabled={loading}
-            style={{width:"100%",marginTop:20,fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"12px",borderRadius:10,border:`1px solid ${isRegister?"rgba(26,58,92,0.2)":"rgba(26,58,92,0.2)"}`,background:isRegister?"rgba(26,58,92,0.07)":"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",letterSpacing:"0.06em",fontWeight:500,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s"}}
-            onMouseEnter={e=>e.currentTarget.style.background=isRegister?"rgba(26,58,92,0.1)":"rgba(26,58,92,0.1)"}
-            onMouseLeave={e=>e.currentTarget.style.background=isRegister?"rgba(26,58,92,0.07)":"rgba(26,58,92,0.08)"}>
-            {loading?<><Icons.Spin/>{isRegister?"CREATING…":"SIGNING IN…"}</>:isRegister?"CREATE ACCOUNT →":"SIGN IN →"}
-          </button>
-
         </div>
       </div>
+
     </div>
   );
+
 };
 
 // ─────────────────────────────────────────────────────────
@@ -891,8 +895,8 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
           </div>
         );
       })()}
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)",animation:"fadeUp .5s ease .12s both"}}>
-        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
+        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"11px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
           {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!campaigns.length
@@ -909,7 +913,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
                 const editable=canEdit(c);
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`}}
+                    style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
@@ -1150,7 +1154,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
           </div>
         );
       })()}
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 4px rgba(0,0,0,0.06)",animation:"fadeUp .5s ease .12s both"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
               {["Date","Media","Reporter","Author","Topic",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
@@ -1303,7 +1307,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       {/* Summary cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:28}}>
         {SUMMARY.map((s,i)=>(
-          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
             <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"var(--accent)",opacity:.5}}/>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8}}>{s.label}</div>
             <div style={{fontSize:32,fontWeight:500,color:"var(--accent)",lineHeight:1,marginBottom:4}}>{s.value}</div>
@@ -1705,7 +1709,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:28}}>
         {STATS.map((s,i)=>(
           <div key={i} onClick={s.key?()=>setDrill(s.key):undefined}
-            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
+            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
             onMouseEnter={e=>{if(s.key){e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)";}}}
             onMouseLeave={e=>{if(s.key){e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)";}}}
           >
@@ -2143,9 +2147,9 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div style={{width:44,height:44,borderRadius:12,background:drillProgram.color+"18",border:`1px solid ${drillProgram.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:500,color:drillProgram.color}}>{initials(drillProgram.name)}</div>
-          <div>
+          <div style={{borderLeft:`3px solid ${drillProgram.color}`,paddingLeft:14}}>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:3}}>// bounty detail</div>
-            <h2 style={{fontSize:24,fontWeight:500,color:drillProgram.color}}>{drillProgram.name}</h2>
+            <h2 style={{fontSize:24,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{drillProgram.name}</h2>
           </div>
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
@@ -2202,15 +2206,15 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
             const citeCount = citations.filter(c=>c.campaignId===cl.id).length;
             return (
               <div key={cl.id} onClick={()=>{setDrillId(cl.id);setDrillTab("weekly")}}
-                style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",animation:`rowIn .3s ease ${i*.05}s both`,cursor:"pointer",transition:"all .2s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=cl.color+"80";e.currentTarget.style.boxShadow=`0 4px 16px rgba(0,0,0,0.08)`;e.currentTarget.style.transform="translateY(-1px)"}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="none";e.currentTarget.style.transform="none"}}>
-                <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:cl.color}}/>
+                style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:`rowIn .3s ease ${i*.05}s both`,cursor:"pointer",transition:"all .2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=cl.color+"80";e.currentTarget.style.boxShadow=`0 8px 32px rgba(0,0,0,0.12)`;e.currentTarget.style.transform="translateY(-3px)"}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)";e.currentTarget.style.transform="none"}}>
+                <div style={{position:"absolute",top:0,left:0,bottom:0,width:3,background:cl.color,borderRadius:"12px 0 0 12px"}}/>
                 <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
                   <div style={{display:"flex",alignItems:"center",gap:12}}>
                     <div style={{width:40,height:40,borderRadius:10,background:cl.color+"18",border:`1px solid ${cl.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:cl.color}}>{initials(cl.name)}</div>
                     <div>
-                      <div style={{fontSize:16,fontWeight:500}}>{cl.name}</div>
+                      <div style={{fontSize:16,fontWeight:600,color:"var(--text)",letterSpacing:"-0.01em"}}>{cl.name}</div>
                       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString()}</div>
                     </div>
                   </div>
@@ -2229,11 +2233,11 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                   <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border2)"}}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Bounties</div>
-                    <div style={{fontSize:22,fontWeight:500,color:cl.color}}>{campCount}</div>
+                    <div className="tabular" style={{fontSize:24,fontWeight:700,color:"var(--text)",letterSpacing:"-0.03em"}}>{campCount}</div>
                   </div>
                   <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border2)"}}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Citations</div>
-                    <div style={{fontSize:22,fontWeight:500,color:cl.color}}>{citeCount}</div>
+                    <div className="tabular" style={{fontSize:24,fontWeight:700,color:"var(--text)",letterSpacing:"-0.03em"}}>{citeCount}</div>
                   </div>
                 </div>
                 <div style={{marginTop:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -2285,6 +2289,13 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
 //  ROOT APP
 // ─────────────────────────────────────────────────────────
 export default function App() {
+  useEffect(()=>{
+    document.title = "CryptoQuant Bounty Tracker";
+    const link = document.querySelector("link[rel~='icon']") || Object.assign(document.createElement('link'),{rel:'icon'});
+    link.type = 'image/png';
+    link.href = 'data:image/png;base64,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';
+    document.head.appendChild(link);
+  },[]);
   const [user,setUser]           = useState(null);
   const [users,setUsers]         = useState([]);
   const [programs,setPrograms]     = useState([]);   // named campaigns: [{id,name,color}]
@@ -2559,38 +2570,52 @@ export default function App() {
       {toast&&<Toast msg={toast.msg} type={toast.type}/>}
 
       {/* HEADER */}
-      <header style={{position:"sticky",top:0,zIndex:100,background:"rgba(228,232,238,0.97)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--border)",boxShadow:"0 1px 0 var(--border)",padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",height:58}}>
+      <header style={{position:"sticky",top:0,zIndex:100,background:"#ffffff",borderBottom:"1px solid var(--border)",boxShadow:"0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04)",padding:"0 36px",display:"flex",alignItems:"center",justifyContent:"space-between",height:62}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <img src="data:image/png;base64,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" alt="CQ" style={{width:32,height:32,borderRadius:9,objectFit:"contain",background:"#fff",padding:3}}/>
-          <span style={{fontSize:15,fontWeight:500,letterSpacing:"-0.01em",color:"var(--text)"}}>Crypto<span style={{color:"var(--accent)"}}>Quant</span></span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:12}}>
-          {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}><Icons.Spin/>SAVING…</div>}
-          <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 12px 5px 6px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:100,boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
-            <div style={{width:22,height:22,borderRadius:"50%",background:rm.bg,border:`1px solid ${rm.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:rm.color}}>{initials(user.username)}</div>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--text)"}}>{user.username}</span>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase"}}>{rm.label}</span>
-          </div>
-          <button onClick={()=>setUser(null)} title="Sign out" style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--dim)",transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--dim)"}}>
-            <Icons.Logout/>
-          </button>
+          <img src="data:image/png;base64,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" alt="CryptoQuant" style={{width:32,height:32,objectFit:"contain"}}/>
+          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-0.01em",color:"var(--text)"}}>CryptoQuant <span style={{color:"var(--dim)",fontWeight:400}}>Bounty Tracker</span></span>
         </div>
       </header>
 
-      {/* MAIN */}
-      <main style={{maxWidth:1400,margin:"0 auto",padding:"36px 36px 100px"}}>
-
-        {/* PAGE HEADER */}
-        <div style={{marginBottom:20,animation:"fadeUp .5s ease both"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.12em",color:rm.color,textTransform:"uppercase",marginBottom:6}}>
-            // {rm.label.toLowerCase()} portal
+      {/* LAYOUT */}
+      <div style={{display:"flex",minHeight:"calc(100vh - 62px)"}}>
+        {/* SIDEBAR */}
+        <nav style={{width:220,flexShrink:0,background:"var(--surface)",borderRight:"1px solid var(--border)",padding:"28px 12px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:62,height:"calc(100vh - 62px)",overflowY:"auto"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",padding:"0 12px",marginBottom:8}}>Navigation</div>
+          {TABS.map(t=>{
+            const ia=tab===t.id;
+            return (
+              <button key={t.id} onClick={()=>setTab(t.id)}
+                style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"var(--accent-light)":"transparent",color:ia?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
+                onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--text)";}}}
+                onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}}>
+                <span style={{color:ia?"var(--accent)":"var(--dim)",flexShrink:0}}>{t.icon}</span>
+                <span style={{flex:1}}>{t.label}</span>
+                {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.1)":"var(--surface2)",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>}
+              </button>
+            );
+          })}
+          <div style={{marginTop:"auto",paddingTop:16,borderTop:"1px solid var(--border)"}}>
+            {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
+            <div style={{padding:"8px 12px",borderRadius:8,background:"var(--surface2)",border:"1px solid var(--border)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <div style={{width:22,height:22,borderRadius:"50%",background:rm.bg,border:`1px solid ${rm.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:rm.color,flexShrink:0}}>{initials(user.username)}</div>
+                <span style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase"}}>{rm.label}</span>
+                <button onClick={()=>setUser(null)} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid var(--border)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--dim)",transition:"all .15s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--dim)"}}>
+                  <Icons.Logout/>
+                </button>
+              </div>
+            </div>
           </div>
-          <h1 style={{fontSize:"clamp(22px,3vw,32px)",fontWeight:500,letterSpacing:"-0.02em",lineHeight:1.15}}>
-            Analytics <span style={{color:"var(--accent)"}}>Suite</span>
-          </h1>
-        </div>
+        </nav>
+
+        {/* MAIN CONTENT */}
+        <main style={{flex:1,padding:"36px 40px 80px",minWidth:0,overflowX:"hidden"}}>
 
         {/* CLIENT switcher + notice */}
         {user.role==="client"&&(
@@ -2633,20 +2658,7 @@ export default function App() {
           </div>
         )}
 
-        {/* TABS */}
-        <div style={{display:"flex",gap:4,marginBottom:24,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:4,width:"fit-content",animation:"fadeUp .5s ease .06s both"}}>
-          {TABS.map(t=>{
-            const ia=tab===t.id;
-            return (
-              <button key={t.id} onClick={()=>setTab(t.id)}
-                style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:9,border:`1px solid ${ia?"rgba(255,255,255,0.08)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?t.accent:"var(--dim)",cursor:"pointer",letterSpacing:"0.04em",fontWeight:ia?700:400,transition:"all .2s"}}>
-                <span style={{color:ia?t.accent:"var(--dim)"}}>{t.icon}</span>
-                {t.label}
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)",color:ia?t.accent:"var(--dim)"}}>{t.count}</span>
-              </button>
-            );
-          })}
-        </div>
+
 
         {/* CAMPAIGN SWITCHER — admin/author only */}
         {user.role!=="client" && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine"||tab==="campaigns_mgmt") && tab!=="campaigns_mgmt" && (()=>{
@@ -2654,8 +2666,8 @@ export default function App() {
             ? programs
             : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id)); // authors only see assigned campaigns
           return (
-          <div style={{marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Active Campaign</div>
+          <div style={{marginBottom:24,animation:"fadeUp .5s ease .04s both"}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>Active Campaign</div>
             {!visibleCampaigns.length ? (
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10}}>
                 <Icons.Brief/>
@@ -2665,17 +2677,24 @@ export default function App() {
                 {user.role==="admin"&&<button onClick={()=>setTab("campaigns_mgmt")} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--accent)",background:"transparent",border:"none",cursor:"pointer",textDecoration:"underline"}}>Create your first campaign →</button>}
               </div>
             ) : (
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {visibleCampaigns.map(cl=>{
                   const ia=activeCid===cl.id;
+                  const bountyCount=campaigns.filter(c=>c.campaignId===cl.id).length;
+                  const citationCount=citations.filter(c=>c.campaignId===cl.id).length;
                   return (
                     <button key={cl.id} onClick={()=>setActiveCid(cl.id)}
-                      style={{display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,border:`1px solid ${ia?cl.color+"60":"var(--border)"}`,background:ia?cl.color+"12":"var(--surface)",cursor:"pointer",transition:"all .2s"}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:ia?cl.color:"var(--dim)",boxShadow:ia?`0 0 6px ${cl.color}`:"none",flexShrink:0}}/>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,fontWeight:ia?700:400,color:ia?cl.color:"var(--muted)",letterSpacing:"0.02em"}}>{cl.name}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?cl.color+"18":"rgba(255,255,255,0.03)",color:ia?cl.color:"var(--dim)"}}>
-                        {campaigns.filter(c=>c.campaignId===cl.id).length}
-                      </span>
+                      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",borderRadius:10,border:`1.5px solid ${ia?cl.color:"var(--border)"}`,background:ia?"var(--surface)":"var(--surface2)",cursor:"pointer",transition:"all .2s",boxShadow:ia?`0 2px 12px ${cl.color}22`:"none",position:"relative",overflow:"hidden"}}
+                      onMouseEnter={e=>{if(!ia){e.currentTarget.style.borderColor=cl.color+"60";e.currentTarget.style.background="var(--surface)";}}}
+                      onMouseLeave={e=>{if(!ia){e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface2)";}}}
+                    >
+                      {ia&&<div style={{position:"absolute",top:0,left:0,bottom:0,width:3,background:cl.color}}/>}
+                      <div style={{width:28,height:28,borderRadius:7,background:cl.color+"18",border:`1px solid ${cl.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:cl.color,flexShrink:0}}>{initials(cl.name)}</div>
+                      <div style={{textAlign:"left"}}>
+                        <div style={{fontSize:13,fontWeight:ia?600:500,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em"}}>{cl.name}</div>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{bountyCount} bounties · {citationCount} citations</div>
+                      </div>
+                      {ia&&<div style={{marginLeft:4,width:6,height:6,borderRadius:"50%",background:cl.color,flexShrink:0}}/>}
                     </button>
                   );
                 })}
@@ -2693,7 +2712,8 @@ export default function App() {
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
-      </main>
+        </main>
+      </div>
 
       <footer style={{borderTop:"1px solid var(--border2)",padding:"16px 32px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite</div>
