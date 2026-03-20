@@ -2050,18 +2050,28 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
     }).filter(r=>{const d=(r["date"]||"").trim();const n=(r["no"]||"").trim();if(n&&isNaN(Number(n)))return false;return d&&!d.toLowerCase().startsWith("yyyy")&&!d.toLowerCase().startsWith("date");});
   };
   const doSync = async() => {
+    console.log("doSync called, isSyncing:", isSyncing.current, "program:", program.id, "bounties URL:", program.sheetBounties, "media URL:", program.sheetMedia);
     if(isSyncing.current) return;
     isSyncing.current = true;
     setSyncing(true); setResult(null);
     let added=0, skipped=0;
     try {
       const newBounties=[], newMedia=[];
+      const fetchSheet = async(url) => {
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+        if(isLocal) {
+          const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url+'&t='+Date.now())}`);
+          return await r.text();
+        } else {
+          const r = await fetch(`/api/sheet-proxy?url=${encodeURIComponent(url)}`);
+          return await r.text();
+        }
+      };
       const {data:existingB} = await supabase.from("bounties").select("cq_link,sheet_row_no").eq("campaign_id",program.id);
       const {data:existingM} = await supabase.from("citations").select("article_link,sheet_row_no").eq("campaign_id",program.id);
       const exB = existingB||[], exM = existingM||[];
       if(program.sheetBounties){
-        const res = await fetch('https://corsproxy.io/?'+encodeURIComponent(program.sheetBounties+'&t='+Date.now()));
-        const text = await res.text();
+        const text = await fetchSheet(program.sheetBounties);
         const rows = parseCSV(text);
         for(const r of rows){
           const link=r["quicktake link"]||r["quicktake_link"]||r["cq_link"]||r["link"]||"";
@@ -2075,8 +2085,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
         }
       }
       if(program.sheetMedia){
-        const res = await fetch('https://corsproxy.io/?'+encodeURIComponent(program.sheetMedia+'&t='+Date.now()));
-        const text = await res.text();
+        const text = await fetchSheet(program.sheetMedia);
         const rows = parseCSV(text);
         for(const r of rows){
           const link=r["article link"]||r["article_link"]||"";
