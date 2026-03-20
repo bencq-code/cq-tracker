@@ -57,6 +57,7 @@ const fromClient = (r) => ({
   status:          r.status || "active",
   sheetBounties:   r.sheet_bounties || "",
   sheetMedia:      r.sheet_media || "",
+  sheetLink:       r.sheet_link || "",
   createdAt:       r.created_at,
 });
 const toClient = (c) => ({
@@ -66,6 +67,7 @@ const toClient = (c) => ({
   status:          c.status || "active",
   sheet_bounties:  c.sheetBounties || "",
   sheet_media:     c.sheetMedia || "",
+  sheet_link:      c.sheetLink || "",
   created_at:      c.createdAt || Date.now(),
 });
 
@@ -80,6 +82,13 @@ const fromCampaign = (r) => ({
   analyticsLink:     r.analytics_link,
   cqTwitterLink:     r.cq_twitter_link,
   telegramLink:      r.telegram_link || "",
+  category:          r.category || "",
+  asset:             r.asset || "",
+  twitterImpressions:r.twitter_impressions || "",
+  telegramImpressions:r.telegram_impressions || "",
+  note1:             r.note1 || "",
+  note2:             r.note2 || "",
+  note3:             r.note3 || "",
   sheetRowNo:        r.sheet_row_no || "",
   createdBy:         r.created_by,
   createdAt:         r.created_at,
@@ -95,6 +104,13 @@ const toCampaign = (c) => ({
   analytics_link:      c.analyticsLink,
   cq_twitter_link:     c.cqTwitterLink,
   telegram_link:       c.telegramLink || "",
+  category:            c.category || "",
+  asset:               c.asset || "",
+  twitter_impressions: c.twitterImpressions || "",
+  telegram_impressions:c.telegramImpressions || "",
+  note1:               c.note1 || "",
+  note2:               c.note2 || "",
+  note3:               c.note3 || "",
   sheet_row_no:        c.sheetRowNo || "",
   created_by:          c.createdBy,
   created_at:          c.createdAt || Date.now(),
@@ -216,6 +232,22 @@ export const db = {
   },
   async deleteCitation(id) {
     const { error } = await supabase.from("citations").delete().eq("id", id);
+    if (error) throw error;
+  },
+  async deleteAllBounties(campaignId) {
+    const { error } = await supabase.from("bounties").delete().eq("campaign_id", campaignId);
+    if (error) throw error;
+  },
+  async deleteAllCitations(campaignId) {
+    const { error } = await supabase.from("citations").delete().eq("campaign_id", campaignId);
+    if (error) throw error;
+  },
+  async batchDeleteBounties(ids) {
+    const { error } = await supabase.from("bounties").delete().in("id", ids);
+    if (error) throw error;
+  },
+  async batchDeleteCitations(ids) {
+    const { error } = await supabase.from("citations").delete().in("id", ids);
     if (error) throw error;
   },
   async batchInsertBounties(entries) {

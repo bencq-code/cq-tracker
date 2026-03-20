@@ -632,7 +632,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE (shared, role-aware)
 // ─────────────────────────────────────────────────────────
-const CAMP_EMPTY = {date:"",author:"",title:"",cqLink:"",analyticsLink:"",authorTwitterLink:"",cqTwitterLink:"",telegramLink:""};
+const CAMP_EMPTY = {date:"",author:"",title:"",cqLink:"",analyticsLink:"",authorTwitterLink:"",cqTwitterLink:"",telegramLink:"",category:"",asset:"",twitterImpressions:"",telegramImpressions:"",note1:"",note2:"",note3:""};
 const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
   const prefill = currentUser.role==="author"?{...CAMP_EMPTY,author:currentUser.displayName||currentUser.username,...initial}:{...CAMP_EMPTY,...initial};
   const [form,setForm] = useState(prefill);
@@ -658,6 +658,22 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
           <Field label="Author Twitter Link" full><input type="url" value={form.authorTwitterLink||""} onChange={e=>set("authorTwitterLink",e.target.value)} placeholder="https://x.com/…" style={iStyle}/></Field>
           <Field label="CryptoQuant Twitter Link" full><input type="url" value={form.cqTwitterLink||""} onChange={e=>set("cqTwitterLink",e.target.value)} placeholder="https://x.com/CryptoQuant_IO/…" style={iStyle}/></Field>
           <Field label="Telegram Link" full><input type="url" value={form.telegramLink||""} onChange={e=>set("telegramLink",e.target.value)} placeholder="https://t.me/cryptoquant_official/…" style={iStyle}/></Field>
+          <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{display:"flex",gap:10}}>
+                <Field label="Category"><input value={form.category||""} onChange={e=>set("category",e.target.value)} placeholder="e.g. Spot, Macro" style={iStyle}/></Field>
+                <Field label="Asset"><input value={form.asset||""} onChange={e=>set("asset",e.target.value)} placeholder="e.g. BTC, ETH" style={iStyle}/></Field>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <Field label="Twitter Impressions"><input value={form.twitterImpressions||""} onChange={e=>set("twitterImpressions",e.target.value)} placeholder="e.g. 21300" style={iStyle}/></Field>
+                <Field label="Telegram Impressions"><input value={form.telegramImpressions||""} onChange={e=>set("telegramImpressions",e.target.value)} placeholder="e.g. 7100" style={iStyle}/></Field>
+              </div>
+              <Field label="Note 1" full><input value={form.note1||""} onChange={e=>set("note1",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
+              <Field label="Note 2" full><input value={form.note2||""} onChange={e=>set("note2",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
+              <Field label="Note 3" full><input value={form.note3||""} onChange={e=>set("note3",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
+            </div>
+          </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
@@ -710,45 +726,71 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const ac = getAuthorColor(entry.author);
-  const links = [
-    {label:"Quicktake",   url:entry.cqLink},
-    {label:"Analytics",   url:entry.analyticsLink},
-    {label:"Author X",    url:entry.authorTwitterLink},
-    {label:"CQ X",        url:entry.cqTwitterLink},
-  ].filter(l=>l.url);
+  const InfoBlock = ({label, value, full=false}) => !value ? null : (
+    <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
+    </div>
+  );
+  const LinkBtn = ({label, url}) => !url ? null : (
+    <a href={url} target="_blank" rel="noreferrer"
+      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+      {label} ↗
+    </a>
+  );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(520px,100%)",padding:32,position:"relative",animation:"modalIn .2s ease"}}>
-        <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>// bounty entry</div>
-        <h2 style={{fontSize:17,fontWeight:500,lineHeight:1.4,marginBottom:20,paddingRight:24}}>{entry.title}</h2>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:20}}>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Date</div>
-            <div style={{fontSize:13,fontWeight:500}}>{fmtDate(entry.date)}</div>
-          </div>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Author</div>
-            <div style={{display:"flex",alignItems:"center",gap:7}}>
-              <div style={{width:22,height:22,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.author)}</div>
-              <span style={{fontSize:13,fontWeight:500}}>{entry.author||"—"}</span>
-            </div>
-          </div>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(560px,100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+        {/* Header */}
+        <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
+          <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// bounty entry</div>
+          <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.title||"—"}</h2>
         </div>
-        {links.length>0&&(
-          <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {links.map(l=>(
-                <a key={l.label} href={l.url} target="_blank" rel="noreferrer"
-                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"flex",alignItems:"center",gap:4}}>
-                  {l.label} ↗
-                </a>
-              ))}
+        {/* Scrollable body */}
+        <div style={{overflowY:"auto",padding:"20px 28px",flex:1}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            <InfoBlock label="Date" value={fmtDate(entry.date)}/>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Author</div>
+              <div style={{display:"flex",alignItems:"center",gap:7}}>
+                <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.author)}</div>
+                <span style={{fontSize:13,fontWeight:500}}>{entry.author||"—"}</span>
+              </div>
             </div>
+            <InfoBlock label="Category" value={entry.category}/>
+            <InfoBlock label="Asset" value={entry.asset}/>
+            <InfoBlock label="Twitter Impressions" value={entry.twitterImpressions}/>
+            <InfoBlock label="Telegram Impressions" value={entry.telegramImpressions}/>
           </div>
-        )}
-        <div style={{display:"flex",justifyContent:"flex-end",gap:8,paddingTop:16,borderTop:"1px solid var(--border)"}}>
+          {(entry.cqLink||entry.analyticsLink||entry.authorTwitterLink||entry.cqTwitterLink||entry.telegramLink)&&(
+            <div style={{marginBottom:16}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <LinkBtn label="Quicktake" url={entry.cqLink}/>
+                <LinkBtn label="Analytics" url={entry.analyticsLink}/>
+                <LinkBtn label="Author X" url={entry.authorTwitterLink}/>
+                <LinkBtn label="CQ X" url={entry.cqTwitterLink}/>
+                <LinkBtn label="Telegram" url={entry.telegramLink}/>
+              </div>
+            </div>
+          )}
+          {(entry.note1||entry.note2||entry.note3)&&(
+            <div style={{marginBottom:16}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Notes</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {[{l:"Note 1",v:entry.note1},{l:"Note 2",v:entry.note2},{l:"Note 3",v:entry.note3}].filter(x=>x.v).map(x=>(
+                  <div key={x.l} style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",marginBottom:4}}>{x.l}</div>
+                    <div style={{fontSize:13,color:"var(--text)"}}>{x.v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* Footer */}
+        <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
           <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
           {isEditable&&<button onClick={onEdit} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
@@ -760,7 +802,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, onSave, onDelete, currentUser, readOnly=false}) => {
+const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, readOnly=false}) => {
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
   const [filterDateFrom,setDateFrom] = useState("");
@@ -816,6 +858,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, currentUser, readOnly=false
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
+              {currentUser.role==="admin"&&campaigns.length>0&&<button onClick={()=>{const cid=campaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {showFilters&&(
@@ -908,43 +951,53 @@ const CampaignTable = ({campaigns, onSave, onDelete, currentUser, readOnly=false
 // ─────────────────────────────────────────────────────────
 const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
+  const InfoBlock = ({label, value, full=false}) => !value ? null : (
+    <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
+    </div>
+  );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(520px,100%)",padding:32,position:"relative",animation:"modalIn .2s ease"}}>
-        <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>// media citation</div>
-        <h2 style={{fontSize:17,fontWeight:500,lineHeight:1.4,marginBottom:20,paddingRight:24}}>{entry.topic||"—"}</h2>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Date</div>
-            <div style={{fontSize:13,fontWeight:500}}>{fmtDate(entry.date)}</div>
-          </div>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Media Outlet</div>
-            <div style={{display:"flex",alignItems:"center",gap:7}}>
-              <div style={{width:22,height:22,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:mc.bg,color:mc.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.media)}</div>
-              <span style={{fontSize:13,fontWeight:500}}>{entry.media||"—"}</span>
-            </div>
-          </div>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Reporter</div>
-            <div style={{fontSize:13,fontWeight:500}}>{entry.reporter||"—"}</div>
-          </div>
-          <div style={{background:"var(--surface2)",borderRadius:10,padding:"12px 14px",border:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Author</div>
-            <div style={{fontSize:13,fontWeight:500}}>{entry.author||"—"}</div>
-          </div>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(560px,100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+        {/* Header */}
+        <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
+          <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
+          <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.topic||"—"}</h2>
         </div>
-        {entry.articleLink&&(
-          <div style={{marginBottom:20}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
-            <a href={entry.articleLink} target="_blank" rel="noreferrer"
-              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
-              Open Article ↗
-            </a>
+        {/* Scrollable body */}
+        <div style={{overflowY:"auto",padding:"20px 28px",flex:1}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            <InfoBlock label="Date" value={fmtDate(entry.date)}/>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Outlet</div>
+              <div style={{display:"flex",alignItems:"center",gap:7}}>
+                <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:mc.bg,color:mc.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.media)}</div>
+                <span style={{fontSize:13,fontWeight:500}}>{entry.media||"—"}</span>
+              </div>
+            </div>
+            <InfoBlock label="Reporter" value={entry.reporter}/>
+            <InfoBlock label="Author" value={entry.author}/>
+            <InfoBlock label="Headline" value={entry.headline} full/>
+            <InfoBlock label="Media Tier" value={entry.mediaTier}/>
+            <InfoBlock label="Direct Relationship" value={entry.directRelationship}/>
+            <InfoBlock label="Language" value={entry.language}/>
+            <InfoBlock label="Asset" value={entry.asset}/>
+            <InfoBlock label="Branding" value={entry.branding}/>
           </div>
-        )}
-        <div style={{display:"flex",justifyContent:"flex-end",gap:8,paddingTop:16,borderTop:"1px solid var(--border)"}}>
+          {entry.articleLink&&(
+            <div style={{marginBottom:16}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
+              <a href={entry.articleLink} target="_blank" rel="noreferrer"
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+                Open Article ↗
+              </a>
+            </div>
+          )}
+        </div>
+        {/* Footer */}
+        <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
           <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
           {isEditable&&<button onClick={onEdit} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
@@ -956,7 +1009,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
 // ─────────────────────────────────────────────────────────
 //  MEDIA TABLE (role-aware)
 // ─────────────────────────────────────────────────────────
-const MEDIA_EMPTY={date:"",media:"",reporter:"",author:"",topic:"",articleLink:""};
+const MEDIA_EMPTY={date:"",media:"",reporter:"",author:"",topic:"",articleLink:"",headline:"",mediaTier:"",directRelationship:"",language:"",asset:"",branding:""};
 const MediaForm = ({initial,isEdit,onSave,onClose}) => {
   const [form,setForm]=useState({...MEDIA_EMPTY,...initial});
   const [saving,setSaving]=useState(false);
@@ -970,11 +1023,26 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
         <div style={{fontSize:18,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Citation":"Add Media Citation"}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <Field label="Date"><input type="date" value={form.date} onChange={e=>set("date",e.target.value)} style={iStyle}/></Field>
-          <Field label="Media"><input value={form.media||""} onChange={e=>set("media",e.target.value)} placeholder="e.g. CoinDesk, Benzinga" style={iStyle}/></Field>
+          <Field label="Media *"><input value={form.media||""} onChange={e=>set("media",e.target.value)} placeholder="e.g. CoinDesk, Benzinga" style={iStyle}/></Field>
           <Field label="Reporter"><input value={form.reporter||""} onChange={e=>set("reporter",e.target.value)} placeholder="Reporter name" style={iStyle}/></Field>
           <Field label="Author"><input value={form.author||""} onChange={e=>set("author",e.target.value)} placeholder="e.g. DarkFost" style={iStyle}/></Field>
           <Field label="Topic" full><input value={form.topic||""} onChange={e=>set("topic",e.target.value)} placeholder="e.g. Bitcoin ETF, Stablecoin" style={iStyle}/></Field>
-          <Field label="Link" full><input type="url" value={form.articleLink||""} onChange={e=>set("articleLink",e.target.value)} placeholder="https://…" style={iStyle}/></Field>
+          <Field label="Headline" full><input value={form.headline||""} onChange={e=>set("headline",e.target.value)} placeholder="Full article headline" style={iStyle}/></Field>
+          <Field label="Article Link" full><input type="url" value={form.articleLink||""} onChange={e=>set("articleLink",e.target.value)} placeholder="https://…" style={iStyle}/></Field>
+          <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{display:"flex",gap:10}}>
+                <Field label="Media Tier"><input value={form.mediaTier||""} onChange={e=>set("mediaTier",e.target.value)} placeholder="e.g. Tier 1" style={iStyle}/></Field>
+                <Field label="Language"><input value={form.language||""} onChange={e=>set("language",e.target.value)} placeholder="e.g. English" style={iStyle}/></Field>
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <Field label="Asset"><input value={form.asset||""} onChange={e=>set("asset",e.target.value)} placeholder="e.g. BTC, ETH" style={iStyle}/></Field>
+                <Field label="Branding"><input value={form.branding||""} onChange={e=>set("branding",e.target.value)} placeholder="Yes / No" style={iStyle}/></Field>
+              </div>
+              <Field label="Direct Relationship"><input value={form.directRelationship||""} onChange={e=>set("directRelationship",e.target.value)} placeholder="Yes / No" style={iStyle}/></Field>
+            </div>
+          </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
@@ -985,7 +1053,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
   );
 };
 
-const MediaTable = ({citations,onSave,onDelete,currentUser,readOnly}) => {
+const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}) => {
   const [search,setSearch]=useState("");
   const [filterAuthor,setFA]=useState("all");
   const [filterMedia,setFM]=useState("all");
@@ -1041,6 +1109,7 @@ const MediaTable = ({citations,onSave,onDelete,currentUser,readOnly}) => {
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
+              {currentUser.role==="admin"&&citations.length>0&&<button onClick={()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
             </div>
             {showFilters&&(
@@ -1112,7 +1181,12 @@ const MediaTable = ({citations,onSave,onDelete,currentUser,readOnly}) => {
                         <div title={c.author||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.author||"—"}</div>
                         <div style={{paddingRight:8,minWidth:0}}>
                           <div title={c.topic||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{c.topic||"—"}</div>
-                          {c.articleLink&&<div onClick={e=>e.stopPropagation()}><a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Link↗</a></div>}
+                          {c.headline&&<div title={c.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
+                          <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
+                            {c.mediaTier&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(22,101,52,0.07)",border:"1px solid rgba(22,101,52,0.2)",color:"#166534"}}>{c.mediaTier}</span>}
+                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(100,116,139,0.08)",border:"1px solid rgba(100,116,139,0.2)",color:"#475569"}}>{c.language}</span>}
+                            {c.articleLink&&<a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Link↗</a>}
+                          </div>
                         </div>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
                           {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
@@ -1859,11 +1933,12 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   const [status,setStatus] = useState(initial?.status||"active");
   const [sheetBounties,setSheetBounties] = useState(initial?.sheetBounties||"");
   const [sheetMedia,setSheetMedia] = useState(initial?.sheetMedia||"");
+  const [sheetLink,setSheetLink] = useState(initial?.sheetLink||"");
   const [dataMode,setDataMode] = useState(initial?.sheetBounties||initial?.sheetMedia?"sheets":"manual");
   const [saving,setSaving] = useState(false);
   const handleSave = async () => {
     if (!name.trim()){alert("Campaign name required.");return;}
-    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?sheetBounties:"",sheetMedia:dataMode==="sheets"?sheetMedia:""}); setSaving(false);
+    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?sheetBounties:"",sheetMedia:dataMode==="sheets"?sheetMedia:"",sheetLink}); setSaving(false);
   };
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
@@ -1926,6 +2001,16 @@ const CampaignForm = ({initial,onSave,onClose}) => {
                 </div>
               </div>
             )}
+            <div style={{paddingTop:14,borderTop:"1px solid var(--border)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>General Spreadsheet Link</div>
+              <Field label="Google Sheet URL" full>
+                <input value={sheetLink} onChange={e=>setSheetLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/..." style={iStyle}/>
+              </Field>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6}}>A direct link to the full Google Sheet for this campaign (visible to all users).</div>
+            </div>
+            {false&&(
+              <span/>
+            )}
           </div>
           <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"var(--surface2)",borderRadius:10,border:"1px solid var(--border)"}}>
             <div style={{width:36,height:36,borderRadius:10,background:color+"18",border:`1px solid ${color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:color}}>{name?initials(name):"??"}</div>
@@ -1986,7 +2071,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
           const inNew=newBounties.some(b=>rowNo?b.sheetRowNo===rowNo:(link&&b.cqLink===link));
           const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(link&&exB.some(b=>b.cq_link===link));
           if(inNew||inDB){skipped++;continue;}
-          newBounties.push({id:uid(),campaignId:program.id,date:r["date"]||"",author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
+          newBounties.push({id:uid(),campaignId:program.id,date:r["date"]||"",author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||r["cq analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||r["analyst twitter/x post"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||r["twitter/x link"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),category:(r["category"]||"").trim(),asset:(r["asset"]||"").trim(),twitterImpressions:(r["twitter impressions"]||r["cq twitter/x impressions"]||"").trim(),telegramImpressions:(r["telegram impressions"]||"").trim(),note1:(r["note 1"]||r["note1"]||"").trim(),note2:(r["note 2"]||r["note2"]||"").trim(),note3:(r["note 3"]||r["note3"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
         }
       }
       if(program.sheetMedia){
@@ -2001,7 +2086,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
           const inNewM=newMedia.some(m=>rowNo2?m.sheetRowNo===rowNo2:(link&&m.articleLink===link));
           const inDBM=rowNo2?exM.some(m=>m.sheet_row_no===rowNo2):(link&&exM.some(m=>m.article_link===link));
           if(inNewM||inDBM){skipped++;continue;}
-          newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:media,reporter:(r["reporter"]||"").trim(),author:norm(r["author"]),topic:(r["topic"]||"").trim(),articleLink:link,sheetRowNo:rowNo2,createdBy:"sheet_sync"});
+          newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:media,reporter:(r["reporter"]||"").trim(),author:norm(r["author"]),topic:(r["topic"]||"").trim(),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:(r["direct relationship"]||"").trim(),language:(r["language"]||"").trim(),asset:(r["asset"]||"").trim(),branding:(r["branding"]||"").trim(),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
         }
       }
       if(newBounties.length){await db.batchInsertBounties(newBounties);setCampaigns(prev=>[...newBounties,...prev]);added+=newBounties.length;}
@@ -2075,8 +2160,8 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         })}
       </div>
       {drillTab==="weekly"   && <WeeklySummaryTab campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
-      {drillTab==="posts"    && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} currentUser={currentUser} readOnly={false}/>}
-      {drillTab==="media"    && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} currentUser={currentUser} readOnly={false}/>}
+      {drillTab==="posts"    && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} onDeleteAll={async(cid)=>{await db.deleteAllBounties(cid);setCampaigns(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
+      {drillTab==="media"    && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} onDeleteAll={async(cid)=>{await db.deleteAllCitations(cid);setCitations(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
       {drillTab==="analytics"&& <AnalyticsTab campaigns={drillCamps} citations={drillCites} clientName={drillProgram.name}/>}
       {showForm&&<CampaignForm initial={editClient} onSave={async f=>{await onSave(f,editClient);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
       {confirmId&&<ConfirmDelete onConfirm={async()=>{await onDelete(confirmId);setConfId(null);setDrillId(null)}} onCancel={()=>setConfId(null)}/>}
@@ -2144,6 +2229,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 </div>
                 <div style={{marginTop:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>View details →</div>
+                  {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",textDecoration:"none",display:"flex",alignItems:"center",gap:4}}>📊 Sheet↗</a>}
                   {(cl.sheetBounties||cl.sheetMedia)&&<div onClick={e=>e.stopPropagation()}><DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/></div>}
                 </div>
               </div>
@@ -2353,6 +2439,16 @@ export default function App() {
     await db.deleteBounty(id);
     setCampaigns(campaigns.filter(c=>c.id!==id));
     showToast("Entry deleted");
+  };
+  const handleDeleteAllCamp=async(campaignId)=>{
+    await db.deleteAllBounties(campaignId);
+    setCampaigns(campaigns.filter(c=>c.campaignId!==campaignId));
+    showToast("All bounties deleted");
+  };
+  const handleDeleteAllMedia=async(campaignId)=>{
+    await db.deleteAllCitations(campaignId);
+    setCitations(citations.filter(c=>c.campaignId!==campaignId));
+    showToast("All citations deleted");
   };
 
   const handleSaveMedia=async(form,existing,cidOverride)=>{
@@ -2582,8 +2678,8 @@ export default function App() {
 
         {/* CONTENT */}
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} onSave={handleSaveCamp} onDelete={handleDeleteCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
-        {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {tab==="analytics"&&user.role==="client"&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.clientName}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
