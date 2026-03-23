@@ -131,7 +131,7 @@ const getClientColor = n => getPaletteColor(CLIENT_PALETTE,"client",n||"?");
 const getTierColor   = t => TIER_COLORS[t]||{bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
-const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
+const fmtDate  = iso => { if(!iso)return"—"; try{ const [y,m,d]=(iso+"").split("-"); const mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]; if(!mon)return iso; return `${mon} ${+d}, ${y}`; }catch{return iso;} };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const hashPass = s => btoa(encodeURIComponent(s));
 
@@ -843,7 +843,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
 
   return (
     <>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
         <StatCard label="Total Posts"       value={campaigns.length} sub={dateRange}                                    c="var(--accent)"/>
         <StatCard label="Unique Authors"     value={authors.length}   sub="Contributing analysts"                        c="var(--purple)"/>
       </div>
@@ -894,7 +894,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval="preserveStartEnd"/>
+                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/6)-1)}/>
                   <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
                   <Tooltip content={({active,payload,label})=>active&&payload?.length?(
                     <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
@@ -1232,7 +1232,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval="preserveStartEnd"/>
+                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/6)-1)}/>
                   <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
                   <Tooltip content={({active,payload,label})=>active&&payload?.length?(
                     <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
@@ -1459,9 +1459,14 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
     }
   });
 
+  const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
+  const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
+
   const SUMMARY = [
-    {label:"Bounties Created", value:totalBounties,  sub:"Bounty posts"},
-    {label:"Media Citations",  value:totalCitations, sub:"Total coverage"},
+    {label:"Bounties",      value:totalBounties,        sub:"Posts published",      c:"var(--accent)"},
+    {label:"Media Citations",value:totalCitations,       sub:"Total coverage",       c:"#4a7fa8"},
+    {label:"Authors",        value:uniqueAuthors.length,  sub:"Unique contributors",  c:"var(--accent)"},
+    {label:"Media Outlets",  value:uniqueOutlets.length,  sub:"Unique publications",  c:"#4a7fa8"},
   ];
 
   const CustomTooltip = ({active,payload,label,nameMap={}}) => {
@@ -1501,11 +1506,10 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       {/* Summary cards */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:28}}>
         {SUMMARY.map((s,i)=>(
-          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-            <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"var(--accent)",opacity:.5}}/>
+          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8}}>{s.label}</div>
-            <div style={{fontSize:32,fontWeight:500,color:"var(--accent)",lineHeight:1,marginBottom:4}}>{s.value}</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>{s.sub}</div>
+            <div className="tabular" style={{fontSize:30,fontWeight:700,color:"var(--text)",lineHeight:1,marginBottom:6,letterSpacing:"-0.03em"}}>{s.value}</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -1545,7 +1549,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/8)-1)}/>
                 <YAxis yAxisId="monthly" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
                 <YAxis yAxisId="cumulative" orientation="right" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={36} allowDecimals={false}/>
                 <Tooltip content={({active,payload,label})=>{
@@ -1720,48 +1724,85 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const [drill, setDrill] = useState(null);
 
-  // ── DATE WINDOW ──────────────────────────────────────────
-  const today = new Date();
-  today.setHours(23,59,59,999);
-  const cutoff = new Date(today);
-  cutoff.setDate(today.getDate()-6);
-  cutoff.setHours(0,0,0,0);
-  const cutStr = cutoff.toISOString().slice(0,10);
+  // ── WEEK NAVIGATION ───────────────────────────────────────
+  // Find the Monday of the current week
+  const getMondayOf = (date) => {
+    const d = new Date(date);
+    if(isNaN(d.getTime())) return new Date();
+    d.setHours(0,0,0,0);
+    const day = d.getDay();
+    d.setDate(d.getDate() - ((day + 6) % 7));
+    return d;
+  };
 
-  const hasRecentData = campaigns.some(c=>c.date>=cutStr)||citations.some(c=>c.date>=cutStr);
-  let activeCutStr = cutStr;
-  let isHistorical = false;
+  const todayMonday = getMondayOf(new Date());
+  const [weekStart, setWeekStart] = useState(todayMonday);
+  const [manuallyNavigated, setManuallyNavigated] = useState(false);
 
-  if(!hasRecentData){
-    const allDates=[...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
-    if(allDates.length){
-      const lastDate=new Date(allDates[allDates.length-1]+"T00:00:00");
-      const fb=new Date(lastDate);
-      fb.setDate(lastDate.getDate()-6);
-      activeCutStr=fb.toISOString().slice(0,10);
-      isHistorical=true;
-    }
-  }
+  // Once data arrives, jump to the latest data week — but only if not manually navigated
+  useEffect(()=>{
+    if(manuallyNavigated) return;
+    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(d=>{if(!d)return false;const t=new Date(d+"T00:00:00");return !isNaN(t.getTime());}).sort();
+    if(!allDates.length) return;
+    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
+    const lastMonday = getMondayOf(lastDate);
+    setWeekStart(lastMonday > todayMonday ? todayMonday : lastMonday);
+  },[campaigns.length, citations.length]);
 
-  // Previous 7-day window for WoW delta
-  const prevCutStr = (() => {
-    const d = new Date(activeCutStr+"T00:00:00");
-    d.setDate(d.getDate()-7);
-    return d.toISOString().slice(0,10);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23,59,59,999);
+
+  const weekStartStr = weekStart.toISOString().slice(0,10);
+  const weekEndStr   = weekEnd.toISOString().slice(0,10);
+
+  const isCurrentWeek = weekStartStr === todayMonday.toISOString().slice(0,10);
+  const isFutureWeek  = weekStart > todayMonday;
+
+  const latestDataMonday = (() => {
+    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(d=>{if(!d)return false;const t=new Date(d+"T00:00:00");return !isNaN(t.getTime());}).sort();
+    if(!allDates.length) return todayMonday;
+    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
+    const lastMonday = getMondayOf(lastDate);
+    return lastMonday > todayMonday ? todayMonday : lastMonday;
   })();
 
-  const weekBounties  = campaigns.filter(c=>c.date&&c.date>=activeCutStr);
-  const weekCitations = citations.filter(c=>c.date&&c.date>=activeCutStr);
-  const prevBounties  = campaigns.filter(c=>c.date&&c.date>=prevCutStr&&c.date<activeCutStr);
-  const prevCitations = citations.filter(c=>c.date&&c.date>=prevCutStr&&c.date<activeCutStr);
+  const isLatestWeek = weekStartStr === latestDataMonday.toISOString().slice(0,10);
+
+  const goBack = () => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate()-7);
+    setWeekStart(d);
+    setManuallyNavigated(true);
+    setDrill(null);
+  };
+  const goForward = () => {
+    if(isCurrentWeek) return;
+    const d = new Date(weekStart);
+    d.setDate(d.getDate()+7);
+    setWeekStart(d);
+    setManuallyNavigated(true);
+    setDrill(null);
+  };
+  const goLatest = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
+
+  const safeFmt = (d,opts) => { try{ const r=d.toLocaleDateString("en-US",opts); return r; }catch{ return "—"; }};
+  const dateRange = `${safeFmt(weekStart,{month:"short",day:"numeric"})} – ${safeFmt(weekEnd,{month:"short",day:"numeric",year:"numeric"})}`;
+
+  // ── DATA FOR THIS WEEK ────────────────────────────────────
+  const weekBounties  = campaigns.filter(c=>c.date&&c.date>=weekStartStr&&c.date<=weekEndStr);
+  const weekCitations = citations.filter(c=>c.date&&c.date>=weekStartStr&&c.date<=weekEndStr);
+
+  // Previous week for WoW delta
+  const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate()-7);
+  const prevEnd   = new Date(weekStart); prevEnd.setDate(prevEnd.getDate()-1);
+  const prevStartStr = prevStart.toISOString().slice(0,10);
+  const prevEndStr   = prevEnd.toISOString().slice(0,10);
+  const prevBounties  = campaigns.filter(c=>c.date&&c.date>=prevStartStr&&c.date<=prevEndStr);
+  const prevCitations = citations.filter(c=>c.date&&c.date>=prevStartStr&&c.date<=prevEndStr);
 
   const authorsSet = new Set([...weekBounties.map(c=>c.author),...weekCitations.map(c=>c.author)].filter(Boolean));
   const outletsSet = new Set(weekCitations.map(c=>c.media).filter(Boolean));
-
-  const windowStart = new Date(activeCutStr+"T00:00:00");
-  const windowEnd   = new Date(activeCutStr+"T00:00:00");
-  windowEnd.setDate(windowStart.getDate()+6);
-  const dateRange = `${windowStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${windowEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
 
   // ── DRILL VIEW ───────────────────────────────────────────
   if(drill){
@@ -1837,7 +1878,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
   // ── DAILY BAR DATA ───────────────────────────────────────
   const days = Array.from({length:7},(_,i)=>{
-    const d=new Date(activeCutStr+"T00:00:00");
+    const d=new Date(weekStartStr+"T00:00:00");
     d.setDate(d.getDate()+i);
     return d.toISOString().slice(0,10);
   });
@@ -1873,20 +1914,34 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
 
-      {/* Header */}
-      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
+      {/* Header with week navigation */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{dateRange}</div>
-            {isHistorical&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:"rgba(217,119,6,0.08)",border:"1px solid rgba(217,119,6,0.2)",color:"#92400e"}}>Last available data</span>}
-          </div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
           <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em",color:"var(--text)"}}>Weekly Summary</h2>
         </div>
-        {totalActivity===0&&(
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"6px 12px",borderRadius:7,background:"var(--surface2)",border:"1px solid var(--border)"}}>
-            No activity this week
-          </div>
-        )}
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <button onClick={goBack}
+            style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14,transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
+            ‹
+          </button>
+          {!isLatestWeek&&(
+            <button onClick={goLatest}
+              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
+              Latest
+            </button>
+          )}
+          <button onClick={goForward} disabled={isLatestWeek}
+            style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:isLatestWeek?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:isLatestWeek?"var(--border2)":"var(--muted)",fontSize:14,transition:"all .15s"}}
+            onMouseEnter={e=>{if(!isLatestWeek){e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color=isLatestWeek?"var(--border2)":"var(--muted)";}}>
+            ›
+          </button>
+        </div>
       </div>
 
       {/* Stat cards with WoW delta */}
@@ -2141,6 +2196,8 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const CHART_W=760,CHART_H=110,BAR_AREA=80,PAD_L=0,PAD_R=0;
     const barW = weeks.length ? Math.min(40, Math.floor((CHART_W-PAD_L-PAD_R)/weeks.length)-4) : 30;
     const gap  = weeks.length > 1 ? (CHART_W-PAD_L-PAD_R-(barW*weeks.length))/(weeks.length-1) : 0;
+    // Show at most 8 labels — skip intermediate ones evenly
+    const labelEvery = Math.max(1, Math.ceil(weeks.length / 8));
     const fmtMD = iso => { try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;} };
 
     const bars = weeks.map((w,i)=>{
@@ -2151,7 +2208,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
       return `
         <rect x="${x}" y="${BAR_AREA-cH}" width="${barW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/>
         <rect x="${x}" y="${BAR_AREA-cH-bH}" width="${barW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>
-        <text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>
+        ${i % labelEvery === 0 ? `<text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>` : ''}
       `;
     }).join("");
 
@@ -2511,6 +2568,27 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   );
 };
 
+class ErrorBoundary extends React.Component {
+  constructor(props){super(props);this.state={err:null};}
+  static getDerivedStateFromError(e){return {err:e};}
+  componentDidCatch(e,info){console.error("App error:",e,info);}
+  render(){
+    if(this.state.err) return (
+      <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f1f4f8",padding:40}}>
+        <div style={{background:"#fff",border:"1px solid #e2e7f0",borderRadius:12,padding:"36px 40px",maxWidth:480,textAlign:"center",boxShadow:"0 4px 24px rgba(0,0,0,0.08)"}}>
+          <div style={{fontSize:28,marginBottom:12,opacity:.3}}>⚠</div>
+          <div style={{fontSize:16,fontWeight:600,color:"#0f1923",marginBottom:8}}>Something went wrong</div>
+          <div style={{fontFamily:"monospace",fontSize:11,color:"#6b7685",marginBottom:20,wordBreak:"break-word"}}>{this.state.err.message}</div>
+          <button onClick={()=>window.location.reload()} style={{fontFamily:"monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer"}}>
+            Reload page
+          </button>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}) => {
   const [syncing,setSyncing] = useState(false);
   const [result,setResult]   = useState(null);
@@ -2530,7 +2608,6 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
     }).filter(r=>{const d=(r["date"]||"").trim();const n=(r["no"]||"").trim();if(n&&isNaN(Number(n)))return false;return d&&!d.toLowerCase().startsWith("yyyy")&&!d.toLowerCase().startsWith("date");});
   };
   const doSync = async() => {
-    console.log("doSync called, isSyncing:", isSyncing.current, "program:", program.id, "bounties URL:", program.sheetBounties, "media URL:", program.sheetMedia);
     if(isSyncing.current) return;
     isSyncing.current = true;
     setSyncing(true); setResult(null);
@@ -2541,9 +2618,11 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         if(isLocal) {
           const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url+'&t='+Date.now())}`);
+          if(!r.ok) throw new Error(`Sheet fetch failed: ${r.status}`);
           return await r.text();
         } else {
           const r = await fetch(`/api/sheet-proxy?url=${encodeURIComponent(url)}`);
+          if(!r.ok) throw new Error(`Sheet proxy failed: ${r.status}`);
           return await r.text();
         }
       };
@@ -2578,12 +2657,31 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
           newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:media,reporter:(r["reporter"]||"").trim(),author:norm(r["author"]),topic:(r["topic"]||"").trim(),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:(r["direct relationship"]||"").trim(),language:(r["language"]||"").trim(),asset:(r["asset"]||"").trim(),branding:(r["branding"]||"").trim(),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
         }
       }
-      if(newBounties.length){await db.batchInsertBounties(newBounties);setCampaigns(prev=>[...newBounties,...prev]);added+=newBounties.length;}
-      if(newMedia.length){await db.batchInsertCitations(newMedia);setCitations(prev=>[...newMedia,...prev]);added+=newMedia.length;}
+      if(newBounties.length){
+        await db.batchInsertBounties(newBounties);
+        added+=newBounties.length;
+      }
+      if(newMedia.length){
+        await db.batchInsertCitations(newMedia);
+        added+=newMedia.length;
+      }
+      // Re-fetch from DB so state is always clean and consistent
+      if(newBounties.length||newMedia.length){
+        const [freshB, freshC] = await Promise.all([
+          db.getCampaigns().catch(()=>null),
+          db.getCitations().catch(()=>null),
+        ]);
+        if(freshB) setCampaigns(freshB);
+        if(freshC) setCitations(freshC);
+      }
       setResult(`✓ ${added} added, ${skipped} skipped`);
-    } catch(err){ setResult(`Error: ${err.message}`); }
-    setSyncing(false);
-    isSyncing.current = false;
+    } catch(err){
+      console.error("Sync error:", err);
+      setResult(`Error: ${err.message}`);
+    } finally {
+      setSyncing(false);
+      isSyncing.current = false;
+    }
   };
   return (
     <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -2600,8 +2698,9 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
   const [showForm,setShowForm]   = useState(false);
   const [editClient,setEdit]     = useState(null);
   const [confirmId,setConfId]    = useState(null);
-  const [drillId,setDrillId]     = useState(null); // campaign being viewed
+  const [drillId,setDrillId]     = useState(null);
   const [drillTab,setDrillTab]   = useState("weekly");
+  const [showDrillPdf,setShowDrillPdf] = useState(false);
 
   const drillProgram = programs.find(c=>c.id===drillId)||null;
   const drillCamps  = campaigns.filter(c=>c.campaignId===drillId);
@@ -2630,7 +2729,12 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         </div>
         <div style={{display:"flex",gap:6,alignItems:"center"}}>
           {(drillProgram.sheetBounties||drillProgram.sheetMedia)&&<DrillSync program={drillProgram} drillCamps={drillCamps} drillCites={drillCites} setCampaigns={setCampaigns} setCitations={setCitations}/>}
-
+          <button onClick={()=>setShowDrillPdf(true)}
+            style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 13px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",transition:"all .15s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background="var(--accent-light)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(26,58,92,0.25)"}}
+            onMouseLeave={e=>{e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
+            <span>↓</span> PDF
+          </button>
           {currentUser.role==="admin"&&<RowBtn onClick={()=>{setEdit(drillProgram);setShowForm(true)}} title="Edit campaign" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
           {currentUser.role==="admin"&&<RowBtn onClick={()=>setConfId(drillProgram.id)} title="Delete campaign" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
         </div>
@@ -2648,12 +2752,13 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           );
         })}
       </div>
-      {drillTab==="weekly"   && <WeeklySummaryTab campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
+      {drillTab==="weekly"   && <WeeklySummaryTab key={drillProgram.id} campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
       {drillTab==="posts"    && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} onDeleteAll={async(cid)=>{await db.deleteAllBounties(cid);setCampaigns(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
       {drillTab==="media"    && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} onDeleteAll={async(cid)=>{await db.deleteAllCitations(cid);setCitations(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
       {drillTab==="analytics"&& <AnalyticsTab campaigns={drillCamps} citations={drillCites} clientName={drillProgram.name}/>}
       {showForm&&<CampaignForm initial={editClient} onSave={async f=>{await onSave(f,editClient);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
       {confirmId&&<ConfirmDelete onConfirm={async()=>{await onDelete(confirmId);setConfId(null);setDrillId(null)}} onCancel={()=>setConfId(null)}/>}
+      {showDrillPdf&&<PdfReportModal campaigns={drillCamps} citations={drillCites} campaignName={drillProgram.name} onClose={()=>setShowDrillPdf(false)}/>}
     </div>
   );
 
@@ -2679,72 +2784,84 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         const activeCampaigns    = programs.filter(cl=>cl.status!=="completed");
         const completedCampaigns = programs.filter(cl=>cl.status==="completed");
 
-        const CampaignCard = ({cl, i}) => {
+        const CampaignRow = ({cl, i, total}) => {
           const campCount = campaigns.filter(c=>c.campaignId===cl.id).length;
           const citeCount = citations.filter(c=>c.campaignId===cl.id).length;
+          const isLast = i === total - 1;
           return (
-            <div key={cl.id} onClick={()=>{setDrillId(cl.id);setDrillTab("weekly")}}
-              style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:`rowIn .3s ease ${i*.05}s both`,cursor:"pointer",transition:"all .2s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor=cl.color+"80";e.currentTarget.style.boxShadow=`0 8px 32px rgba(0,0,0,0.12)`;e.currentTarget.style.transform="translateY(-3px)"}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)";e.currentTarget.style.transform="none"}}>
-              <div style={{position:"absolute",top:0,left:0,bottom:0,width:3,background:cl.status==="completed"?"#94a3b8":cl.color,borderRadius:"12px 0 0 12px"}}/>
-              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{width:40,height:40,borderRadius:10,background:cl.color+"18",border:`1px solid ${cl.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:cl.color,opacity:cl.status==="completed"?0.6:1}}>{initials(cl.name)}</div>
-                  <div>
-                    <div style={{fontSize:16,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em"}}>{cl.name}</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString()}</div>
+            <div onClick={()=>{setDrillId(cl.id);setDrillTab("weekly")}}
+              style={{display:"grid",gridTemplateColumns:"3px 1fr auto",alignItems:"center",borderBottom:isLast?"none":"1px solid var(--border)",cursor:"pointer",transition:"background .12s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              {/* colour stripe */}
+              <div style={{alignSelf:"stretch",background:cl.status==="completed"?"#94a3b8":cl.color}}/>
+              {/* main content */}
+              <div style={{display:"flex",alignItems:"center",gap:14,padding:"13px 20px",minWidth:0}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:cl.status==="completed"?"#94a3b8":cl.color,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {cl.createdAt&&!isNaN(new Date(cl.createdAt).getTime())?new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—"}</div>
+                </div>
+                <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
+                  <div style={{textAlign:"right"}}>
+                    <div className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{campCount}</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Bounties</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{citeCount}</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Citations</div>
                   </div>
                 </div>
-                <div style={{display:"flex",gap:4,alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                  <span onClick={e=>{e.stopPropagation();onSave({...cl,status:cl.status==="completed"?"active":"completed"},cl)}}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:6,cursor:"pointer",
-                    background:cl.status==="completed"?"rgba(100,116,139,0.1)":"rgba(22,101,52,0.08)",
-                    border:cl.status==="completed"?"1px solid rgba(100,116,139,0.25)":"1px solid rgba(22,101,52,0.25)",
-                    color:cl.status==="completed"?"#475569":"#166534"}}>
-                    {cl.status==="completed"?"Completed":"Active"}
-                  </span>
-                  <RowBtn onClick={()=>{setEdit(cl);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>
-                  <RowBtn onClick={()=>setConfId(cl.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>
-                </div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border2)"}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Bounties</div>
-                  <div className="tabular" style={{fontSize:24,fontWeight:700,color:"var(--text)",letterSpacing:"-0.03em"}}>{campCount}</div>
-                </div>
-                <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border2)"}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Citations</div>
-                  <div className="tabular" style={{fontSize:24,fontWeight:700,color:"var(--text)",letterSpacing:"-0.03em"}}>{citeCount}</div>
-                </div>
-              </div>
-              <div style={{marginTop:12,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>View details →</div>
-                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",textDecoration:"none",display:"flex",alignItems:"center",gap:4}}>📊 Sheet↗</a>}
-                {(cl.sheetBounties||cl.sheetMedia)&&<div onClick={e=>e.stopPropagation()}><DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/></div>}
+              {/* actions */}
+              <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14}} onClick={e=>e.stopPropagation()}>
+                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:5,border:"1px solid rgba(26,58,92,0.18)",background:"rgba(26,58,92,0.05)",color:"var(--accent)",textDecoration:"none"}}>Sheet↗</a>}
+                {(cl.sheetBounties||cl.sheetMedia)&&<DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/>}
+                <span onClick={e=>{e.stopPropagation();onSave({...cl,status:cl.status==="completed"?"active":"completed"},cl)}}
+                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,cursor:"pointer",
+                  background:cl.status==="completed"?"rgba(100,116,139,0.08)":"rgba(22,101,52,0.07)",
+                  border:cl.status==="completed"?"1px solid rgba(100,116,139,0.2)":"1px solid rgba(22,101,52,0.2)",
+                  color:cl.status==="completed"?"#475569":"#166634"}}>
+                  {cl.status==="completed"?"Completed":"Active"}
+                </span>
+                <RowBtn onClick={()=>{setEdit(cl);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>
+                <RowBtn onClick={()=>setConfId(cl.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>
               </div>
             </div>
           );
         };
 
-        const Folder = ({label, items, defaultOpen=true, accent="#166534", accentBg="rgba(22,101,52,0.07)", accentBorder="rgba(22,101,52,0.2)"}) => {
+        const Section = ({label, items, accent, accentBg, accentBorder, defaultOpen=true}) => {
           const [open, setOpen] = useState(defaultOpen);
+          if(!items.length) return null;
           return (
-            <div style={{marginBottom:28}}>
-              {/* Folder header */}
+            <div style={{marginBottom:20}}>
               <button onClick={()=>setOpen(v=>!v)}
-                style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:"none",border:"none",cursor:"pointer",padding:"10px 14px",borderRadius:9,marginBottom:open?14:0,transition:"background .15s",textAlign:"left"}}
+                style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",padding:"6px 4px",marginBottom:open?8:0,width:"100%",textAlign:"left",borderRadius:6,transition:"background .12s"}}
                 onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>
-                <span style={{fontSize:13,transition:"transform .2s",display:"inline-block",transform:open?"rotate(90deg)":"rotate(0deg)",color:"var(--dim)"}}>▶</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:100,background:accentBg,border:`1px solid ${accentBorder}`,color:accent}}>
-                  {items.length}
-                </span>
+                <span style={{fontSize:11,display:"inline-block",transform:open?"rotate(90deg)":"none",transition:"transform .18s",color:"var(--dim)",width:14,textAlign:"center"}}>▶</span>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:accentBg,border:`1px solid ${accentBorder}`,color:accent}}>{items.length}</span>
               </button>
-              {open && (
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
-                  {items.map((cl,i)=><CampaignCard key={cl.id} cl={cl} i={i}/>)}
+              {open&&(
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+                  {/* Column headers */}
+                  <div style={{display:"grid",gridTemplateColumns:"3px 1fr auto",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
+                    <div/>
+                    <div style={{padding:"7px 20px",display:"flex",gap:14,alignItems:"center"}}>
+                      <div style={{width:8,flexShrink:0}}/>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",flex:1}}>Campaign</span>
+                      <div style={{display:"flex",gap:16}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Bounties</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Citations</span>
+                      </div>
+                    </div>
+                    <div style={{paddingRight:14,display:"flex",alignItems:"center"}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>Actions</span>
+                    </div>
+                  </div>
+                  {items.map((cl,i)=><CampaignRow key={cl.id} cl={cl} i={i} total={items.length}/>)}
                 </div>
               )}
             </div>
@@ -2753,24 +2870,8 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
 
         return (
           <div>
-            <Folder
-              label="Active"
-              items={activeCampaigns}
-              defaultOpen={true}
-              accent="#166534"
-              accentBg="rgba(22,101,52,0.07)"
-              accentBorder="rgba(22,101,52,0.2)"
-            />
-            {completedCampaigns.length > 0 && (
-              <Folder
-                label="Completed"
-                items={completedCampaigns}
-                defaultOpen={false}
-                accent="#475569"
-                accentBg="rgba(100,116,139,0.08)"
-                accentBorder="rgba(100,116,139,0.2)"
-              />
-            )}
+            <Section label="Active" items={activeCampaigns} accent="#166634" accentBg="rgba(22,101,52,0.07)" accentBorder="rgba(22,101,52,0.2)" defaultOpen={true}/>
+            <Section label="Completed" items={completedCampaigns} accent="#475569" accentBg="rgba(100,116,139,0.08)" accentBorder="rgba(100,116,139,0.2)" defaultOpen={false}/>
           </div>
         );
       })()}
@@ -2813,6 +2914,10 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
 //  ROOT APP
 // ─────────────────────────────────────────────────────────
 export default function App() {
+  return <ErrorBoundary><AppInner/></ErrorBoundary>;
+}
+
+function AppInner() {
   useEffect(()=>{
     document.title = "CryptoQuant Bounty Tracker";
     const link = document.querySelector("link[rel~='icon']") || Object.assign(document.createElement('link'),{rel:'icon'});
@@ -2835,12 +2940,33 @@ export default function App() {
 
   const showToast=(msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800)};
 
-  // Set default tab based on role after login
+  // Set default tab + campaign — runs when either user or programs change,
+  // so it works regardless of which loads first
   useEffect(()=>{
-    if(!user) return;
-    if(user.role==="admin") setTab("campaigns_mgmt");
-    else setTab("weekly");
-  },[user?.role]);
+    if(!user||!programs.length) return;
+    if(user.role==="admin"){
+      setTab("campaigns_mgmt");
+      setActiveCid(null);
+    } else if(user.role==="author"){
+      setTab("weekly");
+      const allowed = (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
+      // Pick most recently created allowed campaign
+      const mostRecent = allowed
+        .map(id=>programs.find(p=>p.id===id))
+        .filter(Boolean)
+        .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
+      setActiveCid(mostRecent?.id||null);
+    } else if(user.role==="client"){
+      setTab("weekly");
+      const allowed = (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
+      // Pick most recently created allowed campaign
+      const mostRecent = allowed
+        .map(id=>programs.find(p=>p.id===id))
+        .filter(Boolean)
+        .sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
+      if(mostRecent) setClientActiveCid(mostRecent.id);
+    }
+  },[user?.id, programs.length]);
 
   // ── RE-FETCH USERS whenever the Users tab is opened ──
   // Picks up accounts registered by other users while admin was already logged in
@@ -2875,7 +3001,6 @@ export default function App() {
         }
 
         setPrograms(loadedPrograms);
-        if(loadedPrograms.length) setActiveCid(loadedPrograms[0].id);
 
         // Seed Nexo bounties if not yet done
         const nexoSeeded = await db.getFlag(NEXO_SEEDED_KEY).catch(()=>false);
@@ -3121,8 +3246,8 @@ export default function App() {
               </button>
             );
           })}
-          {/* PDF Report — inline nav item below Analytics, only when campaign selected */}
-          {effectiveCid&&(
+          {/* PDF Report — hide for admin on campaigns_mgmt (drill view has its own button) */}
+          {effectiveCid && tab!=="campaigns_mgmt" && (
             <button onClick={()=>setShowPdfModal(true)}
               style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
               onMouseEnter={e=>{e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--text)";}}
@@ -3302,7 +3427,7 @@ export default function App() {
         })()}
 
         {/* CONTENT */}
-        {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
+        {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {tab==="analytics"&&user.role==="client"&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.clientName}/>}
