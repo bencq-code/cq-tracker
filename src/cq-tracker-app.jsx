@@ -1718,84 +1718,72 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 //  WEEKLY SUMMARY TAB
 // ─────────────────────────────────────────────────────────
 const WeeklySummaryTab = ({campaigns, citations, color}) => {
-  const [drill, setDrill] = useState(null); // "bounties" | "citations" | null
+  const [drill, setDrill] = useState(null);
 
+  // ── DATE WINDOW ──────────────────────────────────────────
   const today = new Date();
   today.setHours(23,59,59,999);
   const cutoff = new Date(today);
-  cutoff.setDate(today.getDate() - 6);
+  cutoff.setDate(today.getDate()-6);
   cutoff.setHours(0,0,0,0);
   const cutStr = cutoff.toISOString().slice(0,10);
 
-  // Check if there's any data in the last 7 days — if not, fall back to last available 7 days
-  const hasRecentData = campaigns.some(c=>c.date>=cutStr) || citations.some(c=>c.date>=cutStr);
-
+  const hasRecentData = campaigns.some(c=>c.date>=cutStr)||citations.some(c=>c.date>=cutStr);
   let activeCutStr = cutStr;
   let isHistorical = false;
 
-  if(!hasRecentData) {
-    const allDates = [
-      ...campaigns.map(c=>c.date),
-      ...citations.map(c=>c.date)
-    ].filter(Boolean).sort();
-    if(allDates.length) {
-      const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
-      const fallbackCutoff = new Date(lastDate);
-      fallbackCutoff.setDate(lastDate.getDate() - 6);
-      activeCutStr = fallbackCutoff.toISOString().slice(0,10);
-      isHistorical = true;
+  if(!hasRecentData){
+    const allDates=[...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
+    if(allDates.length){
+      const lastDate=new Date(allDates[allDates.length-1]+"T00:00:00");
+      const fb=new Date(lastDate);
+      fb.setDate(lastDate.getDate()-6);
+      activeCutStr=fb.toISOString().slice(0,10);
+      isHistorical=true;
     }
   }
 
-  const weekBounties  = campaigns.filter(c=>c.date && c.date>=activeCutStr);
-  const weekCitations = citations.filter(c=>c.date && c.date>=activeCutStr);
+  // Previous 7-day window for WoW delta
+  const prevCutStr = (() => {
+    const d = new Date(activeCutStr+"T00:00:00");
+    d.setDate(d.getDate()-7);
+    return d.toISOString().slice(0,10);
+  })();
 
-  const authorsSet  = new Set([...weekBounties.map(c=>c.author),...weekCitations.map(c=>c.author)].filter(Boolean));
-  const outletsSet  = new Set(weekCitations.map(c=>c.media).filter(Boolean));
+  const weekBounties  = campaigns.filter(c=>c.date&&c.date>=activeCutStr);
+  const weekCitations = citations.filter(c=>c.date&&c.date>=activeCutStr);
+  const prevBounties  = campaigns.filter(c=>c.date&&c.date>=prevCutStr&&c.date<activeCutStr);
+  const prevCitations = citations.filter(c=>c.date&&c.date>=prevCutStr&&c.date<activeCutStr);
 
-  // Top authors by activity
-  const authorMap = {};
-  weekBounties.forEach(c=>{ const a=c.author||"Unknown"; if(!authorMap[a]) authorMap[a]={name:a,bounties:0,citations:0}; authorMap[a].bounties++; });
-  weekCitations.forEach(c=>{ const a=c.author||"Unknown"; if(!authorMap[a]) authorMap[a]={name:a,bounties:0,citations:0}; authorMap[a].citations++; });
-  const allWeekAuthors = Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations));
-
-  // Top outlets
-  const outletMap = {};
-  weekCitations.forEach(c=>{ const m=c.media||"Unknown"; if(!outletMap[m]) outletMap[m]=0; outletMap[m]++; });
-  const allWeekOutlets = Object.entries(outletMap).sort((a,b)=>b[1]-a[1]);
+  const authorsSet = new Set([...weekBounties.map(c=>c.author),...weekCitations.map(c=>c.author)].filter(Boolean));
+  const outletsSet = new Set(weekCitations.map(c=>c.media).filter(Boolean));
 
   const windowStart = new Date(activeCutStr+"T00:00:00");
   const windowEnd   = new Date(activeCutStr+"T00:00:00");
   windowEnd.setDate(windowStart.getDate()+6);
   const dateRange = `${windowStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${windowEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
 
-  const STATS = [
-    {label:"Bounties",      value:weekBounties.length,  sub:"New posts",          c:"var(--accent)", key:"bounties"},
-    {label:"Citations",     value:weekCitations.length, sub:"Media mentions",     c:"#4a7fa8",       key:"citations"},
-    {label:"Active Authors",value:authorsSet.size,      sub:"Contributors",       c:"var(--accent)", key:null},
-    {label:"Media Outlets", value:outletsSet.size,      sub:"Unique publications", c:"#4a7fa8",       key:null},
-  ];
-
-  if(drill) {
-    const items = drill==="bounties" ? weekBounties : weekCitations;
-    const sorted = [...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-    const DrillList = () => {
-      const [expanded, setExpanded] = useState(false);
-      const visible = expanded ? sorted : sorted.slice(0,10);
+  // ── DRILL VIEW ───────────────────────────────────────────
+  if(drill){
+    const items=drill==="bounties"?weekBounties:weekCitations;
+    const sorted=[...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    const DrillList=()=>{
+      const [expanded,setExpanded]=useState(false);
+      const visible=expanded?sorted:sorted.slice(0,10);
       return (
         <div style={{animation:"fadeUp .4s ease both"}}>
           <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
             ← Back to Summary
           </button>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
-          <h3 style={{fontSize:18,fontWeight:500,marginBottom:20}}>{drill==="bounties"?"Bounties":"Media Citations"} This Week <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length} total</span></h3>
+          <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{drill==="bounties"?"Bounties":"Media Citations"} This Week <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             {sorted.length===0
-              ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this week</div>
-              : <>
-                <div style={{maxHeight:expanded?"600px":"520px",overflowY:"auto"}}>
+              ?<div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this week</div>
+              :<>
+                <div style={{maxHeight:"520px",overflowY:"auto"}}>
                   {visible.map((item,i)=>(
-                    <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"12px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
+                    <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
                       onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
@@ -1827,235 +1815,590 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
     return <DrillList/>;
   }
 
+  // ── HELPERS ──────────────────────────────────────────────
+  const delta = (curr,prev) => {
+    if(prev===0&&curr===0) return null;
+    if(prev===0) return {val:curr,pct:null,up:true};
+    const pct = Math.round(((curr-prev)/prev)*100);
+    return {val:curr-prev,pct,up:curr>=prev};
+  };
+
+  const Delta = ({curr,prev}) => {
+    const d = delta(curr,prev);
+    if(!d) return null;
+    const col = d.up?"var(--positive)":"var(--negative)";
+    const sign = d.val>=0?"+":"";
+    return (
+      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:col,display:"inline-flex",alignItems:"center",gap:3}}>
+        {d.up?"↑":"↓"} {sign}{d.pct!==null?`${d.pct}%`:`${d.val}`} vs last week
+      </span>
+    );
+  };
+
+  // ── DAILY BAR DATA ───────────────────────────────────────
+  const days = Array.from({length:7},(_,i)=>{
+    const d=new Date(activeCutStr+"T00:00:00");
+    d.setDate(d.getDate()+i);
+    return d.toISOString().slice(0,10);
+  });
+  const dayData = days.map(day=>({
+    day,
+    label: new Date(day+"T00:00:00").toLocaleDateString("en-US",{weekday:"short"}),
+    date:  new Date(day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
+    bounties:  weekBounties.filter(c=>c.date===day).length,
+    citations: weekCitations.filter(c=>c.date===day).length,
+  }));
+  const maxVal = Math.max(...dayData.map(d=>d.bounties+d.citations),1);
+  const totalActivity = weekBounties.length+weekCitations.length;
+
+  // ── TOP AUTHORS / OUTLETS ────────────────────────────────
+  const authorMap={};
+  weekBounties.forEach(c=>{const a=c.author||"Unknown";if(!authorMap[a])authorMap[a]={name:a,bounties:0,citations:0};authorMap[a].bounties++;});
+  weekCitations.forEach(c=>{const a=c.author||"Unknown";if(!authorMap[a])authorMap[a]={name:a,bounties:0,citations:0};authorMap[a].citations++;});
+  const topAuthors=Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations)).slice(0,5);
+  const maxAuthorTotal=(topAuthors[0]?.bounties||0)+(topAuthors[0]?.citations||0)||1;
+
+  const outletMap={};
+  weekCitations.forEach(c=>{const m=c.media||"Unknown";if(!outletMap[m])outletMap[m]=0;outletMap[m]++;});
+  const topOutlets=Object.entries(outletMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxOutlet=topOutlets[0]?.[1]||1;
+
+  // ── RECENT ENTRIES FEED ──────────────────────────────────
+  const recentAll = [
+    ...weekBounties.map(b=>({...b,_type:"bounty"})),
+    ...weekCitations.map(c=>({...c,_type:"citation"})),
+  ].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6);
+
+  // ── RENDER ───────────────────────────────────────────────
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
+
       {/* Header */}
-      <div style={{marginBottom:24}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{dateRange}</div>
-          {isHistorical&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:"rgba(217,119,6,0.08)",border:"1px solid rgba(217,119,6,0.2)",color:"var(--orange)"}}>Last available data</span>}
+      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{dateRange}</div>
+            {isHistorical&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:"rgba(217,119,6,0.08)",border:"1px solid rgba(217,119,6,0.2)",color:"#92400e"}}>Last available data</span>}
+          </div>
+          <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em",color:"var(--text)"}}>Weekly Summary</h2>
         </div>
-        <h2 style={{fontSize:22,fontWeight:500}}>Weekly Summary</h2>
+        {totalActivity===0&&(
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"6px 12px",borderRadius:7,background:"var(--surface2)",border:"1px solid var(--border)"}}>
+            No activity this week
+          </div>
+        )}
       </div>
 
-      {/* Stats - clickable for bounties/citations */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:28}}>
-        {STATS.map((s,i)=>(
+      {/* Stat cards with WoW delta */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
+        {[
+          {label:"Bounties",      curr:weekBounties.length,  prev:prevBounties.length,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
+          {label:"Citations",     curr:weekCitations.length, prev:prevCitations.length, sub:"Media mentions",    c:"#4a7fa8",       key:"citations"},
+          {label:"Active Authors",curr:authorsSet.size,      prev:null,                 sub:"Contributors",      c:"var(--accent)", key:null},
+          {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"#4a7fa8",      key:null},
+        ].map((s,i)=>(
           <div key={i} onClick={s.key?()=>setDrill(s.key):undefined}
-            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",position:"relative",overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
-            onMouseEnter={e=>{if(s.key){e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.boxShadow="0 2px 8px rgba(0,0,0,0.08)";}}}
-            onMouseLeave={e=>{if(s.key){e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.05)";}}}
-          >
-            <div style={{position:"absolute",top:0,left:0,bottom:0,width:3,background:s.c,opacity:.7,borderRadius:"12px 0 0 12px"}}/>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8,paddingLeft:10}}>
-              {s.label}{s.key&&<span style={{marginLeft:6,opacity:.5}}>→</span>}
+            style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
+            onMouseEnter={e=>{if(s.key){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
+            onMouseLeave={e=>{if(s.key){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>
+              {s.label}{s.key&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
             </div>
-            <div style={{fontSize:32,fontWeight:500,color:"var(--text)",lineHeight:1,marginBottom:4,paddingLeft:10}}>{s.value}</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",paddingLeft:10}}>{s.sub}</div>
+            <div className="tabular" style={{fontSize:30,fontWeight:700,letterSpacing:"-0.03em",color:s.curr===0?"var(--border2)":"var(--text)",lineHeight:1,marginBottom:6}}>{s.curr}</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
+              {s.prev!==null&&<Delta curr={s.curr} prev={s.prev}/>}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Daily activity chart */}
-      {(()=>{
-        const days = Array.from({length:7},(_,i)=>{
-          const d = new Date(activeCutStr+"T00:00:00");
-          d.setDate(d.getDate()+i);
-          return d.toISOString().slice(0,10);
-        });
-        const dayData = days.map(day=>({
-          day,
-          short: new Date(day+"T00:00:00").toLocaleDateString("en-US",{weekday:"short"}),
-          date:  new Date(day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
-          bounties:  weekBounties.filter(c=>c.date===day).length,
-          citations: weekCitations.filter(c=>c.date===day).length,
-        }));
-        const maxVal = Math.max(...dayData.map(d=>d.bounties+d.citations), 1);
-        return (
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",marginBottom:16,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Daily Activity</div>
-              <div style={{display:"flex",gap:14}}>
-                {[{color:"var(--accent)",label:"Bounties"},{color:"#4a7fa8",label:"Citations"}].map((l,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
-                    <div style={{width:8,height:8,borderRadius:2,background:l.color}}/>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+      {/* Activity chart + recent feed — side by side */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,marginBottom:14}}>
+
+        {/* Daily bar chart */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexShrink:0}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Daily Activity</div>
+            <div style={{display:"flex",gap:14}}>
+              {[{color:"var(--accent)",label:"Bounties"},{color:"#4a7fa8",label:"Citations"}].map((l,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
+                  <div style={{width:8,height:8,borderRadius:2,background:l.color,opacity:.8}}/>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:1,display:"flex",alignItems:"flex-end",gap:6,minHeight:100}}>
+            {dayData.map((d,i)=>{
+              const total=d.bounties+d.citations;
+              const bPct=maxVal?(d.bounties/maxVal)*100:0;
+              const cPct=maxVal?(d.citations/maxVal)*100:0;
+              const isEmpty=total===0;
+              return (
+                <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",justifyContent:"flex-end",gap:0}}>
+                  {/* count label */}
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:isEmpty?"transparent":"var(--accent)",fontWeight:600,marginBottom:3,height:13,flexShrink:0}}>{total||""}</div>
+                  {/* bar area — flex:1 fills remaining height */}
+                  <div style={{flex:1,width:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"stretch",gap:0,position:"relative"}}>
+                    {isEmpty
+                      ? <div style={{width:"100%",height:"100%",background:"var(--surface2)",borderRadius:4,border:"1px dashed var(--border)"}}/>
+                      : <>
+                          {d.citations>0&&<div style={{width:"100%",height:`${cPct}%`,minHeight:4,background:"#4a7fa8",opacity:.75,borderRadius:d.bounties>0?"3px 3px 0 0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
+                          {d.bounties>0&&<div style={{width:"100%",height:`${bPct}%`,minHeight:4,background:"var(--accent)",opacity:.85,borderRadius:d.citations>0?"0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
+                          <div style={{height:2,background:color,width:"100%",opacity:.4,flexShrink:0}}/>
+                        </>
+                    }
+                  </div>
+                  {/* labels */}
+                  <div style={{textAlign:"center",marginTop:7,flexShrink:0}}>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,color:isEmpty?"var(--border2)":"var(--text)"}}>{d.label}</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>{d.date}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {totalActivity===0&&(
+            <div style={{marginTop:8,textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",flexShrink:0}}>
+              No activity recorded in this period
+            </div>
+          )}
+        </div>
+
+        {/* Recent entries feed */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Recent Activity</div>
+          {recentAll.length===0
+            ? <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,padding:"20px 0"}}>
+                <div style={{fontSize:28,opacity:.15}}>◎</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textAlign:"center"}}>Nothing posted this week</div>
+              </div>
+            : <div style={{display:"flex",flexDirection:"column",gap:0,flex:1}}>
+                {recentAll.map((item,i)=>(
+                  <div key={item.id} style={{display:"flex",alignItems:"flex-start",gap:9,padding:"8px 0",borderBottom:i<recentAll.length-1?"1px solid var(--border)":"none"}}>
+                    <div style={{width:5,height:5,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",flexShrink:0,marginTop:5}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:1}}>
+                        {item._type==="bounty"?item.title:(item.topic||item.media||"—")}
+                      </div>
+                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
+                        {item._type==="bounty"?item.author:item.media} · {item.date}
+                      </div>
+                    </div>
+                    {(item._type==="bounty"?item.cqLink:item.articleLink)&&(
+                      <a href={item._type==="bounty"?item.cqLink:item.articleLink} target="_blank" rel="noreferrer"
+                        style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0,opacity:.6}}>↗</a>
+                    )}
                   </div>
                 ))}
               </div>
+          }
+          {(weekBounties.length+weekCitations.length)>6&&(
+            <div style={{marginTop:8,display:"flex",gap:8}}>
+              {weekBounties.length>0&&<button onClick={()=>setDrill("bounties")} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(26,58,92,0.3)"}}
+                onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
+                All bounties →
+              </button>}
+              {weekCitations.length>0&&<button onClick={()=>setDrill("citations")} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.color="#4a7fa8";e.currentTarget.style.borderColor="rgba(74,127,168,0.3)"}}
+                onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
+                All citations →
+              </button>}
             </div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:8,height:120,paddingTop:24}}>
-              {dayData.map((d,i)=>{
-                const bPct = maxVal ? (d.bounties/maxVal)*88 : 0;
-                const cPct = maxVal ? (d.citations/maxVal)*88 : 0;
-                const total = d.bounties + d.citations;
-                return (
-                  <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,height:"100%",justifyContent:"flex-end"}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:total>0?"var(--accent)":"var(--border2)",fontWeight:total>0?500:400,marginBottom:2}}>{total>0?total:""}</div>
-                    <div style={{width:"100%",display:"flex",flexDirection:"column",gap:2,alignItems:"center"}}>
-                      {d.citations>0&&<div style={{width:"80%",height:`${cPct}px`,minHeight:d.citations>0?4:0,background:"#4a7fa8",opacity:.75,borderRadius:"3px 3px 0 0",transition:"height .4s ease"}}/>}
-                      {d.bounties>0&&<div style={{width:"80%",height:`${bPct}px`,minHeight:d.bounties>0?4:0,background:"var(--accent)",opacity:.8,borderRadius:d.citations>0?"0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
-                      {total===0&&<div style={{width:"80%",height:3,background:"var(--border)",borderRadius:2}}/>}
-                    </div>
-                    <div style={{textAlign:"center",marginTop:6}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:500,color:total>0?"var(--text)":"var(--dim)"}}>{d.short}</div>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>{d.date}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })()}
+          )}
+        </div>
+      </div>
 
-      {/* Two column: top authors + top outlets */}
-      {(()=>{
-        const WeekAuthorsBlock = () => {
-          const [expanded,setExpanded] = useState(false);
-          const visible = expanded ? allWeekAuthors : allWeekAuthors.slice(0,5);
-          return (
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Authors</div>
-                {allWeekAuthors.length>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{allWeekAuthors.length}</span>}
-              </div>
-              {allWeekAuthors.length===0
-                ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No activity this week</div>
-                : <>
-                  <div style={{display:"flex",flexDirection:"column",maxHeight:expanded?"320px":"none",overflowY:expanded?"auto":"visible",paddingRight:expanded?"4px":"0"}}>
-                    {visible.map((a,i)=>(
-                      <div key={a.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0",borderBottom:i<visible.length-1?"1px solid var(--border)":"none"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",width:16}}>{i+1}</span>
-                          <span style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{a.name}</span>
-                        </div>
-                        <div style={{display:"flex",gap:10}}>
-                          {a.bounties>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:500}}>{a.bounties}b</span>}
-                          {a.citations>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:500}}>{a.citations}c</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {allWeekAuthors.length>5&&(
-                    <button onClick={()=>setExpanded(v=>!v)}
-                      style={{marginTop:12,width:"100%",padding:"7px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)"}}
-                      onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)"}}>
-                      {expanded?`▲ SHOW LESS`:`▼ SHOW ALL ${allWeekAuthors.length} AUTHORS`}
-                    </button>
-                  )}
-                </>
-              }
-            </div>
-          );
-        };
-        const WeekOutletsBlock = () => {
-          const [expanded,setExpanded] = useState(false);
-          const visible = expanded ? allWeekOutlets : allWeekOutlets.slice(0,5);
-          return (
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Media Outlets</div>
-                {allWeekOutlets.length>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{allWeekOutlets.length}</span>}
-              </div>
-              {allWeekOutlets.length===0
-                ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No citations this week</div>
-                : <>
-                  <div style={{display:"flex",flexDirection:"column",maxHeight:expanded?"320px":"none",overflowY:expanded?"auto":"visible",paddingRight:expanded?"4px":"0"}}>
-                    {visible.map(([outlet,count],i)=>(
-                      <div key={outlet} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 0",borderBottom:i<visible.length-1?"1px solid var(--border)":"none"}}>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",width:16}}>{i+1}</span>
-                          <span title={outlet} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{outlet}</span>
-                        </div>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:500}}>{count} article{count!==1?"s":""}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {allWeekOutlets.length>5&&(
-                    <button onClick={()=>setExpanded(v=>!v)}
-                      style={{marginTop:12,width:"100%",padding:"7px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)"}}
-                      onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)"}}>
-                      {expanded?`▲ SHOW LESS`:`▼ SHOW ALL ${allWeekOutlets.length} OUTLETS`}
-                    </button>
-                  )}
-                </>
-              }
-            </div>
-          );
-        };
-        return (
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-            <WeekAuthorsBlock/>
-            <WeekOutletsBlock/>
-          </div>
-        );
-      })()}
+      {/* Bottom row: top authors + top outlets — compact, only show if data exists */}
+      {(topAuthors.length>0||topOutlets.length>0)&&(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
 
-      {/* Top Topics */}
-      {(()=>{
-        const topicMap = {};
-        weekCitations.forEach(c=>{
-          const t = (c.topic||"").trim()||"Uncategorised";
-          if(!topicMap[t]) topicMap[t]={topic:t,count:0,outlets:new Set(),authors:new Set()};
-          topicMap[t].count++;
-          if(c.media) topicMap[t].outlets.add(c.media);
-          if(c.author) topicMap[t].authors.add(c.author);
-        });
-        const ranked = Object.values(topicMap)
-          .map(r=>({...r,outlets:r.outlets.size,authors:r.authors.size}))
-          .sort((a,b)=>b.count-a.count);
-        if(!ranked.length) return null;
-        const maxCount = ranked[0].count;
-        const WeekTopicsBlock = () => {
-          const [expanded,setExpanded] = useState(false);
-          const visible = expanded ? ranked : ranked.slice(0,5);
-          return (
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",marginTop:16,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Topics</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{ranked.length} topics</span>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:12,maxHeight:expanded?"320px":"none",overflowY:expanded?"auto":"visible",paddingRight:expanded?"4px":"0"}}>
-                {visible.map((r,i)=>(
-                  <div key={r.topic}>
-                    <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:6,gap:10}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",width:16,flexShrink:0}}>{i+1}</span>
-                        <div style={{minWidth:0}}>
-                          <div title={r.topic} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.topic}</div>
-                          <div style={{display:"flex",gap:10,marginTop:2}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}><span style={{color:"var(--muted)",fontWeight:500}}>{r.outlets}</span> outlet{r.outlets!==1?"s":""}</span>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}><span style={{color:"var(--muted)",fontWeight:500}}>{r.authors}</span> author{r.authors!==1?"s":""}</span>
-                          </div>
+          {/* Top authors */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Authors</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{authorsSet.size}</span>
+            </div>
+            {topAuthors.length===0
+              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No author activity</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                {topAuthors.map((a,i)=>{
+                  const total=a.bounties+a.citations;
+                  return (
+                    <div key={a.name}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
+                          <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{a.name}</span>
+                        </div>
+                        <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                          {a.bounties>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>{a.bounties}b</span>}
+                          {a.citations>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600}}>{a.citations}c</span>}
                         </div>
                       </div>
-                      <div style={{display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,fontWeight:500,color:"#4a7fa8"}}>{r.count}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>mention{r.count!==1?"s":""}</span>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{display:"flex",height:"100%"}}>
+                          <div style={{width:`${maxAuthorTotal?(a.bounties/maxAuthorTotal)*100:0}%`,background:"var(--accent)",opacity:.8,transition:"width .4s"}}/>
+                          <div style={{width:`${maxAuthorTotal?(a.citations/maxAuthorTotal)*100:0}%`,background:"#4a7fa8",opacity:.7,transition:"width .4s"}}/>
+                        </div>
                       </div>
                     </div>
-                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",border:"1px solid var(--border)",overflow:"hidden"}}>
-                      <div style={{width:`${(r.count/maxCount)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .5s ease"}}/>
+                  );
+                })}
+              </div>
+            }
+          </div>
+
+          {/* Top outlets */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Media Outlets</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{outletsSet.size}</span>
+            </div>
+            {topOutlets.length===0
+              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage this week</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                {topOutlets.map(([outlet,count],i)=>(
+                  <div key={outlet}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
+                        <span title={outlet} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{outlet}</span>
+                      </div>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                      <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
                 ))}
               </div>
-              {ranked.length>5&&(
-                <button onClick={()=>setExpanded(v=>!v)}
-                  style={{marginTop:12,width:"100%",padding:"7px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)"}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)"}}>
-                  {expanded?`▲ SHOW LESS`:`▼ SHOW ALL ${ranked.length} TOPICS`}
-                </button>
-              )}
-            </div>
-          );
-        };
-        return <WeekTopicsBlock/>;
-      })()}
+            }
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
+
+// ─────────────────────────────────────────────────────────
+//  PDF REPORT MODAL
+// ─────────────────────────────────────────────────────────
+const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
+  const today = new Date().toISOString().slice(0,10);
+  const earliest = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort()[0] || today;
+
+  const [dateFrom, setDateFrom] = useState(earliest);
+  const [dateTo,   setDateTo]   = useState(today);
+  const [inclBounties,  setInclBounties]  = useState(false);
+  const [inclCitations, setInclCitations] = useState(false);
+
+  const b = campaigns.filter(c=>c.date&&c.date>=dateFrom&&c.date<=dateTo);
+  const c = citations.filter(x=>x.date&&x.date>=dateFrom&&x.date<=dateTo);
+
+  const generatePDF = () => {
+    // ── Stats ──
+    const uniqueAuthors  = [...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))];
+    const uniqueOutlets  = [...new Set(c.map(x=>x.media).filter(Boolean))];
+    const uniqueAnalysts = [...new Set(b.map(x=>x.author).filter(Boolean))];
+
+    // ── Leaderboards ──
+    const authorMap={};
+    b.forEach(x=>{const a=x.author||"—";if(!authorMap[a])authorMap[a]={b:0,c:0};authorMap[a].b++;});
+    c.forEach(x=>{const a=x.author||"—";if(!authorMap[a])authorMap[a]={b:0,c:0};authorMap[a].c++;});
+    const topAuthors = Object.entries(authorMap).sort((a,z)=>(z[1].b+z[1].c)-(a[1].b+a[1].c)).slice(0,8);
+
+    const outletMap={};
+    c.forEach(x=>{const m=x.media||"—";outletMap[m]=(outletMap[m]||0)+1;});
+    const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+
+    const topicMap={};
+    c.forEach(x=>{const t=(x.topic||"—").trim();topicMap[t]=(topicMap[t]||0)+1;});
+    const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+
+    // ── Weekly chart data ──
+    const weekKey = iso => {
+      try {
+        const d=new Date(iso+"T00:00:00");
+        if(isNaN(d.getTime()))return null;
+        const mon=new Date(d);
+        mon.setDate(d.getDate()-((d.getDay()+6)%7));
+        return mon.toISOString().slice(0,10);
+      } catch{return null;}
+    };
+    const wkMap={};
+    b.forEach(x=>{const wk=weekKey(x.date);if(!wk)return;if(!wkMap[wk])wkMap[wk]={wk,b:0,c:0};wkMap[wk].b++;});
+    c.forEach(x=>{const wk=weekKey(x.date);if(!wk)return;if(!wkMap[wk])wkMap[wk]={wk,b:0,c:0};wkMap[wk].c++;});
+    const weeks = Object.values(wkMap).sort((a,z)=>a.wk.localeCompare(z.wk));
+    const maxWk = Math.max(...weeks.map(w=>w.b+w.c),1);
+
+    // SVG bar chart — 760px wide, 140px tall
+    const CHART_W=760,CHART_H=110,BAR_AREA=80,PAD_L=0,PAD_R=0;
+    const barW = weeks.length ? Math.min(40, Math.floor((CHART_W-PAD_L-PAD_R)/weeks.length)-4) : 30;
+    const gap  = weeks.length > 1 ? (CHART_W-PAD_L-PAD_R-(barW*weeks.length))/(weeks.length-1) : 0;
+    const fmtMD = iso => { try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;} };
+
+    const bars = weeks.map((w,i)=>{
+      const x = PAD_L + i*(barW+gap);
+      const bH = maxWk?(w.b/maxWk)*BAR_AREA:0;
+      const cH = maxWk?(w.c/maxWk)*BAR_AREA:0;
+      const labelX = x+barW/2;
+      return `
+        <rect x="${x}" y="${BAR_AREA-cH}" width="${barW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/>
+        <rect x="${x}" y="${BAR_AREA-cH-bH}" width="${barW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>
+        <text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>
+      `;
+    }).join("");
+
+    // Y-axis guides
+    const guides = [0,0.25,0.5,0.75,1].map(pct=>{
+      const y = BAR_AREA-(pct*BAR_AREA);
+      return `
+        <line x1="0" y1="${y}" x2="${CHART_W}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/>
+        <text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(pct*maxWk)}</text>
+      `;
+    }).join("");
+
+    const chartSvg = weeks.length ? `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CHART_W} ${CHART_H+20}" width="${CHART_W}" height="${CHART_H+20}" style="overflow:visible">
+        ${guides}${bars}
+      </svg>` : `<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
+
+    const fmtD = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
+    const row  = (cells,hdr=false) => `<tr>${cells.map(cell=>`<t${hdr?"h":"d"}>${cell}</t${hdr?"h":"d"}>`).join("")}</tr>`;
+    const tbl  = (headers,rows) => `<table><thead>${row(headers,true)}</thead><tbody>${rows.map(r=>row(r)).join("")}</tbody></table>`;
+
+    const leaderCol = (items, valueLabel) => items.map(([name,val],i)=>{
+      const pct = (val/(items[0][1]||1))*100;
+      return `<tr>
+        <td style="font-family:monospace;color:#9ca3af;font-size:9px;width:20px">${i+1}</td>
+        <td>
+          <div style="font-weight:500;margin-bottom:3px">${name}</div>
+          <div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:#1a3a5c;opacity:0.7;border-radius:99px"></div>
+          </div>
+        </td>
+        <td style="font-family:monospace;font-weight:600;color:#1a3a5c;text-align:right;white-space:nowrap">${val}</td>
+      </tr>`;
+    }).join("");
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<title>${campaignName} — Performance Report</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; color:#111827; background:#fff; }
+.page { padding:44px 52px; max-width:880px; margin:0 auto; }
+.header { display:flex; align-items:flex-start; justify-content:space-between; padding-bottom:20px; border-bottom:2px solid #111827; margin-bottom:28px; }
+.header h1 { font-size:22px; font-weight:700; letter-spacing:-0.03em; margin-bottom:3px; }
+.header .sub { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; }
+.header-right { text-align:right; font-family:monospace; font-size:9px; color:#6b7280; line-height:1.9; }
+.stats { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
+.stat { background:#f5f6f9; border-left:3px solid #1a3a5c; padding:11px 13px; border-radius:4px; }
+.stat .lbl { font-family:monospace; font-size:7.5px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; margin-bottom:5px; }
+.stat .val { font-size:24px; font-weight:700; letter-spacing:-0.03em; color:#111827; line-height:1; }
+.chart-wrap { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:18px 18px 8px; margin-bottom:28px; overflow:hidden; }
+.chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.chart-title { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; font-weight:600; }
+.legend { display:flex; gap:16px; }
+.legend-item { display:flex; align-items:center; gap:5px; font-family:monospace; font-size:8px; color:#6b7280; }
+.legend-dot { width:8px; height:8px; border-radius:2px; }
+.leaders { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:28px; }
+.panel { border:1px solid #e5e7eb; border-radius:6px; overflow:hidden; }
+.panel-hdr { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; font-weight:600; padding:10px 12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; }
+.panel table { width:100%; border-collapse:collapse; font-size:10px; }
+.panel td { padding:7px 10px; border-bottom:1px solid #f3f4f6; vertical-align:middle; color:#374151; }
+.panel tr:last-child td { border-bottom:none; }
+.footer { padding-top:14px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-family:monospace; font-size:8.5px; color:#9ca3af; }
+@media print { body{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .page{padding:32px 40px;} }
+</style>
+</head><body><div class="page">
+
+<div class="header">
+  <div>
+    <h1>${campaignName}</h1>
+    <div class="sub">Campaign Performance Report</div>
+  </div>
+  <div class="header-right">
+    <div>Period: ${fmtD(dateFrom)} – ${fmtD(dateTo)}</div>
+    <div>Generated: ${fmtD(today)}</div>
+    <div>CryptoQuant Bounty Tracker</div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="lbl">Bounties</div><div class="val">${b.length}</div></div>
+  <div class="stat"><div class="lbl">Citations</div><div class="val">${c.length}</div></div>
+  <div class="stat"><div class="lbl">Unique Analysts</div><div class="val">${uniqueAnalysts.length}</div></div>
+  <div class="stat"><div class="lbl">Authors</div><div class="val">${uniqueAuthors.length}</div></div>
+  <div class="stat"><div class="lbl">Media Outlets</div><div class="val">${uniqueOutlets.length}</div></div>
+</div>
+
+<div class="chart-wrap">
+  <div class="chart-header">
+    <div class="chart-title">Weekly Activity</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#1a3a5c;opacity:0.85"></div>Bounties</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4a7fa8;opacity:0.75"></div>Citations</div>
+    </div>
+  </div>
+  ${chartSvg}
+</div>
+
+${topAuthors.length||topOutlets.length||topTopics.length?`
+<div class="leaders">
+  ${topAuthors.length?`
+  <div class="panel">
+    <div class="panel-hdr">Top Authors</div>
+    <table><tbody>${topAuthors.map(([name,{b:bc,c:cc}],i)=>`<tr>
+      <td style="font-family:monospace;color:#9ca3af;font-size:9px;width:20px">${i+1}</td>
+      <td><div style="font-weight:500;margin-bottom:3px">${name}</div>
+        <div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${((bc+cc)/((topAuthors[0][1].b+topAuthors[0][1].c)||1)*100)}%;height:100%;background:#1a3a5c;opacity:0.7;border-radius:99px"></div></div>
+      </td>
+      <td style="font-family:monospace;font-weight:600;color:#1a3a5c;text-align:right;white-space:nowrap;font-size:10px">${bc+cc}</td>
+    </tr>`).join("")}</tbody></table>
+  </div>`:"<div></div>"}
+  ${topOutlets.length?`
+  <div class="panel">
+    <div class="panel-hdr">Top Outlets</div>
+    <table><tbody>${leaderCol(topOutlets,"articles")}</tbody></table>
+  </div>`:"<div></div>"}
+  ${topTopics.length?`
+  <div class="panel">
+    <div class="panel-hdr">Top Topics</div>
+    <table><tbody>${leaderCol(topTopics,"mentions")}</tbody></table>
+  </div>`:"<div></div>"}
+</div>`:""}
+
+<div class="footer">
+  <span>CryptoQuant Bounty Program · ${campaignName}</span>
+  <span>Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</span>
+</div>
+
+${inclBounties&&b.length?`
+<div style="margin-top:28px">
+  <div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:1px solid #e5e7eb;margin-bottom:12px">All Bounties (${b.length})</div>
+  <table style="width:100%;border-collapse:collapse;font-size:10px">
+    <thead><tr>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Date</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Title</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Author</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Link</th>
+    </tr></thead>
+    <tbody>${[...b].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`
+      <tr style="${i%2===0?"":"background:#fafafa"}">
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:9px;color:#6b7280;white-space:nowrap">${x.date||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:500;color:#374151">${(x.title||"—").slice(0,90)}${x.title&&x.title.length>90?"…":""}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap">${x.author||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6">${x.cqLink?`<a href="${x.cqLink}" style="color:#1a3a5c;font-size:9px;text-decoration:none;font-family:monospace">↗</a>`:"—"}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+</div>`:""}
+
+${inclCitations&&c.length?`
+<div style="margin-top:28px">
+  <div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:1px solid #e5e7eb;margin-bottom:12px">All Media Citations (${c.length})</div>
+  <table style="width:100%;border-collapse:collapse;font-size:10px">
+    <thead><tr>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Date</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Outlet</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Reporter</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Topic</th>
+      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Link</th>
+    </tr></thead>
+    <tbody>${[...c].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`
+      <tr style="${i%2===0?"":"background:#fafafa"}">
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:9px;color:#6b7280;white-space:nowrap">${x.date||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:500;color:#374151">${x.media||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151">${x.reporter||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151">${x.topic||"—"}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6">${x.articleLink?`<a href="${x.articleLink}" style="color:#1a3a5c;font-size:9px;text-decoration:none;font-family:monospace">↗</a>`:"—"}</td>
+      </tr>`).join("")}
+    </tbody>
+  </table>
+</div>`:""}
+
+</div></body></html>`;
+
+    const w = window.open("","_blank","width=960,height=800");
+    w.document.write(html);
+    w.document.close();
+    w.onload = () => w.print();
+  };
+
+  return (
+    <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(420px,100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
+
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>Download Report</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{campaignName}</div>
+          </div>
+          <button onClick={onClose} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
+        </div>
+
+        {/* Body */}
+        <div style={{padding:"20px 24px"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Date Range</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+            <Field label="From">
+              <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
+            </Field>
+            <Field label="To">
+              <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
+            </Field>
+          </div>
+          {/* Live preview */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+            {[
+              {label:"Bounties",  value:b.length,  c:"var(--accent)"},
+              {label:"Citations", value:c.length,  c:"#4a7fa8"},
+              {label:"Authors",   value:[...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))].length, c:"var(--accent)"},
+            ].map(s=>(
+              <div key={s.label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:7,padding:"9px 12px"}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{s.label}</div>
+                <div className="tabular" style={{fontSize:20,fontWeight:700,color:"var(--text)",letterSpacing:"-0.02em"}}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:12}}>
+            Report includes: stat summary · weekly chart · top authors · top outlets · top topics
+          </div>
+          {/* Optional full lists */}
+          <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:0,borderTop:"1px solid var(--border)",paddingTop:14}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Optional — append full lists</div>
+            {[
+              {label:`All bounties (${b.length})`,       checked:inclBounties,  onChange:setInclBounties},
+              {label:`All media citations (${c.length})`,checked:inclCitations, onChange:setInclCitations},
+            ].map(s=>(
+              <label key={s.label} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"7px 0",borderBottom:"1px solid var(--border)"}}>
+                <input type="checkbox" checked={s.checked} onChange={e=>s.onChange(e.target.checked)}
+                  style={{width:14,height:14,cursor:"pointer",accentColor:"var(--accent)"}}/>
+                <span style={{fontSize:13,color:"var(--text)"}}>{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",gap:10,justifyContent:"flex-end"}}>
+          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={generatePDF}
+            style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:7,letterSpacing:"0.04em"}}
+            onMouseEnter={e=>e.currentTarget.style.background="#1a3a5c"}
+            onMouseLeave={e=>e.currentTarget.style.background="#0d1f33"}>
+            ↓ GENERATE PDF
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 };
@@ -2488,6 +2831,7 @@ export default function App() {
   const [toast,setToast]         = useState(null);
   const [tab,setTab]             = useState("campaign");
   const [clientActiveCid,setClientActiveCid] = useState(null);
+  const [showPdfModal,setShowPdfModal] = useState(false);
 
   const showToast=(msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800)};
 
@@ -2749,6 +3093,7 @@ export default function App() {
     <>
       <style>{css}</style>
       {toast&&<Toast msg={toast.msg} type={toast.type}/>}
+      {showPdfModal&&effectiveClient&&<PdfReportModal campaigns={scopedCampaigns} citations={scopedCitations} campaignName={effectiveClient.name} onClose={()=>setShowPdfModal(false)}/>}
 
       {/* HEADER */}
       <header style={{position:"sticky",top:0,zIndex:100,background:"#ffffff",borderBottom:"1px solid var(--border)",boxShadow:"0 1px 0 var(--border),0 2px 8px rgba(15,25,35,0.05)",padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",height:58}}>
@@ -2776,6 +3121,16 @@ export default function App() {
               </button>
             );
           })}
+          {/* PDF Report — inline nav item below Analytics, only when campaign selected */}
+          {effectiveCid&&(
+            <button onClick={()=>setShowPdfModal(true)}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--text)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}>
+              <span style={{color:"var(--dim)",flexShrink:0,fontSize:12}}>↓</span>
+              <span style={{flex:1}}>PDF Report</span>
+            </button>
+          )}
           <div style={{marginTop:"auto",paddingTop:16,borderTop:"1px solid var(--border)"}}>
             {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
             <div style={{padding:"8px 12px",borderRadius:8,background:"var(--surface2)",border:"1px solid var(--border)"}}>
@@ -2816,28 +3171,57 @@ export default function App() {
                   <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
                 )}
               </div>
-            ) : (
-              <div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Your Campaigns</div>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-                  {allowedClientCampaigns.map(cl=>{
-                    const ia=(clientActiveCid||allowedClientCampaigns[0]?.id)===cl.id;
-                    return (
-                      <button key={cl.id} onClick={()=>setClientActiveCid(cl.id)}
-                        style={{display:"flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,border:`1px solid ${ia?cl.color+"60":"var(--border)"}`,background:ia?cl.color+"12":"var(--surface)",cursor:"pointer",transition:"all .2s"}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:ia?cl.color:"var(--dim)",boxShadow:ia?`0 0 6px ${cl.color}`:"none"}}/>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,fontWeight:ia?700:400,color:ia?cl.color:"var(--muted)"}}>{cl.name}</span>
+            ) : (()=>{
+              const CampaignDropdown = () => {
+                const [open,setOpen] = useState(false);
+                const ref = useRef(null);
+                const activeCl = allowedClientCampaigns.find(c=>c.id===(clientActiveCid||allowedClientCampaigns[0]?.id));
+                useEffect(()=>{
+                  const h = e => { if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+                  document.addEventListener("mousedown",h);
+                  return ()=>document.removeEventListener("mousedown",h);
+                },[]);
+                return (
+                  <div ref={ref} style={{marginBottom:20,animation:"fadeUp .5s ease .05s both"}}>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Your Campaign</div>
+                    <div style={{display:"flex",alignItems:"center",gap:8}}>
+                      <button onClick={()=>setOpen(v=>!v)}
+                        style={{flex:1,display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"var(--surface)",border:`1px solid ${open?"var(--border2)":"var(--border)"}`,borderRadius:8,cursor:"pointer",transition:"all .15s",boxShadow:open?"0 0 0 3px rgba(26,58,92,0.08)":"none",textAlign:"left"}}>
+                        {activeCl&&<div style={{width:8,height:8,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
+                        <span style={{flex:1,fontSize:13,fontWeight:500,color:"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select campaign"}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:open?"rotate(180deg)":"none"}}>▾</span>
                       </button>
-                    );
-                  })}
-                  {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
-                    <div style={{marginLeft:"auto"}}>
-                      <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
+                      {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
+                        <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
+                    {open&&(
+                      <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.08)",overflow:"hidden",animation:"fadeUp .15s ease"}}>
+                        {allowedClientCampaigns.map((cl,i)=>{
+                          const ia=cl.id===(clientActiveCid||allowedClientCampaigns[0]?.id);
+                          const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
+                          const cc=citations.filter(c=>c.campaignId===cl.id).length;
+                          return (
+                            <button key={cl.id} onClick={()=>{setClientActiveCid(cl.id);setOpen(false);}}
+                              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",width:"100%",background:ia?"var(--accent-light)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<allowedClientCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
+                              onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
+                              onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
+                              <div style={{width:8,height:8,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
+                              <span style={{flex:1,fontSize:13,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
+                              <div style={{display:"flex",gap:8,flexShrink:0}}>
+                                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc}<span style={{opacity:.5}}> b</span></span>
+                                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{cc}<span style={{opacity:.5}}> c</span></span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              };
+              return <CampaignDropdown/>;
+            })()}
           </div>
         )}
 
@@ -2849,50 +3233,72 @@ export default function App() {
           </div>
         )}
 
-
-
         {/* CAMPAIGN SWITCHER — admin/author only */}
         {user.role!=="client" && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine"||tab==="campaigns_mgmt") && tab!=="campaigns_mgmt" && (()=>{
           const visibleCampaigns = user.role==="admin"
             ? programs
-            : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id)); // authors only see assigned campaigns
-          return (
-          <div style={{marginBottom:24,animation:"fadeUp .5s ease .04s both"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>Active Campaign</div>
-            {!visibleCampaigns.length ? (
-              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10}}>
-                <Icons.Brief/>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                  {user.role==="admin"?"No campaigns yet. ":"No campaigns assigned to your account. Contact an admin."}
-                </span>
-                {user.role==="admin"&&<button onClick={()=>setTab("campaigns_mgmt")} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--accent)",background:"transparent",border:"none",cursor:"pointer",textDecoration:"underline"}}>Create your first campaign →</button>}
+            : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id));
+          const CampaignDropdown = () => {
+            const [open,setOpen] = useState(false);
+            const ref = useRef(null);
+            const activeCl = visibleCampaigns.find(c=>c.id===activeCid);
+            useEffect(()=>{
+              const h = e => { if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+              document.addEventListener("mousedown",h);
+              return ()=>document.removeEventListener("mousedown",h);
+            },[]);
+            return (
+              <div ref={ref} style={{marginBottom:24,animation:"fadeUp .5s ease .04s both"}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>
+                  {visibleCampaigns.length===0?"Campaigns":"Active Campaign"}
+                </div>
+                {!visibleCampaigns.length ? (
+                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8}}>
+                    <Icons.Brief/>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
+                      {user.role==="admin"?"No campaigns yet. ":"No campaigns assigned to your account. Contact an admin."}
+                    </span>
+                    {user.role==="admin"&&<button onClick={()=>setTab("campaigns_mgmt")} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--accent)",background:"transparent",border:"none",cursor:"pointer",textDecoration:"underline"}}>Create your first campaign →</button>}
+                  </div>
+                ) : (
+                  <button onClick={()=>setOpen(v=>!v)}
+                    style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"var(--surface)",border:`1px solid ${open?"var(--border2)":"var(--border)"}`,borderRadius:8,cursor:"pointer",transition:"all .15s",boxShadow:open?"0 0 0 3px rgba(26,58,92,0.08)":"none",textAlign:"left"}}>
+                    {activeCl&&<div style={{width:8,height:8,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
+                    <span style={{flex:1,fontSize:13,fontWeight:500,color:activeCl?"var(--text)":"var(--dim)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select a campaign…"}</span>
+                    {activeCl&&(()=>{
+                      const bc=campaigns.filter(c=>c.campaignId===activeCl.id).length;
+                      const cc=citations.filter(c=>c.campaignId===activeCl.id).length;
+                      return <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>{bc}b · {cc}c</span>;
+                    })()}
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:open?"rotate(180deg)":"none",flexShrink:0}}>▾</span>
+                  </button>
+                )}
+                {open&&visibleCampaigns.length>0&&(
+                  <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.08)",overflow:"hidden",animation:"fadeUp .15s ease"}}>
+                    {visibleCampaigns.map((cl,i)=>{
+                      const ia=activeCid===cl.id;
+                      const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
+                      const cc=citations.filter(c=>c.campaignId===cl.id).length;
+                      return (
+                        <button key={cl.id} onClick={()=>{setActiveCid(cl.id);setOpen(false);}}
+                          style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",width:"100%",background:ia?"var(--accent-light)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
+                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
+                          onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
+                          <div style={{width:8,height:8,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
+                          <span style={{flex:1,fontSize:13,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
+                          <div style={{display:"flex",gap:8,flexShrink:0}}>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc}<span style={{opacity:.5}}> b</span></span>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{cc}<span style={{opacity:.5}}> c</span></span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {visibleCampaigns.map(cl=>{
-                  const ia=activeCid===cl.id;
-                  const bountyCount=campaigns.filter(c=>c.campaignId===cl.id).length;
-                  const citationCount=citations.filter(c=>c.campaignId===cl.id).length;
-                  return (
-                    <button key={cl.id} onClick={()=>setActiveCid(cl.id)}
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",borderRadius:10,border:`1.5px solid ${ia?cl.color:"var(--border)"}`,background:ia?"var(--surface)":"var(--surface2)",cursor:"pointer",transition:"all .2s",boxShadow:ia?`0 2px 12px ${cl.color}22`:"none",position:"relative",overflow:"hidden"}}
-                      onMouseEnter={e=>{if(!ia){e.currentTarget.style.borderColor=cl.color+"60";e.currentTarget.style.background="var(--surface)";}}}
-                      onMouseLeave={e=>{if(!ia){e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--surface2)";}}}
-                    >
-                      {ia&&<div style={{position:"absolute",top:0,left:0,bottom:0,width:3,background:cl.color}}/>}
-                      <div style={{width:28,height:28,borderRadius:7,background:cl.color+"18",border:`1px solid ${cl.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:cl.color,flexShrink:0}}>{initials(cl.name)}</div>
-                      <div style={{textAlign:"left"}}>
-                        <div style={{fontSize:13,fontWeight:ia?600:500,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em"}}>{cl.name}</div>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{bountyCount} bounties · {citationCount} citations</div>
-                      </div>
-                      {ia&&<div style={{marginLeft:4,width:6,height:6,borderRadius:"50%",background:cl.color,flexShrink:0}}/>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          );
+            );
+          };
+          return <CampaignDropdown/>;
         })()}
 
         {/* CONTENT */}
