@@ -131,8 +131,10 @@ const getClientColor = n => getPaletteColor(CLIENT_PALETTE,"client",n||"?");
 const getTierColor   = t => TIER_COLORS[t]||{bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
-const fmtDate  = iso => { if(!iso)return"—"; try{ const [y,m,d]=(iso+"").split("-"); const mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]; if(!mon)return iso; return `${mon} ${+d}, ${y}`; }catch{return iso;} };
+const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
+const normKey   = s => (s||"").trim().toLowerCase();
+const titleCase = s => { if(!s) return ""; return s.trim().replace(/\b\w/g, c => c.toUpperCase()); };
 const hashPass = s => btoa(encodeURIComponent(s));
 
 // ─────────────────────────────────────────────────────────
@@ -637,7 +639,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE (shared, role-aware)
 // ─────────────────────────────────────────────────────────
-const CAMP_EMPTY = {date:"",author:"",title:"",cqLink:"",analyticsLink:"",authorTwitterLink:"",cqTwitterLink:"",telegramLink:"",category:"",asset:"",twitterImpressions:"",telegramImpressions:"",note1:"",note2:"",note3:""};
+const CAMP_EMPTY = {date:"",author:"",title:"",cqLink:"",analyticsLink:"",authorTwitterLink:"",cqTwitterLink:"",telegramLink:"",category:"",asset:"",twitterImpressions:"",telegramImpressions:""};
 const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
   const prefill = currentUser.role==="author"?{...CAMP_EMPTY,author:currentUser.displayName||currentUser.username,...initial}:{...CAMP_EMPTY,...initial};
   const [form,setForm] = useState(prefill);
@@ -674,9 +676,6 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
                 <Field label="Twitter Impressions"><input value={form.twitterImpressions||""} onChange={e=>set("twitterImpressions",e.target.value)} placeholder="e.g. 21300" style={iStyle}/></Field>
                 <Field label="Telegram Impressions"><input value={form.telegramImpressions||""} onChange={e=>set("telegramImpressions",e.target.value)} placeholder="e.g. 7100" style={iStyle}/></Field>
               </div>
-              <Field label="Note 1" full><input value={form.note1||""} onChange={e=>set("note1",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
-              <Field label="Note 2" full><input value={form.note2||""} onChange={e=>set("note2",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
-              <Field label="Note 3" full><input value={form.note3||""} onChange={e=>set("note3",e.target.value)} placeholder="Custom field…" style={iStyle}/></Field>
             </div>
           </div>
         </div>
@@ -780,19 +779,6 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
               </div>
             </div>
           )}
-          {(entry.note1||entry.note2||entry.note3)&&(
-            <div style={{marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Notes</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {[{l:"Note 1",v:entry.note1},{l:"Note 2",v:entry.note2},{l:"Note 3",v:entry.note3}].filter(x=>x.v).map(x=>(
-                  <div key={x.l} style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",marginBottom:4}}>{x.l}</div>
-                    <div style={{fontSize:13,color:"var(--text)"}}>{x.v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
@@ -850,81 +836,95 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
 
       {/* Bounty activity chart */}
       {campaigns.length > 1 && (()=>{
-        // Build weekly buckets
-        const weekKey = iso => {
-          try {
-            const d = new Date(iso+"T00:00:00");
-            if(isNaN(d.getTime())) return null;
-            const monday = new Date(d);
-            monday.setDate(d.getDate() - ((d.getDay()+6)%7));
-            return monday.toISOString().slice(0,10);
-          } catch { return null; }
-        };
-        const buckets = {};
-        campaigns.forEach(c => {
-          const wk = weekKey(c.date);
-          if(!wk) return;
-          if(!buckets[wk]) buckets[wk] = { week:wk, count:0 };
-          buckets[wk].count++;
-        });
-        const chartData = Object.values(buckets)
-          .sort((a,b)=>a.week.localeCompare(b.week))
-          .map(w => {
-            const d = new Date(w.week+"T00:00:00");
-            return { ...w, label: isNaN(d.getTime()) ? w.week : d.toLocaleDateString("en-US",{month:"short",day:"numeric"}) };
-          });
-
-        // Top authors for mini leaderboard
-        const authorCounts = {};
-        campaigns.forEach(c => { if(c.author) authorCounts[c.author]=(authorCounts[c.author]||0)+1; });
-        const topAuthors = Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        const maxAuthor = topAuthors[0]?.[1] || 1;
-
-        return (
-          <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
-            {/* Weekly bar chart */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Weekly Posting Activity</div>
-              <ResponsiveContainer width="100%" height={100}>
-                <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
-                  <defs>
-                    <linearGradient id="gbChart" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#1a3a5c" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#1a3a5c" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/6)-1)}/>
-                  <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
-                  <Tooltip content={({active,payload,label})=>active&&payload?.length?(
-                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} bounties</div>
-                    </div>
-                  ):null}/>
-                  <Area type="monotone" dataKey="count" stroke="#1a3a5c" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"#1a3a5c"}}/>
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Top authors mini-leaderboard */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Authors</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {topAuthors.map(([name,count],i)=>(
-                  <div key={name}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                      <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:600}}>{count}</span>
-                    </div>
-                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                      <div style={{width:`${(count/maxAuthor)*100}%`,height:"100%",background:"var(--accent)",opacity:1-i*0.15,borderRadius:99}}/>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        const GranularityToggle = ({value, onChange}) => (
+          <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+            {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
+              <button key={val} onClick={()=>onChange(val)}
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                {lbl}
+              </button>
+            ))}
           </div>
         );
+
+        const BountyChart = () => {
+          const [gran, setGran] = useState("daily");
+          const weekKey = iso => {
+            try {
+              const d = new Date(iso+"T00:00:00");
+              if(isNaN(d.getTime())) return null;
+              const monday = new Date(d);
+              monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+              return monday.toISOString().slice(0,10);
+            } catch { return null; }
+          };
+          const buckets = {};
+          campaigns.forEach(c => {
+            const key = gran === "daily" ? c.date : weekKey(c.date);
+            if(!key) return;
+            if(!buckets[key]) buckets[key] = { period:key, count:0 };
+            buckets[key].count++;
+          });
+          const chartData = Object.values(buckets)
+            .sort((a,b)=>a.period.localeCompare(b.period))
+            .map(w => {
+              const d = new Date(w.period+"T00:00:00");
+              return { ...w, label: isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"}) };
+            });
+
+          const authorCounts = {};
+          campaigns.forEach(c => { if(c.author) authorCounts[c.author]=(authorCounts[c.author]||0)+1; });
+          const topAuthors = Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+          const maxAuthor = topAuthors[0]?.[1] || 1;
+
+          return (
+            <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
+                  <GranularityToggle value={gran} onChange={setGran}/>
+                </div>
+                <ResponsiveContainer width="100%" height={100}>
+                  <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
+                    <defs>
+                      <linearGradient id="gbChart" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#1a3a5c" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="#1a3a5c" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
+                    <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
+                    <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
+                    <Tooltip content={({active,payload,label})=>active&&payload?.length?(
+                      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} bounties</div>
+                      </div>
+                    ):null}/>
+                    <Area type="monotone" dataKey="count" stroke="#1a3a5c" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"#1a3a5c"}}/>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Authors</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {topAuthors.map(([name,count],i)=>(
+                    <div key={name}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:600}}>{count}</span>
+                      </div>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{width:`${(count/maxAuthor)*100}%`,height:"100%",background:"var(--accent)",opacity:1-i*0.15,borderRadius:99}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        };
+        return <BountyChart/>;
       })()}
       {/* Filter bar */}
       {(()=>{
@@ -977,7 +977,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
       })()}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"11px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-          {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!campaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -993,7 +993,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
                 const editable=canEdit(c);
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`}}
+                    style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
@@ -1008,6 +1008,20 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Telegram↗</a>}
                       </div>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",gap:3,minWidth:0}}>
+                      {(c.twitterImpressions||c.telegramImpressions)?(
+                        <>
+                          {c.twitterImpressions&&<div style={{display:"flex",alignItems:"center",gap:5}}>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>𝕏</span>
+                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,color:"var(--accent)"}}>{Number(String(c.twitterImpressions).replace(/,/g,"")).toLocaleString()}</span>
+                          </div>}
+                          {c.telegramImpressions&&<div style={{display:"flex",alignItems:"center",gap:5}}>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>TG</span>
+                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,color:"#4a7fa8"}}>{Number(String(c.telegramImpressions).replace(/,/g,"")).toLocaleString()}</span>
+                          </div>}
+                        </>
+                      ):<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--border2)"}}>—</span>}
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
                       <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,flexShrink:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)"}}>{initials(c.author)}</div>
@@ -1180,112 +1194,125 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
 
       {/* Media activity charts */}
       {citations.length > 1 && (()=>{
-        const weekKey = iso => {
-          try {
-            const d = new Date(iso+"T00:00:00");
-            if(isNaN(d.getTime())) return null;
-            const monday = new Date(d);
-            monday.setDate(d.getDate() - ((d.getDay()+6)%7));
-            return monday.toISOString().slice(0,10);
-          } catch { return null; }
-        };
-        const buckets = {};
-        citations.forEach(c => {
-          const wk = weekKey(c.date);
-          if(!wk) return;
-          if(!buckets[wk]) buckets[wk] = { week:wk, count:0 };
-          buckets[wk].count++;
-        });
-        const chartData = Object.values(buckets)
-          .sort((a,b)=>a.week.localeCompare(b.week))
-          .map(w => {
-            const d = new Date(w.week+"T00:00:00");
-            return { ...w, label: isNaN(d.getTime()) ? w.week : d.toLocaleDateString("en-US",{month:"short",day:"numeric"}) };
-          });
-
-        // Tier breakdown
-        const tierCounts = {};
-        citations.forEach(c => {
-          const t = c.mediaTier ? String(c.mediaTier).trim() : "";
-          if(t) tierCounts[t] = (tierCounts[t]||0)+1;
-        });
-        const tierEntries = Object.entries(tierCounts).sort((a,b)=>a[0].localeCompare(b[0]));
-        const tierColors = {"1":"#166534","2":"#1a3a5c","3":"#6b7685","Tier 1":"#166534","Tier 2":"#1a3a5c","Tier 3":"#6b7685"};
-
-        // Top outlets
-        const outletCounts = {};
-        citations.forEach(c => { if(c.media) outletCounts[c.media]=(outletCounts[c.media]||0)+1; });
-        const topOutlets = Object.entries(outletCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-        const maxOutlet = topOutlets[0]?.[1] || 1;
-
-        return (
-          <div style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
-            {/* Weekly area chart */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Weekly Coverage</div>
-              <ResponsiveContainer width="100%" height={100}>
-                <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
-                  <defs>
-                    <linearGradient id="gcChart" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="#4a7fa8" stopOpacity={0.18}/>
-                      <stop offset="95%" stopColor="#4a7fa8" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                  <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/6)-1)}/>
-                  <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
-                  <Tooltip content={({active,payload,label})=>active&&payload?.length?(
-                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"#4a7fa8"}}>{payload[0].value} articles</div>
-                    </div>
-                  ):null}/>
-                  <Area type="monotone" dataKey="count" stroke="#4a7fa8" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"#4a7fa8"}}/>
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Tier breakdown */}
-            {tierEntries.length > 0 && (
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Media Tier Breakdown</div>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  {tierEntries.map(([tier,count])=>{
-                    const pct = Math.round((count/citations.length)*100);
-                    const col = tierColors[tier]||"var(--dim)";
-                    return (
-                      <div key={tier}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:col,fontWeight:600}}>Tier {tier}</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>{count} <span style={{color:"var(--dim)"}}>({pct}%)</span></span>
-                        </div>
-                        <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                          <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .5s ease"}}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {/* Top outlets */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Outlets</div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {topOutlets.map(([name,count],i)=>(
-                  <div key={name}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                      <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:600}}>{count}</span>
-                    </div>
-                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                      <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:1-i*0.15,borderRadius:99}}/>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        const GranularityToggle = ({value, onChange}) => (
+          <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+            {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
+              <button key={val} onClick={()=>onChange(val)}
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                {lbl}
+              </button>
+            ))}
           </div>
         );
+
+        const MediaChart = () => {
+          const [gran, setGran] = useState("daily");
+          const weekKey = iso => {
+            try {
+              const d = new Date(iso+"T00:00:00");
+              if(isNaN(d.getTime())) return null;
+              const monday = new Date(d);
+              monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+              return monday.toISOString().slice(0,10);
+            } catch { return null; }
+          };
+          const buckets = {};
+          citations.forEach(c => {
+            const key = gran === "daily" ? c.date : weekKey(c.date);
+            if(!key) return;
+            if(!buckets[key]) buckets[key] = { period:key, count:0 };
+            buckets[key].count++;
+          });
+          const chartData = Object.values(buckets)
+            .sort((a,b)=>a.period.localeCompare(b.period))
+            .map(w => {
+              const d = new Date(w.period+"T00:00:00");
+              return { ...w, label: isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"}) };
+            });
+
+          const tierCounts = {};
+          citations.forEach(c => {
+            const t = c.mediaTier ? String(c.mediaTier).trim() : "";
+            if(t) tierCounts[t] = (tierCounts[t]||0)+1;
+          });
+          const tierEntries = Object.entries(tierCounts).sort((a,b)=>a[0].localeCompare(b[0]));
+          const tierColors = {"1":"#166534","2":"#1a3a5c","3":"#6b7685","Tier 1":"#166534","Tier 2":"#1a3a5c","Tier 3":"#6b7685"};
+
+          const outletCounts = {};
+          citations.forEach(c => { if(c.media) outletCounts[c.media]=(outletCounts[c.media]||0)+1; });
+          const topOutlets = Object.entries(outletCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+          const maxOutlet = topOutlets[0]?.[1] || 1;
+
+          return (
+            <div style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
+                  <GranularityToggle value={gran} onChange={setGran}/>
+                </div>
+                <ResponsiveContainer width="100%" height={100}>
+                  <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
+                    <defs>
+                      <linearGradient id="gcChart" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#4a7fa8" stopOpacity={0.18}/>
+                        <stop offset="95%" stopColor="#4a7fa8" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
+                    <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
+                    <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
+                    <Tooltip content={({active,payload,label})=>active&&payload?.length?(
+                      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"#4a7fa8"}}>{payload[0].value} articles</div>
+                      </div>
+                    ):null}/>
+                    <Area type="monotone" dataKey="count" stroke="#4a7fa8" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"#4a7fa8"}}/>
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              {tierEntries.length > 0 && (
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Media Tier Breakdown</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    {tierEntries.map(([tier,count])=>{
+                      const pct = Math.round((count/citations.length)*100);
+                      const col = tierColors[tier]||"var(--dim)";
+                      return (
+                        <div key={tier}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:col,fontWeight:600}}>Tier {tier}</span>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>{count} <span style={{color:"var(--dim)"}}>({pct}%)</span></span>
+                          </div>
+                          <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                            <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .5s ease"}}/>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Outlets</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {topOutlets.map(([name,count],i)=>(
+                    <div key={name}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:600}}>{count}</span>
+                      </div>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:1-i*0.15,borderRadius:99}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        };
+        return <MediaChart/>;
       })()}
       {/* Filter bar */}
       {(()=>{
@@ -1407,12 +1434,14 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
 //  ANALYTICS TAB (Client only)
 // ─────────────────────────────────────────────────────────
 const AnalyticsTab = ({campaigns, citations, clientName}) => {
-  const [range, setRange]       = useState("all");
+  const [range, setRange]           = useState("all");
+  const [showMore, setShowMore]     = useState(false);
+  const [granularity, setGranularity] = useState("daily"); // "daily" | "weekly"
 
   const totalBounties  = campaigns.length;
   const totalCitations = citations.length;
 
-  // Build weekly series
+  // Build chart series — daily or weekly
   const getWeekKey = (iso) => {
     try {
       const d = new Date(iso+"T00:00:00");
@@ -1423,50 +1452,74 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       return monday.toISOString().slice(0,10);
     } catch { return null; }
   };
-  const weekMap = {};
+
+  const bucketMap = {};
   const addTo = (iso, key) => {
     if(!iso) return;
-    const wk = getWeekKey(iso);
-    if(!wk) return;
-    if(!weekMap[wk]) weekMap[wk] = {week:wk, bounties:0, citations:0};
-    weekMap[wk][key]++;
+    const bkey = granularity === "daily" ? iso : getWeekKey(iso);
+    if(!bkey) return;
+    if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0};
+    bucketMap[bkey][key]++;
   };
   campaigns.forEach(c => addTo(c.date, "bounties"));
   citations.forEach(c => addTo(c.date, "citations"));
 
-  let allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
+  // Also keep weekMap for rangeStart (used for impression filtering)
+  const weekMap = {};
+  campaigns.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].bounties++;} });
+  citations.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].citations++;} });
 
-  if(range !== "all" && allWeeks.length > 0) {
+  let allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
+  let allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
+
+  if(range !== "all") {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - parseInt(range));
     const cutStr = cutoff.toISOString().slice(0,10);
-    allWeeks = allWeeks.filter(w => w.week >= cutStr);
+    allWeeks   = allWeeks.filter(w => w.week >= cutStr);
+    allBuckets = allBuckets.filter(b => b.period >= cutStr);
   }
 
   let cumB = 0, cumC = 0;
-  const chartData = allWeeks.map(w => {
+  const chartData = allBuckets.map(w => {
     cumB += w.bounties; cumC += w.citations;
     try {
-      const d = new Date(w.week+"T00:00:00");
-      return {
-        ...w,
-        label: isNaN(d.getTime()) ? w.week : d.toLocaleDateString("en-US",{month:"short",day:"numeric"}),
-        cumBounties: cumB,
-        cumCitations: cumC,
-      };
+      const d = new Date(w.period+"T00:00:00");
+      const label = isNaN(d.getTime()) ? w.period
+        : granularity === "daily"
+          ? d.toLocaleDateString("en-US",{month:"short",day:"numeric"})
+          : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+      return { ...w, label, cumBounties: cumB, cumCitations: cumC };
     } catch {
-      return { ...w, label: w.week, cumBounties: cumB, cumCitations: cumC };
+      return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC };
     }
   });
 
   const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
   const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
 
+  // Impression totals (scoped to range via chartData dates)
+  const rangeStart = allWeeks.length ? allWeeks[0].week : null;
+  const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
+  const parseNum = v => {
+    if(!v) return 0;
+    const s = String(v).replace(/,/g,"").trim();
+    if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000);
+    if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000);
+    return parseInt(s)||0;
+  };
+  const totalTwitterImpressions  = inRange(campaigns).reduce((s,c)=>s+parseNum(c.twitterImpressions),0);
+  const totalTelegramImpressions = inRange(campaigns).reduce((s,c)=>s+parseNum(c.telegramImpressions),0);
+  const totalImpressions = totalTwitterImpressions + totalTelegramImpressions;
+
+  const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
+
   const SUMMARY = [
-    {label:"Bounties",      value:totalBounties,        sub:"Posts published",      c:"var(--accent)"},
-    {label:"Media Citations",value:totalCitations,       sub:"Total coverage",       c:"#4a7fa8"},
-    {label:"Authors",        value:uniqueAuthors.length,  sub:"Unique contributors",  c:"var(--accent)"},
-    {label:"Media Outlets",  value:uniqueOutlets.length,  sub:"Unique publications",  c:"#4a7fa8"},
+    {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)"},
+    {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"#4a7fa8"},
+    {label:"Authors",           value:uniqueAuthors.length,    sub:"Unique contributors",    c:"var(--accent)"},
+    {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"#4a7fa8"},
+    {label:"Total Impressions", value:fmtNum(totalImpressions),sub:"Twitter + Telegram",     c:"var(--accent)"},
   ];
 
   const CustomTooltip = ({active,payload,label,nameMap={}}) => {
@@ -1503,9 +1556,9 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:28}}>
-        {SUMMARY.map((s,i)=>(
+      {/* Stat cards — 4 primary + impressions if available */}
+      <div style={{display:"grid",gridTemplateColumns:`repeat(${totalImpressions>0?5:4},1fr)`,gap:14,marginBottom:28}}>
+        {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
           <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8}}>{s.label}</div>
             <div className="tabular" style={{fontSize:30,fontWeight:700,color:"var(--text)",lineHeight:1,marginBottom:6,letterSpacing:"-0.03em"}}>{s.value}</div>
@@ -1521,12 +1574,23 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
         </div>
       ) : (
         <>
-          {/* Combined monthly + cumulative chart */}
+          {/* Combined chart */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Weekly Activity & Running Total</div>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{granularity === "daily" ? "Daily" : "Weekly"} Activity & Running Total</div>
+                {/* Daily / Weekly toggle */}
+                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+                  {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setGranularity(val)}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div style={{display:"flex",gap:16}}>
-                {[{color:"rgba(26,58,92,0.3)",label:"Bounties (weekly)"},{color:"rgba(74,127,168,0.5)",label:"Citations (weekly)"},{color:"#1a3a5c",label:"Bounties (total)",line:true},{color:"#4a7fa8",label:"Citations (total)",line:true}].map((l,i)=>(
+                {[{color:"rgba(26,58,92,0.3)",label:`Bounties (${granularity==="daily"?"daily":"weekly"})`},{color:"rgba(74,127,168,0.5)",label:`Citations (${granularity==="daily"?"daily":"weekly"})`},{color:"#1a3a5c",label:"Bounties (total)",line:true},{color:"#4a7fa8",label:"Citations (total)",line:true}].map((l,i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
                     {l.line
                       ? <div style={{width:16,height:2,background:l.color,borderRadius:1}}/>
@@ -1549,12 +1613,12 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/8)-1)}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
                 <YAxis yAxisId="monthly" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
                 <YAxis yAxisId="cumulative" orientation="right" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={36} allowDecimals={false}/>
                 <Tooltip content={({active,payload,label})=>{
                   if(!active||!payload?.length) return null;
-                  const names={bounties:"Bounties / wk",citations:"Citations / wk",cumBounties:"Total Bounties",cumCitations:"Total Citations"};
+                  const names={bounties:`Bounties / ${granularity==="daily"?"day":"wk"}`,citations:`Citations / ${granularity==="daily"?"day":"wk"}`,cumBounties:"Total Bounties",cumCitations:"Total Citations"};
                   return (
                     <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
                       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
@@ -1582,8 +1646,9 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
             const topicMap = {};
             citations.forEach(c=>{
               const t=(c.topic||"").trim()||"Uncategorised";
-              if(!topicMap[t]) topicMap[t]={topic:t,count:0};
-              topicMap[t].count++;
+              const tk=t.toLowerCase();
+              if(!topicMap[tk]) topicMap[tk]={topic:t,count:0};
+              topicMap[tk].count++;
             });
             const allTopics  = Object.values(topicMap).sort((a,b)=>b.count-a.count);
             const topTopics  = allTopics.slice(0,5);
@@ -1591,15 +1656,15 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
             // Authors
             const authorMap = {};
-            campaigns.forEach(c=>{ const a=c.author||"Unknown"; if(!authorMap[a]) authorMap[a]={author:a,bounties:0,citations:0}; authorMap[a].bounties++; });
-            citations.forEach(c=>{ const a=c.author||"Unknown"; if(!authorMap[a]) authorMap[a]={author:a,bounties:0,citations:0}; authorMap[a].citations++; });
+            campaigns.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].bounties++; });
+            citations.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].citations++; });
             const allAuthors = Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations));
             const topAuthors = allAuthors.slice(0,5);
             const maxAuthor  = (allAuthors[0]?.bounties||0)+(allAuthors[0]?.citations||0)||1;
 
             // Outlets
             const mediaMap = {};
-            citations.forEach(c=>{ const m=(c.media||"").trim()||"Unknown"; if(!mediaMap[m]) mediaMap[m]={media:m,count:0}; mediaMap[m].count++; });
+            citations.forEach(c=>{ const m=(c.media||"").trim()||"Unknown"; const mk=m.toLowerCase(); if(!mediaMap[mk]) mediaMap[mk]={media:m,count:0}; mediaMap[mk].count++; });
             const allOutlets = Object.values(mediaMap).sort((a,b)=>b.count-a.count);
             const topOutlets = allOutlets.slice(0,5);
             const maxOutlet  = allOutlets[0]?.count||1;
@@ -1688,6 +1753,95 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     </Panel>
                   </div>
 
+                  {/* More breakdowns toggle */}
+                  <button onClick={()=>setShowMore(v=>!v)}
+                    style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 16px",cursor:"pointer",marginTop:14,transition:"all .15s",width:"100%",justifyContent:"center",letterSpacing:"0.04em"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
+                    <span style={{display:"inline-block",transform:showMore?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
+                    {showMore ? "Hide breakdowns" : "More breakdowns"}
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:"var(--surface3)",color:"var(--dim)",marginLeft:4}}>Tier · Language · Direct Rel · Asset · Branding</span>
+                  </button>
+
+                  {showMore && <>
+                  {/* Row 2: Media Tier, Language, Direct Relationship */}
+                  {(()=>{
+                    const tierMap={}, langMap={}, drMap={};
+                    citations.forEach(c=>{
+                      if(c.mediaTier){const t=String(c.mediaTier).trim();const tk=normKey(t);if(tk)tierMap[tk]=(tierMap[tk]||0)+1;}
+                      if(c.language){const l=c.language.trim();const lk=normKey(l);if(lk)langMap[lk]=(langMap[lk]||0)+1;}
+                      if(c.directRelationship){const d=c.directRelationship.trim();const dk=normKey(d);if(dk)drMap[dk]=(drMap[dk]||0)+1;}
+                    });
+                    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+                    const langEntries=Object.entries(langMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                    const drEntries=Object.entries(drMap).sort((a,b)=>b[1]-a[1]);
+                    const maxTier=Math.max(...tierEntries.map(e=>e[1]),1);
+                    const maxLang=langEntries[0]?.[1]||1;
+                    const maxDR=drEntries[0]?.[1]||1;
+                    const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685","tier 1":"#166534","tier 2":"#1a3a5c","tier 3":"#6b7685"};
+                    if(!tierEntries.length&&!langEntries.length&&!drEntries.length) return null;
+                    return (
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:14}}>
+                        <Panel title="Media Tier Breakdown" badge={`${citations.length} citations`}>
+                          {tierEntries.length ? tierEntries.map(([tier,count])=>{
+                            const col=tierColors[tier.toLowerCase()]||"var(--dim)";
+                            const pct=(count/citations.length)*100;
+                            return (
+                              <div key={tier} style={{marginBottom:10}}>
+                                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
+                                  <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                                </div>
+                                <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                                  <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .5s"}}/>
+                                </div>
+                              </div>
+                            );
+                          }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No tier data</div>}
+                        </Panel>
+                        <Panel title="Language Breakdown" badge={`${langEntries.length} languages`}>
+                          {langEntries.length ? langEntries.map(([lang,count],i)=>(
+                            <Row key={lang} rank={i+1} label={lang} value={count} pct={(count/maxLang)*100} color="#4a7fa8"/>
+                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No language data</div>}
+                        </Panel>
+                        <Panel title="Direct Relationship">
+                          {drEntries.length ? drEntries.map(([dr,count],i)=>(
+                            <Row key={dr} rank={i+1} label={dr} value={count} pct={(count/maxDR)*100} color="var(--accent)"/>
+                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                        </Panel>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Row 3: Asset, Branding */}
+                  {(()=>{
+                    const assetMap={}, brandMap={};
+                    citations.forEach(c=>{
+                      if(c.asset){const a=c.asset.trim();const ak=normKey(a);if(ak)assetMap[ak]=(assetMap[ak]||0)+1;}
+                      if(c.branding){const b=c.branding.trim();const bk=normKey(b);if(bk)brandMap[bk]=(brandMap[bk]||0)+1;}
+                    });
+                    const assetEntries=Object.entries(assetMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                    const brandEntries=Object.entries(brandMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                    const maxAsset=assetEntries[0]?.[1]||1;
+                    const maxBrand=brandEntries[0]?.[1]||1;
+                    if(!assetEntries.length&&!brandEntries.length) return null;
+                    return (
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:14}}>
+                        <Panel title="Top Assets">
+                          {assetEntries.length ? assetEntries.map(([asset,count],i)=>(
+                            <Row key={asset} rank={i+1} label={asset} value={count} pct={(count/maxAsset)*100} color="var(--accent)"/>
+                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No asset data</div>}
+                        </Panel>
+                        <Panel title="Branding Mentions">
+                          {brandEntries.length ? brandEntries.map(([brand,count],i)=>(
+                            <Row key={brand} rank={i+1} label={brand} value={count} pct={(count/maxBrand)*100} color="#4a7fa8"/>
+                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No branding data</div>}
+                        </Panel>
+                      </div>
+                    );
+                  })()}
+                  </>}
+
                   {modal==="topics" && (
                     <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
                       {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>)}
@@ -1728,10 +1882,9 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   // Find the Monday of the current week
   const getMondayOf = (date) => {
     const d = new Date(date);
-    if(isNaN(d.getTime())) return new Date();
     d.setHours(0,0,0,0);
-    const day = d.getDay();
-    d.setDate(d.getDate() - ((day + 6) % 7));
+    const day = d.getDay(); // 0=Sun,1=Mon...
+    d.setDate(d.getDate() - ((day + 6) % 7)); // back to Monday
     return d;
   };
 
@@ -1742,7 +1895,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   // Once data arrives, jump to the latest data week — but only if not manually navigated
   useEffect(()=>{
     if(manuallyNavigated) return;
-    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(d=>{if(!d)return false;const t=new Date(d+"T00:00:00");return !isNaN(t.getTime());}).sort();
+    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
     if(!allDates.length) return;
     const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
     const lastMonday = getMondayOf(lastDate);
@@ -1760,10 +1913,11 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const isFutureWeek  = weekStart > todayMonday;
 
   const latestDataMonday = (() => {
-    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(d=>{if(!d)return false;const t=new Date(d+"T00:00:00");return !isNaN(t.getTime());}).sort();
+    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
     if(!allDates.length) return todayMonday;
     const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
     const lastMonday = getMondayOf(lastDate);
+    // If latest data is in the future or current week, use today's Monday
     return lastMonday > todayMonday ? todayMonday : lastMonday;
   })();
 
@@ -1786,8 +1940,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   };
   const goLatest = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
 
-  const safeFmt = (d,opts) => { try{ const r=d.toLocaleDateString("en-US",opts); return r; }catch{ return "—"; }};
-  const dateRange = `${safeFmt(weekStart,{month:"short",day:"numeric"})} – ${safeFmt(weekEnd,{month:"short",day:"numeric",year:"numeric"})}`;
+  const dateRange = `${weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
 
   // ── DATA FOR THIS WEEK ────────────────────────────────────
   const weekBounties  = campaigns.filter(c=>c.date&&c.date>=weekStartStr&&c.date<=weekEndStr);
@@ -1894,13 +2047,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
   // ── TOP AUTHORS / OUTLETS ────────────────────────────────
   const authorMap={};
-  weekBounties.forEach(c=>{const a=c.author||"Unknown";if(!authorMap[a])authorMap[a]={name:a,bounties:0,citations:0};authorMap[a].bounties++;});
-  weekCitations.forEach(c=>{const a=c.author||"Unknown";if(!authorMap[a])authorMap[a]={name:a,bounties:0,citations:0};authorMap[a].citations++;});
+  weekBounties.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].bounties++;});
+  weekCitations.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].citations++;});
   const topAuthors=Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations)).slice(0,5);
   const maxAuthorTotal=(topAuthors[0]?.bounties||0)+(topAuthors[0]?.citations||0)||1;
 
   const outletMap={};
-  weekCitations.forEach(c=>{const m=c.media||"Unknown";if(!outletMap[m])outletMap[m]=0;outletMap[m]++;});
+  weekCitations.forEach(c=>{const m=c.media||"Unknown";const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]=0;outletMap[mk]++;});
   const topOutlets=Object.entries(outletMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxOutlet=topOutlets[0]?.[1]||1;
 
@@ -2164,16 +2317,16 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
 
     // ── Leaderboards ──
     const authorMap={};
-    b.forEach(x=>{const a=x.author||"—";if(!authorMap[a])authorMap[a]={b:0,c:0};authorMap[a].b++;});
-    c.forEach(x=>{const a=x.author||"—";if(!authorMap[a])authorMap[a]={b:0,c:0};authorMap[a].c++;});
+    b.forEach(x=>{const a=x.author||"—";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={b:0,c:0};authorMap[ak].b++;});
+    c.forEach(x=>{const a=x.author||"—";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={b:0,c:0};authorMap[ak].c++;});
     const topAuthors = Object.entries(authorMap).sort((a,z)=>(z[1].b+z[1].c)-(a[1].b+a[1].c)).slice(0,8);
 
     const outletMap={};
-    c.forEach(x=>{const m=x.media||"—";outletMap[m]=(outletMap[m]||0)+1;});
+    c.forEach(x=>{const m=x.media||"—";const mk=m.toLowerCase();outletMap[mk]=(outletMap[mk]||0)+1;});
     const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
 
     const topicMap={};
-    c.forEach(x=>{const t=(x.topic||"—").trim();topicMap[t]=(topicMap[t]||0)+1;});
+    c.forEach(x=>{const t=(x.topic||"—").trim();const tk=t.toLowerCase();topicMap[tk]=(topicMap[tk]||0)+1;});
     const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
 
     // ── Weekly chart data ──
@@ -2196,8 +2349,6 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const CHART_W=760,CHART_H=110,BAR_AREA=80,PAD_L=0,PAD_R=0;
     const barW = weeks.length ? Math.min(40, Math.floor((CHART_W-PAD_L-PAD_R)/weeks.length)-4) : 30;
     const gap  = weeks.length > 1 ? (CHART_W-PAD_L-PAD_R-(barW*weeks.length))/(weeks.length-1) : 0;
-    // Show at most 8 labels — skip intermediate ones evenly
-    const labelEvery = Math.max(1, Math.ceil(weeks.length / 8));
     const fmtMD = iso => { try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;} };
 
     const bars = weeks.map((w,i)=>{
@@ -2208,7 +2359,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
       return `
         <rect x="${x}" y="${BAR_AREA-cH}" width="${barW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/>
         <rect x="${x}" y="${BAR_AREA-cH-bH}" width="${barW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>
-        ${i % labelEvery === 0 ? `<text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>` : ''}
+        <text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>
       `;
     }).join("");
 
@@ -2568,27 +2719,6 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   );
 };
 
-class ErrorBoundary extends React.Component {
-  constructor(props){super(props);this.state={err:null};}
-  static getDerivedStateFromError(e){return {err:e};}
-  componentDidCatch(e,info){console.error("App error:",e,info);}
-  render(){
-    if(this.state.err) return (
-      <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"#f1f4f8",padding:40}}>
-        <div style={{background:"#fff",border:"1px solid #e2e7f0",borderRadius:12,padding:"36px 40px",maxWidth:480,textAlign:"center",boxShadow:"0 4px 24px rgba(0,0,0,0.08)"}}>
-          <div style={{fontSize:28,marginBottom:12,opacity:.3}}>⚠</div>
-          <div style={{fontSize:16,fontWeight:600,color:"#0f1923",marginBottom:8}}>Something went wrong</div>
-          <div style={{fontFamily:"monospace",fontSize:11,color:"#6b7685",marginBottom:20,wordBreak:"break-word"}}>{this.state.err.message}</div>
-          <button onClick={()=>window.location.reload()} style={{fontFamily:"monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer"}}>
-            Reload page
-          </button>
-        </div>
-      </div>
-    );
-    return this.props.children;
-  }
-}
-
 const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}) => {
   const [syncing,setSyncing] = useState(false);
   const [result,setResult]   = useState(null);
@@ -2608,6 +2738,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
     }).filter(r=>{const d=(r["date"]||"").trim();const n=(r["no"]||"").trim();if(n&&isNaN(Number(n)))return false;return d&&!d.toLowerCase().startsWith("yyyy")&&!d.toLowerCase().startsWith("date");});
   };
   const doSync = async() => {
+    console.log("doSync called, isSyncing:", isSyncing.current, "program:", program.id, "bounties URL:", program.sheetBounties, "media URL:", program.sheetMedia);
     if(isSyncing.current) return;
     isSyncing.current = true;
     setSyncing(true); setResult(null);
@@ -2618,11 +2749,9 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
         const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
         if(isLocal) {
           const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(url+'&t='+Date.now())}`);
-          if(!r.ok) throw new Error(`Sheet fetch failed: ${r.status}`);
           return await r.text();
         } else {
           const r = await fetch(`/api/sheet-proxy?url=${encodeURIComponent(url)}`);
-          if(!r.ok) throw new Error(`Sheet proxy failed: ${r.status}`);
           return await r.text();
         }
       };
@@ -2640,7 +2769,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
           const inNew=newBounties.some(b=>rowNo?b.sheetRowNo===rowNo:(link&&b.cqLink===link));
           const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(link&&exB.some(b=>b.cq_link===link));
           if(inNew||inDB){skipped++;continue;}
-          newBounties.push({id:uid(),campaignId:program.id,date:r["date"]||"",author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||r["cq analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||r["analyst twitter/x post"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||r["twitter/x link"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),category:(r["category"]||"").trim(),asset:(r["asset"]||"").trim(),twitterImpressions:(r["twitter impressions"]||r["cq twitter/x impressions"]||"").trim(),telegramImpressions:(r["telegram impressions"]||"").trim(),note1:(r["note 1"]||r["note1"]||"").trim(),note2:(r["note 2"]||r["note2"]||"").trim(),note3:(r["note 3"]||r["note3"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
+          newBounties.push({id:uid(),campaignId:program.id,date:r["date"]||"",author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||r["cq analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||r["analyst twitter/x post"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||r["twitter/x link"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),category:titleCase(r["category"]||""),asset:titleCase(r["asset"]||""),twitterImpressions:(r["twitter impressions"]||r["cq twitter/x impressions"]||"").trim(),telegramImpressions:(r["telegram impressions"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
         }
       }
       if(program.sheetMedia){
@@ -2654,34 +2783,15 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
           const inNewM=newMedia.some(m=>rowNo2?m.sheetRowNo===rowNo2:(link&&m.articleLink===link));
           const inDBM=rowNo2?exM.some(m=>m.sheet_row_no===rowNo2):(link&&exM.some(m=>m.article_link===link));
           if(inNewM||inDBM){skipped++;continue;}
-          newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:media,reporter:(r["reporter"]||"").trim(),author:norm(r["author"]),topic:(r["topic"]||"").trim(),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:(r["direct relationship"]||"").trim(),language:(r["language"]||"").trim(),asset:(r["asset"]||"").trim(),branding:(r["branding"]||"").trim(),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
+          newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:titleCase(media),reporter:titleCase(r["reporter"]||""),author:norm(r["author"]),topic:titleCase(r["topic"]||""),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:titleCase(r["direct relationship"]||""),language:titleCase(r["language"]||""),asset:titleCase(r["asset"]||""),branding:titleCase(r["branding"]||""),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
         }
       }
-      if(newBounties.length){
-        await db.batchInsertBounties(newBounties);
-        added+=newBounties.length;
-      }
-      if(newMedia.length){
-        await db.batchInsertCitations(newMedia);
-        added+=newMedia.length;
-      }
-      // Re-fetch from DB so state is always clean and consistent
-      if(newBounties.length||newMedia.length){
-        const [freshB, freshC] = await Promise.all([
-          db.getCampaigns().catch(()=>null),
-          db.getCitations().catch(()=>null),
-        ]);
-        if(freshB) setCampaigns(freshB);
-        if(freshC) setCitations(freshC);
-      }
+      if(newBounties.length){await db.batchInsertBounties(newBounties);setCampaigns(prev=>[...newBounties,...prev]);added+=newBounties.length;}
+      if(newMedia.length){await db.batchInsertCitations(newMedia);setCitations(prev=>[...newMedia,...prev]);added+=newMedia.length;}
       setResult(`✓ ${added} added, ${skipped} skipped`);
-    } catch(err){
-      console.error("Sync error:", err);
-      setResult(`Error: ${err.message}`);
-    } finally {
-      setSyncing(false);
-      isSyncing.current = false;
-    }
+    } catch(err){ setResult(`Error: ${err.message}`); }
+    setSyncing(false);
+    isSyncing.current = false;
   };
   return (
     <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -2699,7 +2809,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
   const [editClient,setEdit]     = useState(null);
   const [confirmId,setConfId]    = useState(null);
   const [drillId,setDrillId]     = useState(null);
-  const [drillTab,setDrillTab]   = useState("weekly");
+  const [drillTab,setDrillTab]   = useState("daily");
   const [showDrillPdf,setShowDrillPdf] = useState(false);
 
   const drillProgram = programs.find(c=>c.id===drillId)||null;
@@ -2800,7 +2910,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 <div style={{width:8,height:8,borderRadius:"50%",background:cl.status==="completed"?"#94a3b8":cl.color,flexShrink:0}}/>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</div>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {cl.createdAt&&!isNaN(new Date(cl.createdAt).getTime())?new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—"}</div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
                 </div>
                 <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
                   <div style={{textAlign:"right"}}>
@@ -2914,10 +3024,6 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
 //  ROOT APP
 // ─────────────────────────────────────────────────────────
 export default function App() {
-  return <ErrorBoundary><AppInner/></ErrorBoundary>;
-}
-
-function AppInner() {
   useEffect(()=>{
     document.title = "CryptoQuant Bounty Tracker";
     const link = document.querySelector("link[rel~='icon']") || Object.assign(document.createElement('link'),{rel:'icon'});
