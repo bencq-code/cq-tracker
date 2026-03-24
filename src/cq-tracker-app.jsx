@@ -2303,6 +2303,19 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
 
   const [dateFrom, setDateFrom] = useState(earliest);
   const [dateTo,   setDateTo]   = useState(today);
+
+  // Section toggles — all on by default except full lists
+  const [inclStats,     setInclStats]     = useState(true);
+  const [inclChart,     setInclChart]     = useState(true);
+  const [inclAuthors,   setInclAuthors]   = useState(true);
+  const [inclOutlets,   setInclOutlets]   = useState(true);
+  const [inclTopics,    setInclTopics]    = useState(true);
+  const [inclTier,      setInclTier]      = useState(true);
+  const [inclLanguage,  setInclLanguage]  = useState(true);
+  const [inclDR,        setInclDR]        = useState(true);
+  const [inclAsset,     setInclAsset]     = useState(true);
+  const [inclBranding,  setInclBranding]  = useState(true);
+  const [inclImpr,      setInclImpr]      = useState(true);
   const [inclBounties,  setInclBounties]  = useState(false);
   const [inclCitations, setInclCitations] = useState(false);
 
@@ -2310,176 +2323,138 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
   const c = citations.filter(x=>x.date&&x.date>=dateFrom&&x.date<=dateTo);
 
   const generatePDF = () => {
-    // ── Stats ──
     const uniqueAuthors  = [...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))];
     const uniqueOutlets  = [...new Set(c.map(x=>x.media).filter(Boolean))];
     const uniqueAnalysts = [...new Set(b.map(x=>x.author).filter(Boolean))];
+    const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+    const totalTwitter  = b.reduce((s,x)=>s+parseNum(x.twitterImpressions),0);
+    const totalTelegram = b.reduce((s,x)=>s+parseNum(x.telegramImpressions),0);
+    const totalImpr     = totalTwitter+totalTelegram;
+    const fmtNum = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
 
-    // ── Leaderboards ──
     const authorMap={};
-    b.forEach(x=>{const a=x.author||"—";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={b:0,c:0};authorMap[ak].b++;});
-    c.forEach(x=>{const a=x.author||"—";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={b:0,c:0};authorMap[ak].c++;});
-    const topAuthors = Object.entries(authorMap).sort((a,z)=>(z[1].b+z[1].c)-(a[1].b+a[1].c)).slice(0,8);
-
+    b.forEach(x=>{const ak=normKey(x.author||"—");if(!authorMap[ak])authorMap[ak]={name:x.author||"—",b:0,c:0};authorMap[ak].b++;});
+    c.forEach(x=>{const ak=normKey(x.author||"—");if(!authorMap[ak])authorMap[ak]={name:x.author||"—",b:0,c:0};authorMap[ak].c++;});
+    const topAuthors = Object.values(authorMap).sort((a,z)=>(z.b+z.c)-(a.b+a.c)).slice(0,10);
     const outletMap={};
-    c.forEach(x=>{const m=x.media||"—";const mk=m.toLowerCase();outletMap[mk]=(outletMap[mk]||0)+1;});
-    const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
-
+    c.forEach(x=>{const mk=normKey(x.media||"—");outletMap[mk]=(outletMap[mk]||0)+1;});
+    const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
     const topicMap={};
-    c.forEach(x=>{const t=(x.topic||"—").trim();const tk=t.toLowerCase();topicMap[tk]=(topicMap[tk]||0)+1;});
-    const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+    c.forEach(x=>{const tk=normKey((x.topic||"—").trim());topicMap[tk]=(topicMap[tk]||0)+1;});
+    const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
 
-    // ── Weekly chart data ──
-    const weekKey = iso => {
-      try {
-        const d=new Date(iso+"T00:00:00");
-        if(isNaN(d.getTime()))return null;
-        const mon=new Date(d);
-        mon.setDate(d.getDate()-((d.getDay()+6)%7));
-        return mon.toISOString().slice(0,10);
-      } catch{return null;}
-    };
-    const wkMap={};
-    b.forEach(x=>{const wk=weekKey(x.date);if(!wk)return;if(!wkMap[wk])wkMap[wk]={wk,b:0,c:0};wkMap[wk].b++;});
-    c.forEach(x=>{const wk=weekKey(x.date);if(!wk)return;if(!wkMap[wk])wkMap[wk]={wk,b:0,c:0};wkMap[wk].c++;});
-    const weeks = Object.values(wkMap).sort((a,z)=>a.wk.localeCompare(z.wk));
-    const maxWk = Math.max(...weeks.map(w=>w.b+w.c),1);
+    const tierMap={},langMap={},drMap={},assetMap={},brandMap={};
+    c.forEach(x=>{
+      if(x.mediaTier){const k=normKey(String(x.mediaTier).trim());if(k)tierMap[k]=(tierMap[k]||0)+1;}
+      if(x.language){const k=normKey(x.language.trim());if(k)langMap[k]=(langMap[k]||0)+1;}
+      if(x.directRelationship){const k=normKey(x.directRelationship.trim());if(k)drMap[k]=(drMap[k]||0)+1;}
+      if(x.asset){const k=normKey(x.asset.trim());if(k)assetMap[k]=(assetMap[k]||0)+1;}
+      if(x.branding){const k=normKey(x.branding.trim());if(k)brandMap[k]=(brandMap[k]||0)+1;}
+    });
+    const tierEntries=Object.entries(tierMap).sort((a,z)=>a[0].localeCompare(z[0]));
+    const langEntries=Object.entries(langMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+    const drEntries=Object.entries(drMap).sort((a,z)=>z[1]-a[1]);
+    const assetEntries=Object.entries(assetMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+    const brandEntries=Object.entries(brandMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
+    const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685"};
 
-    // SVG bar chart — 760px wide, 140px tall
-    const CHART_W=760,CHART_H=110,BAR_AREA=80,PAD_L=0,PAD_R=0;
-    const barW = weeks.length ? Math.min(40, Math.floor((CHART_W-PAD_L-PAD_R)/weeks.length)-4) : 30;
-    const gap  = weeks.length > 1 ? (CHART_W-PAD_L-PAD_R-(barW*weeks.length))/(weeks.length-1) : 0;
-    const fmtMD = iso => { try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;} };
+    const dayMap={};
+    b.forEach(x=>{if(!x.date)return;if(!dayMap[x.date])dayMap[x.date]={wk:x.date,b:0,c:0};dayMap[x.date].b++;});
+    c.forEach(x=>{if(!x.date)return;if(!dayMap[x.date])dayMap[x.date]={wk:x.date,b:0,c:0};dayMap[x.date].c++;});
+    const weeks=Object.values(dayMap).sort((a,z)=>a.wk.localeCompare(z.wk));
+    const maxWk=Math.max(...weeks.map(w=>w.b+w.c),1);
+    const CW=760,BA=80,CH=110;
+    const bW=weeks.length?Math.min(40,Math.floor(CW/weeks.length)-4):30;
+    const gp=weeks.length>1?(CW-(bW*weeks.length))/(weeks.length-1):0;
+    const le=Math.max(1,Math.ceil(weeks.length/8));
+    const fmtMD=iso=>{try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;}};
+    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
+    const guides=[0,0.25,0.5,0.75,1].map(p=>{const y=BA-(p*BA);return `<line x1="0" y1="${y}" x2="${CW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/><text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(p*maxWk)}</text>`;}).join("");
+    const chartSvg=weeks.length?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${CH+20}" width="${CW}" height="${CH+20}" style="overflow:visible">${guides}${bars}</svg>`:`<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
 
-    const bars = weeks.map((w,i)=>{
-      const x = PAD_L + i*(barW+gap);
-      const bH = maxWk?(w.b/maxWk)*BAR_AREA:0;
-      const cH = maxWk?(w.c/maxWk)*BAR_AREA:0;
-      const labelX = x+barW/2;
-      return `
-        <rect x="${x}" y="${BAR_AREA-cH}" width="${barW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/>
-        <rect x="${x}" y="${BAR_AREA-cH-bH}" width="${barW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>
-        <text x="${labelX}" y="${CHART_H+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>
-      `;
-    }).join("");
+    const fmtD=iso=>{if(!iso)return"—";const [y,m,d]=iso.split("-");return`${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]||"?"} ${+d}, ${y}`;};
+    const TH=s=>`<th style="font-family:monospace;font-size:7.5px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:5px 8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">${s}</th>`;
+    const TD=(s,extra="")=>`<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:top;${extra}">${s}</td>`;
+    const sHdr=(t,n)=>`<div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:2px solid #e5e7eb;margin-bottom:12px">${t}${n!=null?` (${n})`:""}</div>`;
+    const bRow=(rank,name,val,maxV,col="#1a3a5c")=>{const pct=(val/(maxV||1))*100;return `<tr><td style="font-family:monospace;color:#9ca3af;font-size:9px;width:18px;padding:5px 8px;border-bottom:1px solid #f3f4f6">${rank}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6"><div style="font-weight:500;margin-bottom:3px;font-size:10px">${name}</div><div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};opacity:0.75;border-radius:99px"></div></div></td><td style="font-family:monospace;font-weight:600;color:${col};text-align:right;padding:5px 8px;border-bottom:1px solid #f3f4f6;white-space:nowrap;font-size:10px">${val}</td></tr>`;};
 
-    // Y-axis guides
-    const guides = [0,0.25,0.5,0.75,1].map(pct=>{
-      const y = BAR_AREA-(pct*BAR_AREA);
-      return `
-        <line x1="0" y1="${y}" x2="${CHART_W}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/>
-        <text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(pct*maxWk)}</text>
-      `;
-    }).join("");
-
-    const chartSvg = weeks.length ? `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CHART_W} ${CHART_H+20}" width="${CHART_W}" height="${CHART_H+20}" style="overflow:visible">
-        ${guides}${bars}
-      </svg>` : `<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
-
-    const fmtD = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
-    const row  = (cells,hdr=false) => `<tr>${cells.map(cell=>`<t${hdr?"h":"d"}>${cell}</t${hdr?"h":"d"}>`).join("")}</tr>`;
-    const tbl  = (headers,rows) => `<table><thead>${row(headers,true)}</thead><tbody>${rows.map(r=>row(r)).join("")}</tbody></table>`;
-
-    const leaderCol = (items, valueLabel) => items.map(([name,val],i)=>{
-      const pct = (val/(items[0][1]||1))*100;
-      return `<tr>
-        <td style="font-family:monospace;color:#9ca3af;font-size:9px;width:20px">${i+1}</td>
-        <td>
-          <div style="font-weight:500;margin-bottom:3px">${name}</div>
-          <div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:#1a3a5c;opacity:0.7;border-radius:99px"></div>
-          </div>
-        </td>
-        <td style="font-family:monospace;font-weight:600;color:#1a3a5c;text-align:right;white-space:nowrap">${val}</td>
-      </tr>`;
-    }).join("");
-
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<title>${campaignName} — Performance Report</title>
+    const numCols=inclStats?(totalImpr>0&&inclImpr?6:5):0;
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${campaignName} — Performance Report</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; color:#111827; background:#fff; }
-.page { padding:44px 52px; max-width:880px; margin:0 auto; }
-.header { display:flex; align-items:flex-start; justify-content:space-between; padding-bottom:20px; border-bottom:2px solid #111827; margin-bottom:28px; }
-.header h1 { font-size:22px; font-weight:700; letter-spacing:-0.03em; margin-bottom:3px; }
-.header .sub { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; }
-.header-right { text-align:right; font-family:monospace; font-size:9px; color:#6b7280; line-height:1.9; }
-.stats { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:28px; }
-.stat { background:#f5f6f9; border-left:3px solid #1a3a5c; padding:11px 13px; border-radius:4px; }
-.stat .lbl { font-family:monospace; font-size:7.5px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; margin-bottom:5px; }
-.stat .val { font-size:24px; font-weight:700; letter-spacing:-0.03em; color:#111827; line-height:1; }
-.chart-wrap { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:18px 18px 8px; margin-bottom:28px; overflow:hidden; }
-.chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.chart-title { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; font-weight:600; }
-.legend { display:flex; gap:16px; }
-.legend-item { display:flex; align-items:center; gap:5px; font-family:monospace; font-size:8px; color:#6b7280; }
-.legend-dot { width:8px; height:8px; border-radius:2px; }
-.leaders { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:28px; }
-.panel { border:1px solid #e5e7eb; border-radius:6px; overflow:hidden; }
-.panel-hdr { font-family:monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#6b7280; font-weight:600; padding:10px 12px; background:#f9fafb; border-bottom:1px solid #e5e7eb; }
-.panel table { width:100%; border-collapse:collapse; font-size:10px; }
-.panel td { padding:7px 10px; border-bottom:1px solid #f3f4f6; vertical-align:middle; color:#374151; }
-.panel tr:last-child td { border-bottom:none; }
-.footer { padding-top:14px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; font-family:monospace; font-size:8.5px; color:#9ca3af; }
-@media print { body{-webkit-print-color-adjust:exact;print-color-adjust:exact;} .page{padding:32px 40px;} }
-</style>
-</head><body><div class="page">
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#111827;background:#fff;}
+.page{padding:44px 52px;max-width:920px;margin:0 auto;}
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:2px solid #111827;margin-bottom:28px;}
+.hdr h1{font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:3px;}
+.sub{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;}
+.hdr-r{text-align:right;font-family:monospace;font-size:9px;color:#6b7280;line-height:1.9;}
+.stats{display:grid;grid-template-columns:repeat(${numCols||5},1fr);gap:10px;margin-bottom:24px;}
+.stat{background:#f5f6f9;border-left:3px solid #1a3a5c;padding:10px 12px;border-radius:4px;}
+.stat .lbl{font-family:monospace;font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:4px;}
+.stat .val{font-size:20px;font-weight:700;letter-spacing:-0.03em;color:#111827;line-height:1;}
+.chart-wrap{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:16px 16px 6px;margin-bottom:24px;overflow:hidden;}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.chart-title{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;}
+.legend{display:flex;gap:14px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-family:monospace;font-size:8px;color:#6b7280;}
+.leg-dot{width:8px;height:8px;border-radius:2px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.panel{border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;}
+.ph{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding:8px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;}
+.panel table{width:100%;border-collapse:collapse;font-size:10px;}
+.section{margin-bottom:28px;}
+.footer{padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-family:monospace;font-size:8.5px;color:#9ca3af;margin-top:28px;}
+table.full{width:100%;border-collapse:collapse;font-size:9px;}
+table.full tr:nth-child(even) td{background:#fafafa;}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:28px 36px;}}
+</style></head><body><div class="page">
 
-<div class="header">
-  <div>
-    <h1>${campaignName}</h1>
-    <div class="sub">Campaign Performance Report</div>
-  </div>
-  <div class="header-right">
-    <div>Period: ${fmtD(dateFrom)} – ${fmtD(dateTo)}</div>
-    <div>Generated: ${fmtD(today)}</div>
-    <div>CryptoQuant Bounty Tracker</div>
-  </div>
+<div class="hdr">
+  <div><h1>${campaignName}</h1><div class="sub">Campaign Performance Report</div></div>
+  <div class="hdr-r"><div>Period: ${fmtD(dateFrom)} – ${fmtD(dateTo)}</div><div>Generated: ${fmtD(today)}</div><div>CryptoQuant Bounty Tracker</div></div>
 </div>
 
-<div class="stats">
+${inclStats?`<div class="stats">
   <div class="stat"><div class="lbl">Bounties</div><div class="val">${b.length}</div></div>
   <div class="stat"><div class="lbl">Citations</div><div class="val">${c.length}</div></div>
   <div class="stat"><div class="lbl">Unique Analysts</div><div class="val">${uniqueAnalysts.length}</div></div>
   <div class="stat"><div class="lbl">Authors</div><div class="val">${uniqueAuthors.length}</div></div>
   <div class="stat"><div class="lbl">Media Outlets</div><div class="val">${uniqueOutlets.length}</div></div>
-</div>
+  ${totalImpr>0&&inclImpr?`<div class="stat"><div class="lbl">Total Impressions</div><div class="val">${fmtNum(totalImpr)}</div></div>`:""}
+</div>`:""}
 
-<div class="chart-wrap">
-  <div class="chart-header">
-    <div class="chart-title">Weekly Activity</div>
+${inclChart?`<div class="chart-wrap">
+  <div class="chart-hdr">
+    <div class="chart-title">Daily Activity</div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#1a3a5c;opacity:0.85"></div>Bounties</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#4a7fa8;opacity:0.75"></div>Citations</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1a3a5c;opacity:0.85"></div>Bounties</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#4a7fa8;opacity:0.75"></div>Citations</div>
     </div>
   </div>
   ${chartSvg}
-</div>
+</div>`:""}
 
-${topAuthors.length||topOutlets.length||topTopics.length?`
-<div class="leaders">
-  ${topAuthors.length?`
-  <div class="panel">
-    <div class="panel-hdr">Top Authors</div>
-    <table><tbody>${topAuthors.map(([name,{b:bc,c:cc}],i)=>`<tr>
-      <td style="font-family:monospace;color:#9ca3af;font-size:9px;width:20px">${i+1}</td>
-      <td><div style="font-weight:500;margin-bottom:3px">${name}</div>
-        <div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${((bc+cc)/((topAuthors[0][1].b+topAuthors[0][1].c)||1)*100)}%;height:100%;background:#1a3a5c;opacity:0.7;border-radius:99px"></div></div>
-      </td>
-      <td style="font-family:monospace;font-weight:600;color:#1a3a5c;text-align:right;white-space:nowrap;font-size:10px">${bc+cc}</td>
-    </tr>`).join("")}</tbody></table>
-  </div>`:"<div></div>"}
-  ${topOutlets.length?`
-  <div class="panel">
-    <div class="panel-hdr">Top Outlets</div>
-    <table><tbody>${leaderCol(topOutlets,"articles")}</tbody></table>
-  </div>`:"<div></div>"}
-  ${topTopics.length?`
-  <div class="panel">
-    <div class="panel-hdr">Top Topics</div>
-    <table><tbody>${leaderCol(topTopics,"mentions")}</tbody></table>
-  </div>`:"<div></div>"}
+${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopics&&topTopics.length)?`<div class="grid3">
+  ${inclAuthors&&topAuthors.length?`<div class="panel"><div class="ph">Top Authors</div><table><tbody>${topAuthors.map((a,i)=>bRow(i+1,a.name,a.b+a.c,(topAuthors[0].b+topAuthors[0].c)||1)).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclOutlets&&topOutlets.length?`<div class="panel"><div class="ph">Top Media Outlets</div><table><tbody>${topOutlets.map(([n,v],i)=>bRow(i+1,n,v,topOutlets[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Topics</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+</div>`:""}
+
+${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
+  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const col=tierColors[tier]||"#6b7280";const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;color:${col};font-size:10px">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclDR&&drEntries.length?`<div class="panel"><div class="ph">Direct Relationship</div><table><tbody>${drEntries.map(([d,v],i)=>bRow(i+1,d,v,drEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
+</div>`:""}
+
+${(inclAsset&&assetEntries.length)||(inclBranding&&brandEntries.length)?`<div class="grid2">
+  ${inclAsset&&assetEntries.length?`<div class="panel"><div class="ph">Top Assets</div><table><tbody>${assetEntries.map(([a,v],i)=>bRow(i+1,a,v,assetEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclBranding&&brandEntries.length?`<div class="panel"><div class="ph">Branding Mentions</div><table><tbody>${brandEntries.map(([a,v],i)=>bRow(i+1,a,v,brandEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+</div>`:""}
+
+${inclImpr&&totalImpr>0?`<div class="grid2" style="margin-bottom:24px">
+  <div class="stat"><div class="lbl">Twitter Impressions</div><div class="val">${fmtNum(totalTwitter)}</div></div>
+  <div class="stat"><div class="lbl">Telegram Impressions</div><div class="val">${fmtNum(totalTelegram)}</div></div>
 </div>`:""}
 
 <div class="footer">
@@ -2487,61 +2462,50 @@ ${topAuthors.length||topOutlets.length||topTopics.length?`
   <span>Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</span>
 </div>
 
-${inclBounties&&b.length?`
-<div style="margin-top:28px">
-  <div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:1px solid #e5e7eb;margin-bottom:12px">All Bounties (${b.length})</div>
-  <table style="width:100%;border-collapse:collapse;font-size:10px">
-    <thead><tr>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Date</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Title</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Author</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Link</th>
-    </tr></thead>
-    <tbody>${[...b].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`
-      <tr style="${i%2===0?"":"background:#fafafa"}">
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:9px;color:#6b7280;white-space:nowrap">${x.date||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:500;color:#374151">${(x.title||"—").slice(0,90)}${x.title&&x.title.length>90?"…":""}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151;white-space:nowrap">${x.author||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6">${x.cqLink?`<a href="${x.cqLink}" style="color:#1a3a5c;font-size:9px;text-decoration:none;font-family:monospace">↗</a>`:"—"}</td>
-      </tr>`).join("")}
-    </tbody>
-  </table>
+${inclBounties&&b.length?`<div class="section" style="margin-top:36px">
+  ${sHdr("All Bounties",b.length)}
+  <table class="full"><thead><tr>${["Date","Title","Author","Category","Asset","Twitter Impr","Telegram Impr","Links"].map(TH).join("")}</tr></thead>
+  <tbody>${[...b].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`<tr style="${i%2===0?"":"background:#fafafa"}">
+    ${TD(x.date||"—","font-family:monospace;font-size:8px;color:#6b7280;white-space:nowrap")}
+    ${TD(`<span style="font-weight:500">${(x.title||"—").slice(0,80)}${x.title&&x.title.length>80?"…":""}</span>`)}
+    ${TD(x.author||"—")}
+    ${TD(x.category||"—")}
+    ${TD(x.asset||"—")}
+    ${TD(x.twitterImpressions?Number(String(x.twitterImpressions).replace(/,/g,"")).toLocaleString():"—","text-align:right;font-family:monospace;font-size:9px")}
+    ${TD(x.telegramImpressions?Number(String(x.telegramImpressions).replace(/,/g,"")).toLocaleString():"—","text-align:right;font-family:monospace;font-size:9px")}
+    ${TD([x.cqLink?`<a href="${x.cqLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none;margin-right:4px">QT↗</a>`:"",x.cqTwitterLink?`<a href="${x.cqTwitterLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none">X↗</a>`:""].filter(Boolean).join("")||"—")}
+  </tr>`).join("")}</tbody></table>
 </div>`:""}
 
-${inclCitations&&c.length?`
-<div style="margin-top:28px">
-  <div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:1px solid #e5e7eb;margin-bottom:12px">All Media Citations (${c.length})</div>
-  <table style="width:100%;border-collapse:collapse;font-size:10px">
-    <thead><tr>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Date</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Outlet</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Reporter</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Topic</th>
-      <th style="font-family:monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:6px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">Link</th>
-    </tr></thead>
-    <tbody>${[...c].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`
-      <tr style="${i%2===0?"":"background:#fafafa"}">
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:9px;color:#6b7280;white-space:nowrap">${x.date||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;font-weight:500;color:#374151">${x.media||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151">${x.reporter||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6;color:#374151">${x.topic||"—"}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #f3f4f6">${x.articleLink?`<a href="${x.articleLink}" style="color:#1a3a5c;font-size:9px;text-decoration:none;font-family:monospace">↗</a>`:"—"}</td>
-      </tr>`).join("")}
-    </tbody>
-  </table>
+${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
+  ${sHdr("All Media Citations",c.length)}
+  <table class="full"><thead><tr>${["Date","Outlet","Reporter","Topic","Headline","Tier","Lang","Direct Rel","Asset","Branding","Link"].map(TH).join("")}</tr></thead>
+  <tbody>${[...c].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`<tr style="${i%2===0?"":"background:#fafafa"}">
+    ${TD(x.date||"—","font-family:monospace;font-size:8px;color:#6b7280;white-space:nowrap")}
+    ${TD(`<span style="font-weight:500">${x.media||"—"}</span>`)}
+    ${TD(x.reporter||"—")}
+    ${TD(x.topic||"—")}
+    ${TD(x.headline?(x.headline.slice(0,55)+(x.headline.length>55?"…":"")):"—","font-size:8px;color:#6b7280")}
+    ${TD(x.mediaTier||"—","font-family:monospace;text-align:center")}
+    ${TD(x.language||"—")}
+    ${TD(x.directRelationship||"—")}
+    ${TD(x.asset||"—")}
+    ${TD(x.branding||"—")}
+    ${TD(x.articleLink?`<a href="${x.articleLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none">↗</a>`:"—")}
+  </tr>`).join("")}</tbody></table>
 </div>`:""}
 
 </div></body></html>`;
 
-    const w = window.open("","_blank","width=960,height=800");
+    const w=window.open("","_blank","width=1100,height=900");
     w.document.write(html);
     w.document.close();
-    w.onload = () => w.print();
+    w.onload=()=>w.print();
   };
 
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(420px,100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(500px,100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
 
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
@@ -2553,7 +2517,8 @@ ${inclCitations&&c.length?`
         </div>
 
         {/* Body */}
-        <div style={{padding:"20px 24px"}}>
+        <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"70vh"}}>
+          {/* Date range */}
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Date Range</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <Field label="From">
@@ -2563,8 +2528,9 @@ ${inclCitations&&c.length?`
               <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
             </Field>
           </div>
-          {/* Live preview */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+
+          {/* Live preview counts */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
             {[
               {label:"Bounties",  value:b.length,  c:"var(--accent)"},
               {label:"Citations", value:c.length,  c:"#4a7fa8"},
@@ -2576,23 +2542,44 @@ ${inclCitations&&c.length?`
               </div>
             ))}
           </div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:12}}>
-            Report includes: stat summary · weekly chart · top authors · top outlets · top topics
-          </div>
-          {/* Optional full lists */}
-          <div style={{marginTop:16,display:"flex",flexDirection:"column",gap:0,borderTop:"1px solid var(--border)",paddingTop:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>Optional — append full lists</div>
-            {[
-              {label:`All bounties (${b.length})`,       checked:inclBounties,  onChange:setInclBounties},
-              {label:`All media citations (${c.length})`,checked:inclCitations, onChange:setInclCitations},
-            ].map(s=>(
-              <label key={s.label} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",padding:"7px 0",borderBottom:"1px solid var(--border)"}}>
-                <input type="checkbox" checked={s.checked} onChange={e=>s.onChange(e.target.checked)}
-                  style={{width:14,height:14,cursor:"pointer",accentColor:"var(--accent)"}}/>
-                <span style={{fontSize:13,color:"var(--text)"}}>{s.label}</span>
+
+          {/* Section checkboxes */}
+          {(()=>{
+            const Check = ({label, checked, onChange, sub}) => (
+              <label style={{display:"flex",alignItems:"flex-start",gap:9,cursor:"pointer",padding:"8px 0",borderBottom:"1px solid var(--border)"}}>
+                <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}
+                  style={{width:14,height:14,cursor:"pointer",accentColor:"var(--accent)",marginTop:2,flexShrink:0}}/>
+                <div>
+                  <div style={{fontSize:12,color:"var(--text)",fontWeight:500}}>{label}</div>
+                  {sub&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
+                </div>
               </label>
-            ))}
-          </div>
+            );
+            return (
+              <div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Summary</div>
+                <Check label="Stat cards" sub="Bounties, Citations, Authors, Outlets, Impressions" checked={inclStats} onChange={setInclStats}/>
+                <Check label="Weekly activity chart" checked={inclChart} onChange={setInclChart}/>
+                {inclStats&&<Check label="Impression breakdown" sub="Twitter + Telegram split (if data exists)" checked={inclImpr} onChange={setInclImpr}/>}
+
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Leaderboards</div>
+                <Check label="Top Authors" checked={inclAuthors} onChange={setInclAuthors}/>
+                <Check label="Top Media Outlets" checked={inclOutlets} onChange={setInclOutlets}/>
+                <Check label="Top Topics" checked={inclTopics} onChange={setInclTopics}/>
+
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Citation Breakdowns</div>
+                <Check label="Media Tier Breakdown" checked={inclTier} onChange={setInclTier}/>
+                <Check label="Language Breakdown" checked={inclLanguage} onChange={setInclLanguage}/>
+                <Check label="Direct Relationship" checked={inclDR} onChange={setInclDR}/>
+                <Check label="Top Assets" checked={inclAsset} onChange={setInclAsset}/>
+                <Check label="Branding Mentions" checked={inclBranding} onChange={setInclBranding}/>
+
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Full Data Tables (appended at end)</div>
+                <Check label={`All bounties (${b.length})`} sub="Date, Title, Author, Category, Asset, Impressions, Links" checked={inclBounties} onChange={setInclBounties}/>
+                <Check label={`All media citations (${c.length})`} sub="Date, Outlet, Reporter, Topic, Tier, Language, Direct Rel, Asset, Branding, Link" checked={inclCitations} onChange={setInclCitations}/>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Footer */}
