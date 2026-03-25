@@ -1642,10 +1642,10 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
           {/* Leaderboards — 3-column compact grid */}
           {(()=>{
-            // Topics
+            // Headlines
             const topicMap = {};
             citations.forEach(c=>{
-              const t=(c.topic||"").trim()||"Uncategorised";
+              const t=((c.headline||c.topic)||"").trim()||"Uncategorised";
               const tk=t.toLowerCase();
               if(!topicMap[tk]) topicMap[tk]={topic:t,count:0};
               topicMap[tk].count++;
@@ -1735,7 +1735,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
               return (
                 <>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:16}}>
-                    <Panel title="Top Topics" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
+                    <Panel title="Top Headlines" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
                       {topTopics.length ? topTopics.map((r,i)=>(
                         <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
                       )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
@@ -1843,7 +1843,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                   </>}
 
                   {modal==="topics" && (
-                    <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
+                    <AllModal title={`All Headlines (${allTopics.length})`} onClose={()=>setModal(null)}>
                       {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>)}
                     </AllModal>
                   )}
