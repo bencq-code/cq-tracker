@@ -1062,7 +1062,8 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
         <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
-          <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.topic||"—"}</h2>
+          <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.headline||entry.topic||"—"}</h2>
+          {entry.headline&&entry.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:4}}>{entry.topic}</div>}
         </div>
         {/* Scrollable body */}
         <div style={{overflowY:"auto",padding:"20px 28px",flex:1}}>
@@ -1433,6 +1434,211 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
 // ─────────────────────────────────────────────────────────
 //  ANALYTICS TAB (Client only)
 // ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  CQ RESEARCH TAB
+// ─────────────────────────────────────────────────────────
+const CQResearchTab = ({campaigns, citations}) => {
+  const [bPage, setBPage] = useState(1);
+  const [cPage, setCPage] = useState(1);
+  const [viewBounty,  setViewBounty]  = useState(null);
+  const [viewCitation, setViewCitation] = useState(null);
+  const bRef = useRef(null);
+  const cRef = useRef(null);
+
+  const bounties  = campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  const cits      = citations.filter(c=>(c.author||"").toLowerCase()==="cq research").sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+  const pagedBounties = bounties.slice((bPage-1)*PAGE_SIZE, bPage*PAGE_SIZE);
+  const pagedCits     = cits.slice((cPage-1)*PAGE_SIZE, cPage*PAGE_SIZE);
+
+  const changeBPage = p => { setBPage(p); bRef.current?.scrollIntoView({behavior:"smooth",block:"start"}); };
+  const changeCPage = p => { setCPage(p); cRef.current?.scrollIntoView({behavior:"smooth",block:"start"}); };
+
+  const uniqueOutlets = [...new Set(cits.map(c=>c.media).filter(Boolean))];
+
+  // Build chart data — weekly buckets
+  const chartData = useMemo(() => {
+    const getMonday = iso => {
+      const d = new Date(iso+"T00:00:00");
+      if(isNaN(d.getTime())) return null;
+      const day = d.getDay();
+      const mon = new Date(d);
+      mon.setDate(d.getDate() - ((day+6)%7));
+      return mon.toISOString().slice(0,10);
+    };
+    const map = {};
+    bounties.forEach(b => {
+      const wk = getMonday(b.date||""); if(!wk) return;
+      if(!map[wk]) map[wk] = {week:wk, bounties:0, citations:0};
+      map[wk].bounties++;
+    });
+    cits.forEach(c => {
+      const wk = getMonday(c.date||""); if(!wk) return;
+      if(!map[wk]) map[wk] = {week:wk, bounties:0, citations:0};
+      map[wk].citations++;
+    });
+    return Object.values(map).sort((a,b)=>a.week.localeCompare(b.week)).map(w => ({
+      ...w,
+      label: new Date(w.week+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
+    }));
+  }, [bounties.length, cits.length]);
+
+  const linkStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"};
+  const onLink  = e=>e.currentTarget.style.textDecoration="underline";
+  const offLink = e=>e.currentTarget.style.textDecoration="none";
+
+  const Section = ({title, count, children}) => (
+    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"1px solid var(--border)"}}>
+        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>{title}</div>
+        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{count}</span>
+      </div>
+      {children}
+    </div>
+  );
+
+  const EmptyRow = ({msg}) => (
+    <div style={{padding:"32px 22px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{msg}</div>
+  );
+
+  return (
+    <div style={{animation:"fadeUp .5s ease both"}}>
+      {viewBounty   && <BountyDetailModal   entry={viewBounty}   canEdit={false} onEdit={()=>{}} onClose={()=>setViewBounty(null)}/>}
+      {viewCitation && <CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
+
+      <div style={{marginBottom:24}}>
+        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// cq research</div>
+        <h2 style={{fontSize:22,fontWeight:500}}>CQ Research</h2>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
+        <StatCard label="Bounties" value={bounties.length} sub="Posts published" c="var(--accent)"/>
+        <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="#4a7fa8"/>
+        <StatCard label="Media Outlets" value={uniqueOutlets.length} sub="Unique publications" c="var(--accent)"/>
+      </div>
+
+      {/* Chart */}
+      {chartData.length > 0 && (
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Weekly Activity</div>
+            <div style={{display:"flex",gap:14}}>
+              {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
+                <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
+                  <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
+            <ComposedChart data={chartData} margin={{top:4,right:8,left:0,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
+              <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/8)-1)}/>
+              <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
+              <Tooltip content={({active,payload,label})=>{
+                if(!active||!payload?.length) return null;
+                return (
+                  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
+                    {payload.map(p=>(
+                      <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                        <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{p.dataKey}:</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }}/>
+              <Bar dataKey="bounties"  fill="#1a3a5c" fillOpacity={0.35} radius={[3,3,0,0]}/>
+              <Bar dataKey="citations" fill="#4a7fa8" fillOpacity={0.45} radius={[3,3,0,0]}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Bounties table */}
+      <div ref={bRef}>
+      <Section title="Bounties" count={bounties.length}>
+        {bounties.length === 0 ? <EmptyRow msg="No CQ Research bounties"/> : (<>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead>
+              <tr style={{borderBottom:"1px solid var(--border)"}}>
+                {["Date","Title","Analytics","Twitter","CQ Link"].map(h=>(
+                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pagedBounties.map((b,i)=>(
+                <tr key={b.id||i} onClick={()=>setViewBounty(b)} style={{borderBottom:"1px solid var(--border)",transition:"background .1s",cursor:"pointer"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{b.date||"—"}</td>
+                  <td style={{fontSize:13,fontWeight:500,color:"var(--text)",padding:"11px 22px",maxWidth:360,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"—"}</td>
+                  <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
+                    {b.analyticsLink ? <a href={b.analyticsLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Analytics</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                  </td>
+                  <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
+                    {b.cqTwitterLink ? <a href={b.cqTwitterLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Tweet</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                  </td>
+                  <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
+                    {b.cqLink ? <a href={b.cqLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ View</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{padding:"12px 22px",borderTop:"1px solid var(--border)"}}>
+            <Pagination page={bPage} total={bounties.length} onChange={changeBPage}/>
+          </div>
+        </>)}
+      </Section>
+      </div>
+
+      {/* Citations table */}
+      <div ref={cRef}>
+      <Section title="Media Citations" count={cits.length}>
+        {cits.length === 0 ? <EmptyRow msg="No CQ Research citations"/> : (<>
+          <table style={{width:"100%",borderCollapse:"collapse"}}>
+            <thead>
+              <tr style={{borderBottom:"1px solid var(--border)"}}>
+                {["Date","Media","Headline / Topic","Reporter","Article"].map(h=>(
+                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {pagedCits.map((c,i)=>(
+                <tr key={c.id||i} onClick={()=>setViewCitation(c)} style={{borderBottom:"1px solid var(--border)",transition:"background .1s",cursor:"pointer"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.date||"—"}</td>
+                  <td style={{fontSize:13,fontWeight:500,color:"var(--text)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.media||"—"}</td>
+                  <td style={{fontSize:12,color:"var(--muted)",padding:"11px 22px",maxWidth:360}}>
+                    {c.headline&&<div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
+                    {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
+                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)"}}>—</span>}
+                  </td>
+                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.reporter||"—"}</td>
+                  <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
+                    {c.articleLink ? <a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Read</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{padding:"12px 22px",borderTop:"1px solid var(--border)"}}>
+            <Pagination page={cPage} total={cits.length} onChange={changeCPage}/>
+          </div>
+        </>)}
+      </Section>
+      </div>
+    </div>
+  );
+};
+
 const AnalyticsTab = ({campaigns, citations, clientName}) => {
   const [range, setRange]           = useState("all");
   const [showMore, setShowMore]     = useState(false);
@@ -1642,7 +1848,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
           {/* Leaderboards — 3-column compact grid */}
           {(()=>{
-            // Headlines
+            // Topics
             const topicMap = {};
             citations.forEach(c=>{
               const t=((c.headline||c.topic)||"").trim()||"Uncategorised";
@@ -1735,7 +1941,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
               return (
                 <>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:16}}>
-                    <Panel title="Top Headlines" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
+                    <Panel title="Top Topics" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
                       {topTopics.length ? topTopics.map((r,i)=>(
                         <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
                       )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
@@ -1843,7 +2049,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                   </>}
 
                   {modal==="topics" && (
-                    <AllModal title={`All Headlines (${allTopics.length})`} onClose={()=>setModal(null)}>
+                    <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
                       {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>)}
                     </AllModal>
                   )}
@@ -2838,7 +3044,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
       </div>
       {/* Sub-tabs */}
       <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:9,padding:4,width:"fit-content",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)"}}>
-        {[{id:"weekly",label:"Weekly Summary",count:""},{id:"posts",label:"Bounties",count:drillCamps.length},{id:"media",label:"Media Citations",count:drillCites.length},{id:"analytics",label:"Analytics",count:""}].map(t=>{
+        {[{id:"weekly",label:"Weekly Summary",count:""},{id:"posts",label:"Bounties",count:drillCamps.length},{id:"media",label:"Media Citations",count:drillCites.length},{id:"analytics",label:"Analytics",count:""},{id:"cq_research",label:"CQ Research",count:""}].map(t=>{
           const ia=drillTab===t.id;
           return (
             <button key={t.id} onClick={()=>setDrillTab(t.id)}
@@ -2849,10 +3055,11 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           );
         })}
       </div>
-      {drillTab==="weekly"   && <WeeklySummaryTab key={drillProgram.id} campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
-      {drillTab==="posts"    && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} onDeleteAll={async(cid)=>{await db.deleteAllBounties(cid);setCampaigns(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
-      {drillTab==="media"    && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} onDeleteAll={async(cid)=>{await db.deleteAllCitations(cid);setCitations(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
-      {drillTab==="analytics"&& <AnalyticsTab campaigns={drillCamps} citations={drillCites} clientName={drillProgram.name}/>}
+      {drillTab==="weekly"      && <WeeklySummaryTab key={drillProgram.id} campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
+      {drillTab==="posts"       && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} onDeleteAll={async(cid)=>{await db.deleteAllBounties(cid);setCampaigns(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
+      {drillTab==="media"       && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} onDeleteAll={async(cid)=>{await db.deleteAllCitations(cid);setCitations(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
+      {drillTab==="analytics"   && <AnalyticsTab campaigns={drillCamps} citations={drillCites} clientName={drillProgram.name}/>}
+      {drillTab==="cq_research" && <CQResearchTab campaigns={drillCamps} citations={drillCites}/>}
       {showForm&&<CampaignForm initial={editClient} onSave={async f=>{await onSave(f,editClient);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
       {confirmId&&<ConfirmDelete onConfirm={async()=>{await onDelete(confirmId);setConfId(null);setDrillId(null)}} onCancel={()=>setConfId(null)}/>}
       {showDrillPdf&&<PdfReportModal campaigns={drillCamps} citations={drillCites} campaignName={drillProgram.name} onClose={()=>setShowDrillPdf(false)}/>}
@@ -3300,9 +3507,10 @@ export default function App() {
         {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
       ]
     : [
-        {id:"weekly",   label:"Weekly Summary", icon:<Icons.Analytics/>,  accent:"var(--accent)", count:""},
-        {id:"campaign",   label:"Bounties", icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
-        {id:"media",      label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
+        {id:"weekly",      label:"Weekly Summary",  icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
+        {id:"campaign",    label:"Bounties",         icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
+        {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
+        {id:"cq_research", label:"CQ Research",      icon:<Icons.Chart/>,     accent:"var(--accent)", count:""},
         ...(user.role==="client"?[{id:"analytics", label:"Analytics", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""}]:[]),
         ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
       ];
@@ -3527,6 +3735,7 @@ export default function App() {
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
+        {tab==="cq_research"&&<CQResearchTab campaigns={scopedCampaigns} citations={scopedCitations}/>}
         </main>
       </div>
 
