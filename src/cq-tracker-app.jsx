@@ -3740,7 +3740,7 @@ export default function App() {
       </div>
 
       <footer style={{borderTop:"1px solid var(--border2)",padding:"16px 32px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite</div>
+        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
           {programs.length} campaign{programs.length!==1?"s":""} · {campaigns.length} entries · {citations.length} citations · <span style={{color:"var(--green)"}}>synced</span>
         </div>
