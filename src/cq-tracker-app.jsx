@@ -1160,6 +1160,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
   const [search,setSearch]=useState("");
   const [filterAuthor,setFA]=useState("all");
   const [filterMedia,setFM]=useState("all");
+  const [filterTier,setFT]=useState("all");
   const [filterDateFrom,setDateFrom]=useState("");
   const [filterDateTo,setDateTo]=useState("");
   const [showForm,setShowForm]=useState(false);
@@ -1168,7 +1169,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
   const [view,setView]=useState(null);
   const [page,setPage]=useState(1);
   const [showFilters,setShowFilters]=useState(false);
-  const resetFilters=()=>{setSearch("");setFA("all");setFM("all");setDateFrom("");setDateTo("");setPage(1);};
+  const resetFilters=()=>{setSearch("");setFA("all");setFM("all");setFT("all");setDateFrom("");setDateTo("");setPage(1);};
   const canAdd=!readOnly;
   const canEdit=entry=>{
     if(readOnly)return false;
@@ -1181,14 +1182,16 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
     const matchQ=!q||c.media?.toLowerCase().includes(q)||c.reporter?.toLowerCase().includes(q)||c.author?.toLowerCase().includes(q)||c.topic?.toLowerCase().includes(q);
     const matchA=filterAuthor==="all"||c.author===filterAuthor;
     const matchM=filterMedia==="all"||c.media===filterMedia;
+    const matchT=filterTier==="all"||(c.mediaTier||"").trim()===filterTier;
     const matchFrom=!filterDateFrom||(c.date||"")>=filterDateFrom;
     const matchTo=!filterDateTo||(c.date||"")<=filterDateTo;
-    return matchQ&&matchA&&matchM&&matchFrom&&matchTo;
+    return matchQ&&matchA&&matchM&&matchT&&matchFrom&&matchTo;
   });
   const sortedFiltered=[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
   const paged=sortedFiltered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
   const medias=[...new Set(citations.map(c=>c.media).filter(Boolean))];
   const authors=[...new Set(citations.map(c=>c.author).filter(Boolean))];
+  const tiers=[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort();
   const COLS="108px 16% 12% 12% 1fr 72px 54px";
   return (
     <>
@@ -1321,7 +1324,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
       })()}
       {/* Filter bar */}
       {(()=>{
-        const hasFilters = search||filterAuthor!=="all"||filterMedia!=="all"||filterDateFrom||filterDateTo;
+        const hasFilters = search||filterAuthor!=="all"||filterMedia!=="all"||filterTier!=="all"||filterDateFrom||filterDateTo;
         return (
           <div style={{marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -1331,7 +1334,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
               </div>
               <button onClick={()=>setShowFilters(v=>!v)}
                 style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
-                ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterMedia!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
+                ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterMedia!=="all",filterTier!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
@@ -1354,6 +1357,15 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                     {medias.map(m=><option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
+                {tiers.length>0&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:120}}>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</span>
+                    <select value={filterTier} onChange={e=>{setFT(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
+                      <option value="all">All Tiers</option>
+                      {tiers.map(t=><option key={t} value={t}>Tier {t}</option>)}
+                    </select>
+                  </div>
+                )}
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
                   <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
                   <input type="date" value={filterDateFrom} onChange={e=>{setDateFrom(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
@@ -1369,6 +1381,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                 {search&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
                 {filterAuthor!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
                 {filterMedia!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterMedia}</span>}
+                {filterTier!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>Tier {filterTier}</span>}
                 {filterDateFrom&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
                 {filterDateTo&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
               </div>
@@ -2192,8 +2205,17 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
                       <div style={{minWidth:0}}>
-                        <div title={drill==="bounties"?item.title:item.topic} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{drill==="bounties"?item.title:(item.topic||item.media)}</div>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{drill==="bounties"?item.author:`${item.media}${item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}`}</div>
+                        {drill==="bounties"
+                          ? <>
+                              <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
+                              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
+                            </>
+                          : <>
+                              <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
+                              {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+                              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
+                            </>
+                        }
                       </div>
                       {(drill==="bounties"?item.cqLink:item.articleLink)&&(
                         <a href={drill==="bounties"?item.cqLink:item.articleLink} target="_blank" rel="noreferrer"
@@ -2587,7 +2609,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     c.forEach(x=>{const mk=normKey(x.media||"—");outletMap[mk]=(outletMap[mk]||0)+1;});
     const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
     const topicMap={};
-    c.forEach(x=>{const tk=normKey((x.topic||"—").trim());topicMap[tk]=(topicMap[tk]||0)+1;});
+    c.forEach(x=>{const tk=normKey(((x.headline||x.topic)||"—").trim());topicMap[tk]=(topicMap[tk]||0)+1;});
     const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
 
     const tierMap={},langMap={},drMap={},assetMap={},brandMap={};
@@ -2685,7 +2707,7 @@ ${inclChart?`<div class="chart-wrap">
 ${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopics&&topTopics.length)?`<div class="grid3">
   ${inclAuthors&&topAuthors.length?`<div class="panel"><div class="ph">Top Authors</div><table><tbody>${topAuthors.map((a,i)=>bRow(i+1,a.name,a.b+a.c,(topAuthors[0].b+topAuthors[0].c)||1)).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclOutlets&&topOutlets.length?`<div class="panel"><div class="ph">Top Media Outlets</div><table><tbody>${topOutlets.map(([n,v],i)=>bRow(i+1,n,v,topOutlets[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Topics</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Headlines</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
 
 ${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
@@ -2726,13 +2748,12 @@ ${inclBounties&&b.length?`<div class="section" style="margin-top:36px">
 
 ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
   ${sHdr("All Media Citations",c.length)}
-  <table class="full"><thead><tr>${["Date","Outlet","Reporter","Topic","Headline","Tier","Lang","Direct Rel","Asset","Branding","Link"].map(TH).join("")}</tr></thead>
+  <table class="full"><thead><tr>${["Date","Outlet","Reporter","Headline / Topic","Tier","Lang","Direct Rel","Asset","Branding","Link"].map(TH).join("")}</tr></thead>
   <tbody>${[...c].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`<tr style="${i%2===0?"":"background:#fafafa"}">
     ${TD(x.date||"—","font-family:monospace;font-size:8px;color:#6b7280;white-space:nowrap")}
     ${TD(`<span style="font-weight:500">${x.media||"—"}</span>`)}
     ${TD(x.reporter||"—")}
-    ${TD(x.topic||"—")}
-    ${TD(x.headline?(x.headline.slice(0,55)+(x.headline.length>55?"…":"")):"—","font-size:8px;color:#6b7280")}
+    ${TD(`${x.headline?`<div style="font-weight:500">${x.headline.slice(0,60)+(x.headline.length>60?"…":"")}</div>`:""}${x.topic?`<div style="font-size:8px;color:#6b7280;margin-top:1px">${x.topic}</div>`:""}`||"—")}
     ${TD(x.mediaTier||"—","font-family:monospace;text-align:center")}
     ${TD(x.language||"—")}
     ${TD(x.directRelationship||"—")}
@@ -2812,7 +2833,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Leaderboards</div>
                 <Check label="Top Authors" checked={inclAuthors} onChange={setInclAuthors}/>
                 <Check label="Top Media Outlets" checked={inclOutlets} onChange={setInclOutlets}/>
-                <Check label="Top Topics" checked={inclTopics} onChange={setInclTopics}/>
+                <Check label="Top Headlines" checked={inclTopics} onChange={setInclTopics}/>
 
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Citation Breakdowns</div>
                 <Check label="Media Tier Breakdown" checked={inclTier} onChange={setInclTier}/>
