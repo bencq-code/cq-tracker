@@ -2296,6 +2296,14 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,5);
   const maxHeadline=topHeadlines[0]?.count||1;
 
+  const tierMap={};
+  weekCitations.forEach(c=>{
+    const t=(c.mediaTier||"").trim(); if(!t) return;
+    tierMap[t]=(tierMap[t]||0)+1;
+  });
+  const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685","tier 1":"#166534","tier 2":"#1a3a5c","tier 3":"#6b7685"};
+
   // ── RECENT ENTRIES FEED ──────────────────────────────────
   const recentAll = [
     ...weekBounties.map(b=>({...b,_type:"bounty"})),
@@ -2408,9 +2416,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
               const isEmpty=total===0;
               return (
                 <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",justifyContent:"flex-end",gap:0}}>
-                  {/* count label */}
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:isEmpty?"transparent":"var(--accent)",fontWeight:600,marginBottom:3,height:13,flexShrink:0}}>{total||""}</div>
-                  {/* bar area — flex:1 fills remaining height */}
                   <div style={{flex:1,width:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"stretch",gap:0,position:"relative"}}>
                     {isEmpty
                       ? <div style={{width:"100%",height:"100%",background:"var(--surface2)",borderRadius:4,border:"1px dashed var(--border)"}}/>
@@ -2421,7 +2427,6 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                         </>
                     }
                   </div>
-                  {/* labels */}
                   <div style={{textAlign:"center",marginTop:7,flexShrink:0}}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,color:isEmpty?"var(--border2)":"var(--text)"}}>{d.label}</div>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>{d.date}</div>
@@ -2482,9 +2487,64 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         </div>
       </div>
 
-      {/* Bottom row: top authors + top outlets + top headlines */}
-      {(topAuthors.length>0||topOutlets.length>0||topHeadlines.length>0)&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14}}>
+      {/* Bottom row: 2x2 grid */}
+      {(topAuthors.length>0||topOutlets.length>0||topHeadlines.length>0||tierEntries.length>0)&&(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+
+        {/* Top headlines */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Headlines</div>
+            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
+          </div>
+          {topHeadlines.length===0
+            ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No citations this week</div>
+            :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {topHeadlines.map((h,i)=>(
+                <div key={h.label}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                      <span title={h.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
+                    </div>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                  </div>
+                  <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                    <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          }
+        </div>
+
+        {/* Media Tier */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Media Tier</div>
+            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{weekCitations.length} total</span>
+          </div>
+          {tierEntries.length===0
+            ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data this week</div>
+            :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {tierEntries.map(([tier,count])=>{
+                const col=tierColors[tier.toLowerCase()]||"var(--dim)";
+                const pct=(count/weekCitations.length)*100;
+                return (
+                  <div key={tier}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                      <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          }
+        </div>
 
           {/* Top authors */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
@@ -2549,32 +2609,6 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             }
           </div>
 
-        {/* Top headlines */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Headlines</div>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
-          </div>
-          {topHeadlines.length===0
-            ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No citations this week</div>
-            :<div style={{display:"flex",flexDirection:"column",gap:9}}>
-              {topHeadlines.map((h,i)=>(
-                <div key={h.label}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
-                      <span title={h.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
-                    </div>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
-                  </div>
-                  <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                    <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-          }
-        </div>
         </div>
       )}
     </div>
