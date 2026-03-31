@@ -814,22 +814,24 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
   const canAdd  = !readOnly;
   const canEdit = entry => !readOnly && (currentUser.role==="admin" || entry.author===currentUser.displayName||entry.author===currentUser.username);
 
-  const filtered = campaigns.filter(c=>{
+  const filtered = useMemo(()=>campaigns.filter(c=>{
     const q = search.toLowerCase();
     const matchQ = !q || (c.title||"").toLowerCase().includes(q)||(c.author||"").toLowerCase().includes(q);
     const matchA = filterAuthor==="all" || c.author===filterAuthor;
     const matchFrom = !filterDateFrom || (c.date||"") >= filterDateFrom;
     const matchTo   = !filterDateTo   || (c.date||"") <= filterDateTo;
     return matchQ && matchA && matchFrom && matchTo;
-  });
+  }),[campaigns,search,filterAuthor,filterDateFrom,filterDateTo]);
 
-  const sortedFiltered = [...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  const paged = sortedFiltered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE);
-  const authors=[...new Set(campaigns.map(c=>c.author).filter(Boolean))];
+  const sortedFiltered = useMemo(()=>[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[filtered]);
+  const paged = useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE),[sortedFiltered,page]);
+  const authors = useMemo(()=>[...new Set(campaigns.map(c=>c.author).filter(Boolean))],[campaigns]);
   const withTw=campaigns.filter(c=>c.twitterLink).length;
   const clientNames=[...new Set(campaigns.map(c=>c.client).filter(Boolean))];
-  const sortedDates = campaigns.filter(c=>c.date).map(c=>c.date).sort();
-  const dateRange = sortedDates.length?(sortedDates[0]===sortedDates[sortedDates.length-1]?fmtDate(sortedDates[0]):`${fmtDate(sortedDates[0]).split(",")[0]} – ${fmtDate(sortedDates[sortedDates.length-1]).split(",")[0]}`):"—";
+  const dateRange = useMemo(()=>{
+    const sortedDates = campaigns.filter(c=>c.date).map(c=>c.date).sort();
+    return sortedDates.length?(sortedDates[0]===sortedDates[sortedDates.length-1]?fmtDate(sortedDates[0]):`${fmtDate(sortedDates[0]).split(",")[0]} – ${fmtDate(sortedDates[sortedDates.length-1]).split(",")[0]}`):"—";
+  },[campaigns]);
 
   return (
     <>
@@ -1177,7 +1179,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
     if(currentUser.role==="author"){const name=(currentUser.displayName||currentUser.username).toLowerCase();return(entry.author||"").toLowerCase()===name;}
     return false;
   };
-  const filtered=citations.filter(c=>{
+  const filtered=useMemo(()=>citations.filter(c=>{
     const q=search.toLowerCase();
     const matchQ=!q||c.media?.toLowerCase().includes(q)||c.reporter?.toLowerCase().includes(q)||c.author?.toLowerCase().includes(q)||c.topic?.toLowerCase().includes(q);
     const matchA=filterAuthor==="all"||c.author===filterAuthor;
@@ -1186,12 +1188,12 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
     const matchFrom=!filterDateFrom||(c.date||"")>=filterDateFrom;
     const matchTo=!filterDateTo||(c.date||"")<=filterDateTo;
     return matchQ&&matchA&&matchM&&matchT&&matchFrom&&matchTo;
-  });
-  const sortedFiltered=[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  const paged=sortedFiltered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE);
-  const medias=[...new Set(citations.map(c=>c.media).filter(Boolean))];
-  const authors=[...new Set(citations.map(c=>c.author).filter(Boolean))];
-  const tiers=[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort();
+  }),[citations,search,filterAuthor,filterMedia,filterTier,filterDateFrom,filterDateTo]);
+  const sortedFiltered=useMemo(()=>[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[filtered]);
+  const paged=useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),[sortedFiltered,page]);
+  const medias=useMemo(()=>[...new Set(citations.map(c=>c.media).filter(Boolean))],[citations]);
+  const authors=useMemo(()=>[...new Set(citations.map(c=>c.author).filter(Boolean))],[citations]);
+  const tiers=useMemo(()=>[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort(),[citations]);
   const COLS="108px 16% 12% 12% 1fr 72px 54px";
   return (
     <>
@@ -1676,64 +1678,53 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
     } catch { return null; }
   };
 
-  const bucketMap = {};
-  const addTo = (iso, key) => {
-    if(!iso) return;
-    const bkey = granularity === "daily" ? iso : getWeekKey(iso);
-    if(!bkey) return;
-    if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0};
-    bucketMap[bkey][key]++;
-  };
-  campaigns.forEach(c => addTo(c.date, "bounties"));
-  citations.forEach(c => addTo(c.date, "citations"));
+  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions} = useMemo(()=>{
+    const bucketMap = {};
+    const addTo = (iso, key) => {
+      if(!iso) return;
+      const bkey = granularity === "daily" ? iso : getWeekKey(iso);
+      if(!bkey) return;
+      if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0};
+      bucketMap[bkey][key]++;
+    };
+    campaigns.forEach(c => addTo(c.date, "bounties"));
+    citations.forEach(c => addTo(c.date, "citations"));
 
-  // Also keep weekMap for rangeStart (used for impression filtering)
-  const weekMap = {};
-  campaigns.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].bounties++;} });
-  citations.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].citations++;} });
+    const weekMap = {};
+    campaigns.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].bounties++;} });
+    citations.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].citations++;} });
 
-  let allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
-  let allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
+    let allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
+    let allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
 
-  if(range !== "all") {
-    const cutoff = new Date();
-    cutoff.setMonth(cutoff.getMonth() - parseInt(range));
-    const cutStr = cutoff.toISOString().slice(0,10);
-    allWeeks   = allWeeks.filter(w => w.week >= cutStr);
-    allBuckets = allBuckets.filter(b => b.period >= cutStr);
-  }
-
-  let cumB = 0, cumC = 0;
-  const chartData = allBuckets.map(w => {
-    cumB += w.bounties; cumC += w.citations;
-    try {
-      const d = new Date(w.period+"T00:00:00");
-      const label = isNaN(d.getTime()) ? w.period
-        : granularity === "daily"
-          ? d.toLocaleDateString("en-US",{month:"short",day:"numeric"})
-          : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-      return { ...w, label, cumBounties: cumB, cumCitations: cumC };
-    } catch {
-      return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC };
+    if(range !== "all") {
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - parseInt(range));
+      const cutStr = cutoff.toISOString().slice(0,10);
+      allWeeks   = allWeeks.filter(w => w.week >= cutStr);
+      allBuckets = allBuckets.filter(b => b.period >= cutStr);
     }
-  });
 
-  const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
-  const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
+    let cumB = 0, cumC = 0;
+    const chartData = allBuckets.map(w => {
+      cumB += w.bounties; cumC += w.citations;
+      try {
+        const d = new Date(w.period+"T00:00:00");
+        const label = isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+        return { ...w, label, cumBounties: cumB, cumCitations: cumC };
+      } catch { return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC }; }
+    });
 
-  // Impression totals (scoped to range via chartData dates)
-  const rangeStart = allWeeks.length ? allWeeks[0].week : null;
-  const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
-  const parseNum = v => {
-    if(!v) return 0;
-    const s = String(v).replace(/,/g,"").trim();
-    if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000);
-    if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000);
-    return parseInt(s)||0;
-  };
-  const totalTwitterImpressions  = inRange(campaigns).reduce((s,c)=>s+parseNum(c.twitterImpressions),0);
-  const totalTelegramImpressions = inRange(campaigns).reduce((s,c)=>s+parseNum(c.telegramImpressions),0);
-  const totalImpressions = totalTwitterImpressions + totalTelegramImpressions;
+    const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
+    const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
+
+    const rangeStart = allWeeks.length ? allWeeks[0].week : null;
+    const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
+    const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+    const totalImpressions = inRange(campaigns).reduce((s,c)=>s+parseNum(c.twitterImpressions)+parseNum(c.telegramImpressions),0);
+
+    return {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions};
+  },[campaigns, citations, range, granularity]);
 
   const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
 
@@ -2275,40 +2266,37 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const totalActivity = weekBounties.length+weekCitations.length;
 
   // ── TOP AUTHORS / OUTLETS / HEADLINES ───────────────────
-  const authorMap={};
-  weekBounties.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].bounties++;});
-  weekCitations.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].citations++;});
-  const topAuthors=Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations)).slice(0,5);
-  const maxAuthorTotal=(topAuthors[0]?.bounties||0)+(topAuthors[0]?.citations||0)||1;
+  const {topAuthors, maxAuthorTotal, topOutlets, maxOutlet, topHeadlines, maxHeadline, tierEntries} = useMemo(()=>{
+    const authorMap={};
+    weekBounties.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].bounties++;});
+    weekCitations.forEach(c=>{const a=c.author||"Unknown";const ak=a.toLowerCase();if(!authorMap[ak])authorMap[ak]={name:a,bounties:0,citations:0};authorMap[ak].citations++;});
+    const topAuthors=Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations)).slice(0,5);
+    const maxAuthorTotal=(topAuthors[0]?.bounties||0)+(topAuthors[0]?.citations||0)||1;
 
-  const outletMap={};
-  weekCitations.forEach(c=>{const m=c.media||"Unknown";const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]=0;outletMap[mk]++;});
-  const topOutlets=Object.entries(outletMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const maxOutlet=topOutlets[0]?.[1]||1;
+    const outletMap={};
+    weekCitations.forEach(c=>{const m=c.media||"Unknown";const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]=0;outletMap[mk]++;});
+    const topOutlets=Object.entries(outletMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxOutlet=topOutlets[0]?.[1]||1;
 
-  const headlineMap={};
-  weekCitations.forEach(c=>{
-    const h=((c.headline||c.topic)||"").trim(); if(!h) return;
-    const hk=h.toLowerCase();
-    if(!headlineMap[hk]) headlineMap[hk]={label:h,count:0};
-    headlineMap[hk].count++;
-  });
-  const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,5);
-  const maxHeadline=topHeadlines[0]?.count||1;
+    const headlineMap={};
+    weekCitations.forEach(c=>{const h=((c.headline||c.topic)||"").trim();if(!h)return;const hk=h.toLowerCase();if(!headlineMap[hk])headlineMap[hk]={label:h,count:0};headlineMap[hk].count++;});
+    const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,5);
+    const maxHeadline=topHeadlines[0]?.count||1;
 
-  const tierMap={};
-  weekCitations.forEach(c=>{
-    const t=(c.mediaTier||"").trim(); if(!t) return;
-    tierMap[t]=(tierMap[t]||0)+1;
-  });
-  const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+    const tierMap={};
+    weekCitations.forEach(c=>{const t=(c.mediaTier||"").trim();if(!t)return;tierMap[t]=(tierMap[t]||0)+1;});
+    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+
+    return {topAuthors,maxAuthorTotal,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
+  },[weekBounties,weekCitations]);
+
   const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685","tier 1":"#166534","tier 2":"#1a3a5c","tier 3":"#6b7685"};
 
   // ── RECENT ENTRIES FEED ──────────────────────────────────
-  const recentAll = [
+  const recentAll = useMemo(()=>[
     ...weekBounties.map(b=>({...b,_type:"bounty"})),
     ...weekCitations.map(c=>({...c,_type:"citation"})),
-  ].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6);
+  ].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6),[weekBounties,weekCitations]);
 
   // ── RENDER ───────────────────────────────────────────────
   return (
