@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import ReactDOM from "react-dom";
 import { ComposedChart, AreaChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { db, supabase } from "./db.js";
+
+const Portal = ({children}) => ReactDOM.createPortal(children, document.body);
 
 // ─────────────────────────────────────────────────────────
 //  CONSTANTS & HELPERS
@@ -653,7 +656,7 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
   const locked = currentUser.role==="author";
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",backdropFilter:"blur(4px)",zIndex:200,display:"flex",justifyContent:"flex-end"}}>
-      <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100%)",height:"100%",overflowY:"auto",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
+      <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100vw)",height:"100vh",overflowY:"auto",overflowX:"hidden",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
         <button onClick={onClose} style={{position:"absolute",top:16,right:16,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} bounty entry</div>
         <div style={{fontSize:18,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Bounty":"Add Bounty Entry"}</div>
@@ -1117,7 +1120,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
   const handleSave=async()=>{if(!form.media?.trim()){alert("Media outlet required.");return;}setSaving(true);await onSave(form);setSaving(false);};
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",backdropFilter:"blur(4px)",zIndex:200,display:"flex",justifyContent:"flex-end"}}>
-      <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100%)",height:"100%",overflowY:"auto",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
+      <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100vw)",height:"100vh",overflowY:"auto",overflowX:"hidden",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
         <button onClick={onClose} style={{position:"absolute",top:16,right:16,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} media citation</div>
         <div style={{fontSize:18,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Citation":"Add Media Citation"}</div>
@@ -2860,8 +2863,9 @@ const CampaignForm = ({initial,onSave,onClose}) => {
     setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?sheetBounties:"",sheetMedia:dataMode==="sheets"?sheetMedia:"",sheetLink}); setSaving(false);
   };
   return (
+    <Portal>
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(440px,100%)",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(440px,100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
         <button onClick={onClose} style={{position:"absolute",top:18,right:18,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--yellow)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} campaign</div>
         <div style={{fontSize:20,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Campaign":"New Campaign"}</div>
@@ -2947,6 +2951,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
         </div>
       </div>
     </div>
+    </Portal>
   );
 };
 
