@@ -2100,14 +2100,16 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 // ─────────────────────────────────────────────────────────
 const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const [drill, setDrill] = useState(null);
+  const [mode, setMode] = useState("weekly"); // "weekly" | "custom"
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo,   setCustomTo]   = useState("");
 
   // ── WEEK NAVIGATION ───────────────────────────────────────
-  // Find the Monday of the current week
   const getMondayOf = (date) => {
     const d = new Date(date);
     d.setHours(0,0,0,0);
-    const day = d.getDay(); // 0=Sun,1=Mon...
-    d.setDate(d.getDate() - ((day + 6) % 7)); // back to Monday
+    const day = d.getDay();
+    d.setDate(d.getDate() - ((day + 6) % 7));
     return d;
   };
 
@@ -2115,7 +2117,6 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const [weekStart, setWeekStart] = useState(todayMonday);
   const [manuallyNavigated, setManuallyNavigated] = useState(false);
 
-  // Once data arrives, jump to the latest data week — but only if not manually navigated
   useEffect(()=>{
     if(manuallyNavigated) return;
     const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
@@ -2127,47 +2128,43 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
-  weekEnd.setHours(23,59,59,999);
 
-  const weekStartStr = weekStart.toISOString().slice(0,10);
-  const weekEndStr   = weekEnd.toISOString().slice(0,10);
+  const toLocalDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  };
 
-  const isCurrentWeek = weekStartStr === todayMonday.toISOString().slice(0,10);
-  const isFutureWeek  = weekStart > todayMonday;
+  const weekStartStr = toLocalDateStr(weekStart);
+  const weekEndStr   = toLocalDateStr(weekEnd);
+
+  const isCurrentWeek = weekStartStr === toLocalDateStr(todayMonday);
 
   const latestDataMonday = (() => {
     const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
     if(!allDates.length) return todayMonday;
     const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
     const lastMonday = getMondayOf(lastDate);
-    // If latest data is in the future or current week, use today's Monday
     return lastMonday > todayMonday ? todayMonday : lastMonday;
   })();
 
-  const isLatestWeek = weekStartStr === latestDataMonday.toISOString().slice(0,10);
+  const isLatestWeek = weekStartStr === toLocalDateStr(latestDataMonday);
 
-  const goBack = () => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate()-7);
-    setWeekStart(d);
-    setManuallyNavigated(true);
-    setDrill(null);
-  };
-  const goForward = () => {
-    if(isCurrentWeek) return;
-    const d = new Date(weekStart);
-    d.setDate(d.getDate()+7);
-    setWeekStart(d);
-    setManuallyNavigated(true);
-    setDrill(null);
-  };
-  const goLatest = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
+  const goBack    = () => { const d=new Date(weekStart); d.setDate(d.getDate()-7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
+  const goForward = () => { if(isCurrentWeek) return; const d=new Date(weekStart); d.setDate(d.getDate()+7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
+  const goLatest  = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
 
-  const dateRange = `${weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
+  // ── EFFECTIVE DATE RANGE ─────────────────────────────────
+  const effectiveFrom = mode==="custom" ? customFrom : weekStartStr;
+  const effectiveTo   = mode==="custom" ? customTo   : weekEndStr;
+  const dateRange = mode==="custom" && customFrom && customTo
+    ? `${customFrom} – ${customTo}`
+    : `${weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
 
-  // ── DATA FOR THIS WEEK ────────────────────────────────────
-  const weekBounties  = campaigns.filter(c=>c.date&&c.date>=weekStartStr&&c.date<=weekEndStr);
-  const weekCitations = citations.filter(c=>c.date&&c.date>=weekStartStr&&c.date<=weekEndStr);
+  // ── DATA FOR THIS PERIOD ──────────────────────────────────
+  const weekBounties  = campaigns.filter(c=>c.date&&(!effectiveFrom||c.date>=effectiveFrom)&&(!effectiveTo||c.date<=effectiveTo));
+  const weekCitations = citations.filter(c=>c.date&&(!effectiveFrom||c.date>=effectiveFrom)&&(!effectiveTo||c.date<=effectiveTo));
 
   // Previous week for WoW delta
   const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate()-7);
@@ -2309,41 +2306,65 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
 
-      {/* Header with week navigation */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
-          <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em",color:"var(--text)"}}>Weekly Summary</h2>
+          <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em",color:"var(--text)"}}>{mode==="custom"?"Custom Range":"Weekly Summary"}</h2>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <button onClick={goBack}
-            style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14,transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
-            ‹
-          </button>
-          {!isLatestWeek&&(
-            <button onClick={goLatest}
-              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {/* Mode toggle */}
+          <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
+            {[["weekly","Weekly"],["custom","Custom"]].map(([m,label])=>(
+              <button key={m} onClick={()=>{setMode(m);setDrill(null);}}
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:mode===m?"var(--surface)":"transparent",color:mode===m?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===m?700:400,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Weekly nav */}
+          {mode==="weekly" && (<>
+            <button onClick={goBack}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14,transition:"all .15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
-              Latest
+              ‹
             </button>
+            {!isLatestWeek&&(
+              <button onClick={goLatest}
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
+                Latest
+              </button>
+            )}
+            <button onClick={goForward} disabled={isLatestWeek}
+              style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:isLatestWeek?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:isLatestWeek?"var(--border2)":"var(--muted)",fontSize:14,transition:"all .15s"}}
+              onMouseEnter={e=>{if(!isLatestWeek){e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color=isLatestWeek?"var(--border2)":"var(--muted)";}}>
+              ›
+            </button>
+          </>)}
+
+          {/* Custom date inputs */}
+          {mode==="custom" && (
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}}
+                style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
+              <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}}
+                style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+            </div>
           )}
-          <button onClick={goForward} disabled={isLatestWeek}
-            style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:isLatestWeek?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:isLatestWeek?"var(--border2)":"var(--muted)",fontSize:14,transition:"all .15s"}}
-            onMouseEnter={e=>{if(!isLatestWeek){e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--text)";}}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color=isLatestWeek?"var(--border2)":"var(--muted)";}}>
-            ›
-          </button>
         </div>
       </div>
 
       {/* Stat cards with WoW delta */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
         {[
-          {label:"Bounties",      curr:weekBounties.length,  prev:prevBounties.length,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
-          {label:"Citations",     curr:weekCitations.length, prev:prevCitations.length, sub:"Media mentions",    c:"#4a7fa8",       key:"citations"},
+          {label:"Bounties",      curr:weekBounties.length,  prev:mode==="weekly"?prevBounties.length:null,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
+          {label:"Citations",     curr:weekCitations.length, prev:mode==="weekly"?prevCitations.length:null, sub:"Media mentions",    c:"#4a7fa8",       key:"citations"},
           {label:"Active Authors",curr:authorsSet.size,      prev:null,                 sub:"Contributors",      c:"var(--accent)", key:null},
           {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"#4a7fa8",      key:null},
         ].map((s,i)=>(
