@@ -112,9 +112,9 @@ const CLIENT_PALETTE = [
   {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
 ];
 const TIER_COLORS = {
-  "Tier 1":{bg:"rgba(26,58,92,0.08)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  "Tier 2":{bg:"rgba(26,58,92,0.06)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  "Tier 3":{bg:"rgba(26,58,92,0.04)",border:"rgba(26,58,92,0.1)",color:"#3d6a94"},
+  "Tier 1":{bg:"rgba(22,101,52,0.08)",border:"rgba(22,101,52,0.2)",color:"#166534"},
+  "Tier 2":{bg:"rgba(26,58,92,0.08)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
+  "Tier 3":{bg:"rgba(107,118,133,0.08)",border:"rgba(107,118,133,0.2)",color:"#6b7685"},
 };
 const ROLE_META = {
   admin:  {label:"Admin",  color:"#1a3a5c", bg:"rgba(26,58,92,0.08)",  border:"rgba(26,58,92,0.2)"},
@@ -131,12 +131,27 @@ const getPaletteColor = (palette, ns, key) => {
 };
 const getAuthorColor = n => getPaletteColor(AUTHOR_PALETTE,"author",n||"?");
 const getClientColor = n => getPaletteColor(CLIENT_PALETTE,"client",n||"?");
-const getTierColor   = t => TIER_COLORS[t]||{bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
+const getTierColor = t => {
+  if(!t) return {bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
+  const key = t.toString().trim();
+  return TIER_COLORS[key] || TIER_COLORS[`Tier ${key}`] || {bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
+};
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
 const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const normKey   = s => (s||"").trim().toLowerCase();
+
+// ── Shared page header ──
+const PageHeader = ({label, title, children}) => (
+  <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24,gap:16,flexWrap:"wrap"}}>
+    <div>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{label}</div>
+      <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1.2}}>{title}</h2>
+    </div>
+    {children&&<div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>{children}</div>}
+  </div>
+);
 const titleCase = s => { if(!s) return ""; return s.trim().replace(/\b\w/g, c => c.toUpperCase()); };
 const hashPass = s => btoa(encodeURIComponent(s));
 
@@ -184,6 +199,8 @@ button { font-family:'Plus Jakarta Sans','Inter',sans-serif; letter-spacing:-0.0
 input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid rgba(26,58,92,0.1) !important; outline-offset:0 !important; }
 tr:hover td { background:rgba(26,58,92,0.03) !important; transition:background .1s; }
 .row-hover:hover { background:rgba(26,58,92,0.03) !important; }
+tbody tr:nth-child(even) td { background:rgba(26,58,92,0.015); }
+tbody tr:nth-child(even):hover td { background:rgba(26,58,92,0.04) !important; }
 h1,h2,h3,h4 { letter-spacing:-0.02em; }
 `
 
@@ -561,7 +578,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--purple)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// user management</div>
-          <h2 style={{fontSize:22,fontWeight:500}}>Team & Access</h2>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Team & Access</h2>
         </div>
         <button onClick={()=>{setEditUser(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> ADD USER
@@ -1246,7 +1263,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
             if(t) tierCounts[t] = (tierCounts[t]||0)+1;
           });
           const tierEntries = Object.entries(tierCounts).sort((a,b)=>a[0].localeCompare(b[0]));
-          const tierColors = {"1":"#166534","2":"#1a3a5c","3":"#6b7685","Tier 1":"#166534","Tier 2":"#1a3a5c","Tier 3":"#6b7685"};
+          // using global getTierColor
 
           const outletCounts = {};
           citations.forEach(c => { if(c.media) outletCounts[c.media]=(outletCounts[c.media]||0)+1; });
@@ -1287,7 +1304,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {tierEntries.map(([tier,count])=>{
                       const pct = Math.round((count/citations.length)*100);
-                      const col = tierColors[tier]||"var(--dim)";
+                      const col = getTierColor(tier).color;
                       return (
                         <div key={tier}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
@@ -1475,30 +1492,41 @@ const CQResearchTab = ({campaigns, citations}) => {
 
   const uniqueOutlets = [...new Set(cits.map(c=>c.media).filter(Boolean))];
 
+  // Leaderboard data
+  const {topOutlets, maxOutlet, topHeadlines, maxHeadline, tierEntries} = useMemo(()=>{
+    const outletMap={};
+    cits.forEach(c=>{const m=(c.media||"").trim();if(m){const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]={label:m,count:0};outletMap[mk].count++;}});
+    const topOutlets=Object.values(outletMap).sort((a,b)=>b.count-a.count).slice(0,6);
+    const maxOutlet=topOutlets[0]?.count||1;
+
+    const headlineMap={};
+    cits.forEach(c=>{const h=((c.headline||c.topic)||"").trim();if(!h)return;const hk=h.toLowerCase();if(!headlineMap[hk])headlineMap[hk]={label:h,count:0};headlineMap[hk].count++;});
+    const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,6);
+    const maxHeadline=topHeadlines[0]?.count||1;
+
+    const tierMap={};
+    cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
+    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+
+    return {topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
+  },[cits]);
+
   // Build chart data — weekly buckets
   const chartData = useMemo(() => {
-    const getMonday = iso => {
-      const d = new Date(iso+"T00:00:00");
-      if(isNaN(d.getTime())) return null;
-      const day = d.getDay();
-      const mon = new Date(d);
-      mon.setDate(d.getDate() - ((day+6)%7));
-      return mon.toISOString().slice(0,10);
-    };
     const map = {};
     bounties.forEach(b => {
-      const wk = getMonday(b.date||""); if(!wk) return;
-      if(!map[wk]) map[wk] = {week:wk, bounties:0, citations:0};
-      map[wk].bounties++;
+      const day = b.date; if(!day) return;
+      if(!map[day]) map[day] = {day, bounties:0, citations:0};
+      map[day].bounties++;
     });
     cits.forEach(c => {
-      const wk = getMonday(c.date||""); if(!wk) return;
-      if(!map[wk]) map[wk] = {week:wk, bounties:0, citations:0};
-      map[wk].citations++;
+      const day = c.date; if(!day) return;
+      if(!map[day]) map[day] = {day, bounties:0, citations:0};
+      map[day].citations++;
     });
-    return Object.values(map).sort((a,b)=>a.week.localeCompare(b.week)).map(w => ({
+    return Object.values(map).sort((a,b)=>a.day.localeCompare(b.day)).map(w => ({
       ...w,
-      label: new Date(w.week+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
+      label: new Date(w.day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
     }));
   }, [bounties.length, cits.length]);
 
@@ -1525,10 +1553,7 @@ const CQResearchTab = ({campaigns, citations}) => {
       {viewBounty   && <BountyDetailModal   entry={viewBounty}   canEdit={false} onEdit={()=>{}} onClose={()=>setViewBounty(null)}/>}
       {viewCitation && <CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
 
-      <div style={{marginBottom:24}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// cq research</div>
-        <h2 style={{fontSize:22,fontWeight:500}}>CQ Research</h2>
-      </div>
+      <PageHeader label="// cq research" title="CQ Research"/>
 
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
         <StatCard label="Bounties" value={bounties.length} sub="Posts published" c="var(--accent)"/>
@@ -1540,7 +1565,7 @@ const CQResearchTab = ({campaigns, citations}) => {
       {chartData.length > 0 && (
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Weekly Activity</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
             <div style={{display:"flex",gap:14}}>
               {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
                 <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -1574,6 +1599,94 @@ const CQResearchTab = ({campaigns, citations}) => {
               <Bar dataKey="citations" fill="#4a7fa8" fillOpacity={0.45} radius={[3,3,0,0]}/>
             </ComposedChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Leaderboards */}
+      {(topHeadlines.length>0||topOutlets.length>0||tierEntries.length>0)&&(
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16}}>
+
+          {/* Top Headlines */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Headlines</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
+            </div>
+            {topHeadlines.length===0
+              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                {topHeadlines.map((h,i)=>(
+                  <div key={h.label}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                      <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
+                      </div>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                      <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+
+          {/* Top Outlets */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Outlets</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{uniqueOutlets.length}</span>
+            </div>
+            {topOutlets.length===0
+              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                {topOutlets.map((o,i)=>(
+                  <div key={o.label}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                      <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span title={o.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
+                      </div>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                      <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+
+          {/* Media Tier */}
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Media Tier</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cits.length} total</span>
+            </div>
+            {tierEntries.length===0
+              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {tierEntries.map(([tier,count])=>{
+                  const col=getTierColor(tier).color;
+                  const pct=(count/cits.length)*100;
+                  return (
+                    <div key={tier}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                      </div>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            }
+          </div>
         </div>
       )}
 
@@ -1758,7 +1871,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// performance summary</div>
-          <h2 style={{fontSize:22,fontWeight:500}}>Analytics</h2>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Analytics</h2>
         </div>
         <div style={{display:"flex",gap:6}}>
           {[["3","3M"],["6","6M"],["12","1Y"],["all","All"]].map(([val,label])=>(
@@ -1992,13 +2105,13 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     const maxTier=Math.max(...tierEntries.map(e=>e[1]),1);
                     const maxLang=langEntries[0]?.[1]||1;
                     const maxDR=drEntries[0]?.[1]||1;
-                    const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685","tier 1":"#166534","tier 2":"#1a3a5c","tier 3":"#6b7685"};
+                    // using global getTierColor
                     if(!tierEntries.length&&!langEntries.length&&!drEntries.length) return null;
                     return (
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:14}}>
                         <Panel title="Media Tier Breakdown" badge={`${citations.length} citations`}>
                           {tierEntries.length ? tierEntries.map(([tier,count])=>{
-                            const col=tierColors[tier.toLowerCase()]||"var(--dim)";
+                            const col=getTierColor(tier).color;
                             const pct=(count/citations.length)*100;
                             return (
                               <div key={tier} style={{marginBottom:10}}>
@@ -2290,7 +2403,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
     return {topAuthors,maxAuthorTotal,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
   },[weekBounties,weekCitations]);
 
-  const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685","tier 1":"#166534","tier 2":"#1a3a5c","tier 3":"#6b7685"};
+  // using global getTierColor
 
   // ── RECENT ENTRIES FEED ──────────────────────────────────
   const recentAll = useMemo(()=>[
@@ -2306,7 +2419,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
-          <h2 style={{fontSize:22,fontWeight:700,letterSpacing:"-0.02em",color:"var(--text)"}}>{mode==="custom"?"Custom Range":"Weekly Summary"}</h2>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{mode==="custom"?"Custom Range":"Weekly Summary"}</h2>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           {/* Mode toggle */}
@@ -2516,7 +2629,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data this week</div>
             :<div style={{display:"flex",flexDirection:"column",gap:10}}>
               {tierEntries.map(([tier,count])=>{
-                const col=tierColors[tier.toLowerCase()]||"var(--dim)";
+                const col=getTierColor(tier).color;
                 const pct=(count/weekCitations.length)*100;
                 return (
                   <div key={tier}>
@@ -2668,7 +2781,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const drEntries=Object.entries(drMap).sort((a,z)=>z[1]-a[1]);
     const assetEntries=Object.entries(assetMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
     const brandEntries=Object.entries(brandMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
-    const tierColors={"1":"#166534","2":"#1a3a5c","3":"#6b7685"};
+    // using global getTierColor
 
     const dayMap={};
     b.forEach(x=>{if(!x.date)return;if(!dayMap[x.date])dayMap[x.date]={wk:x.date,b:0,c:0};dayMap[x.date].b++;});
@@ -2754,7 +2867,7 @@ ${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopic
 </div>`:""}
 
 ${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
-  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const col=tierColors[tier]||"#6b7280";const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;color:${col};font-size:10px">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const col=getTierColor(tier).color;const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;color:${col};font-size:10px">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclDR&&drEntries.length?`<div class="panel"><div class="ph">Direct Relationship</div><table><tbody>${drEntries.map(([d,v],i)=>bRow(i+1,d,v,drEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
@@ -3178,7 +3291,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// bounty management</div>
-          <h2 style={{fontSize:22,fontWeight:500}}>Campaigns</h2>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Campaigns</h2>
         </div>
         <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> NEW CAMPAIGN
@@ -3301,7 +3414,7 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
     <div style={{animation:"fadeUp .4s ease both"}}>
       <div style={{marginBottom:20}}>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// my contributions</div>
-        <h2 style={{fontSize:22,fontWeight:500}}>My Creations</h2>
+        <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>My Creations</h2>
       </div>
       <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:9,padding:4,width:"fit-content",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)"}}>
         {[{id:"bounties",label:"Bounties",count:myBounties.length},{id:"citations",label:"Media Citations",count:myCitations.length}].map(t=>{
