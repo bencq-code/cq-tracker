@@ -202,6 +202,44 @@ tr:hover td { background:rgba(26,58,92,0.03) !important; transition:background .
 tbody tr:nth-child(even) td { background:rgba(26,58,92,0.015); }
 tbody tr:nth-child(even):hover td { background:rgba(26,58,92,0.04) !important; }
 h1,h2,h3,h4 { letter-spacing:-0.02em; }
+@media(max-width:1100px){
+  .cq-main{padding:28px 20px 60px!important;}
+  .cq-stat-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .cq-chart-row{grid-template-columns:1fr!important;}
+  .cq-3col{grid-template-columns:1fr 1fr!important;}
+}
+@media(max-width:900px){
+  .cq-sidebar{position:fixed!important;left:0;top:0;z-index:500;transform:translateX(-100%);transition:transform .25s ease;box-shadow:none!important;}
+  .cq-sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,0.3)!important;}
+  .cq-overlay.active{display:block!important;}
+  .cq-hamburger{display:flex!important;}
+  .cq-main{padding:20px 16px 60px!important;}
+  .cq-footer{padding:10px 16px!important;flex-direction:column;gap:4px;text-align:center;}
+  .cq-login-wrap{flex-direction:column!important;}
+  .cq-login-left{width:100%!important;padding:32px 28px!important;min-height:auto!important;}
+  .cq-login-right{padding:24px 20px!important;}
+  .cq-stat-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .cq-3col{grid-template-columns:1fr!important;}
+  .cq-2col{grid-template-columns:1fr!important;}
+  .cq-chart-row{grid-template-columns:1fr!important;}
+}
+@media(max-width:600px){
+  .cq-stat-grid{grid-template-columns:1fr!important;}
+  .cq-main{padding:14px 10px 50px!important;}
+}
+@media(min-width:901px){
+  .cq-sidebar{transform:none!important;}
+  .cq-overlay{display:none!important;}
+  .cq-hamburger{display:none!important;}
+}
+.cq-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+@media(max-width:900px){
+  .cq-filter-bar{flex-wrap:wrap!important;}
+  .cq-filter-bar input,.cq-filter-bar select{min-width:0!important;flex:1 1 120px!important;}
+  .cq-header-row{flex-wrap:wrap!important;gap:12px!important;}
+  .cq-tab-pills{flex-wrap:wrap!important;}
+}
+.cq-table-scroll>div{min-width:600px;}
 `
 
 // ─────────────────────────────────────────────────────────
@@ -337,10 +375,10 @@ const LoginScreen = ({onLogin}) => {
   const isRegister = mode === "register";
 
   return (
-    <div style={{minHeight:"100vh",display:"flex",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}>
+    <div className="cq-login-wrap" style={{minHeight:"100vh",display:"flex",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}>
 
       {/* LEFT PANEL */}
-      <div style={{width:"42%",background:"#0d1f33",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"48px 56px",position:"relative",overflow:"hidden",flexShrink:0}}>
+      <div className="cq-login-left" style={{width:"42%",background:"#0d1f33",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"48px 56px",position:"relative",overflow:"hidden",flexShrink:0}}>
         <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",backgroundSize:"40px 40px",pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1}}>
           <img src="data:image/png;base64,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" alt="CryptoQuant" style={{width:52,height:52,objectFit:"contain",mixBlendMode:"screen",marginBottom:32}}/>
@@ -354,7 +392,7 @@ const LoginScreen = ({onLogin}) => {
       </div>
 
       {/* RIGHT PANEL */}
-      <div style={{flex:1,background:"#f5f6f9",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
+      <div className="cq-login-right" style={{flex:1,background:"#f5f6f9",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
         <div style={{width:"min(400px,100%)",animation:"fadeUp .5s ease both"}}>
 
           <div style={{marginBottom:32}}>
@@ -584,7 +622,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
           <Icons.Plus/> ADD USER
         </button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:28}}>
+      <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:28}}>
         {["admin","author","client"].map(role=>{
           const rm = ROLE_META[role];
           const count = users.filter(u=>u.role===role).length;
@@ -600,6 +638,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
           );
         })}
       </div>
+      <div className="cq-table-scroll"><div style={{minWidth:550}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 100px 1fr 120px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
           {["User","Role","Bounty Access","Created",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
@@ -651,6 +690,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
           );
         })}
       </div>
+      </div></div>
       {showForm&&<UserForm initial={editUser} onSave={async f=>{await onSaveUser(f,editUser);setShowForm(false);setEditUser(null)}} onClose={()=>{setShowForm(false);setEditUser(null)}} campaignsList={campaignsList}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDeleteUser(confirmId);setConfirmId(null)}} onCancel={()=>setConfirmId(null)}/>}
     </div>
@@ -914,12 +954,12 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 
       {/* Stat cards */}
       {contentMode==="all" ? (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+        <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
           <StatCard label="Total Posts"       value={activeCampaigns.length} sub={dateRange}                                    c="var(--accent)"/>
           <StatCard label="Unique Authors"     value={authors.length}   sub="Contributing analysts"                        c="var(--purple)"/>
         </div>
       ) : (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+        <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
           <StatCard label="Bounties" value={activeCampaigns.length} sub="Posts published" c="var(--accent)"/>
           <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="#4a7fa8"/>
           <StatCard label="Media Outlets" value={cqResearchData?.uniqueOutlets.length||0} sub="Unique publications" c="var(--accent)"/>
@@ -971,7 +1011,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 
         {/* Leaderboards */}
         {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
+          <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
             {/* Top Headlines */}
             <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
@@ -1034,16 +1074,16 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
                 :<div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {cqResearchData.tierEntries.map(([tier,count])=>{
-                    const col=getTierColor(tier).color;
+                    const tc=getTierColor(tier);
                     const pct=(count/cqResearchData.cits.length)*100;
                     return (
                       <div key={tier}>
-                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                         </div>
                         <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                          <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                          <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
                         </div>
                       </div>
                     );
@@ -1099,7 +1139,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           const maxAuthor = topAuthors[0]?.[1] || 1;
 
           return (
-            <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
+            <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
@@ -1152,7 +1192,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         const hasFilters = search||filterAuthor!=="all"||filterDateFrom||filterDateTo;
         return (
           <div style={{marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div className="cq-filter-bar" style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{position:"relative",flex:1,maxWidth:320}}>
                 <div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"var(--dim)",pointerEvents:"none"}}><Icons.Search/></div>
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search title or author…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
@@ -1196,6 +1236,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           </div>
         );
       })()}
+      <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
           {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
@@ -1258,9 +1299,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         }
         <Pagination page={page} total={sortedFiltered.length} onChange={p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'})}}/>
       </div>
+      </div></div>
       {/* CQ Research citations table */}
       {contentMode==="cq_research"&&cqResearchData&&cqResearchData.cits.length>0&&(
         <div ref={cqCitRef} style={{marginTop:20}}>
+          <div className="cq-table-scroll"><div style={{minWidth:500}}>
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
               <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
@@ -1292,6 +1335,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             })}
             <Pagination page={cqCitPage} total={cqResearchData.cits.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
           </div>
+          </div></div>
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
@@ -1449,7 +1493,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
   const COLS="108px 16% 12% 12% 1fr 72px 54px";
   return (
     <>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
         <StatCard label="Total Citations" value={citations.length} sub="All media mentions" c="var(--accent)"/>
         <StatCard label="Media Outlets"   value={medias.length}    sub={medias.slice(0,3).join(", ")||"—"} c="var(--accent)"/>
       </div>
@@ -1506,7 +1550,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
           const maxOutlet = topOutlets[0]?.[1] || 1;
 
           return (
-            <div style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
+            <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
@@ -1539,15 +1583,15 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {tierEntries.map(([tier,count])=>{
                       const pct = Math.round((count/citations.length)*100);
-                      const col = getTierColor(tier).color;
+                      const tc = getTierColor(tier);
                       return (
                         <div key={tier}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:col,fontWeight:600}}>Tier {tier}</span>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
                             <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>{count} <span style={{color:"var(--dim)"}}>({pct}%)</span></span>
                           </div>
                           <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                            <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .5s ease"}}/>
+                            <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s ease"}}/>
                           </div>
                         </div>
                       );
@@ -1581,7 +1625,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
         const hasFilters = search||filterAuthor!=="all"||filterMedia!=="all"||filterTier!=="all"||filterDateFrom||filterDateTo;
         return (
           <div style={{marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div className="cq-filter-bar" style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{position:"relative",flex:1,maxWidth:320}}>
                 <div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"var(--dim)",pointerEvents:"none"}}><Icons.Search/></div>
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search media, reporter, topic…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
@@ -1643,6 +1687,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
           </div>
         );
       })()}
+      <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
               {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
@@ -1676,7 +1721,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                           <div title={c.topic||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{c.topic||"—"}</div>
                           {c.headline&&<div title={c.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
                           <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                            {c.mediaTier&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(22,101,52,0.07)",border:"1px solid rgba(22,101,52,0.2)",color:"#166534"}}>{c.mediaTier}</span>}
+                            {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
                             {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(100,116,139,0.08)",border:"1px solid rgba(100,116,139,0.2)",color:"#475569"}}>{c.language}</span>}
                           </div>
                         </div>
@@ -1695,6 +1740,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
             }
         <Pagination page={page} total={sortedFiltered.length} onChange={p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'})}}/>
       </div>
+      </div></div>
       {view&&<CitationDetailModal entry={view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)}/>}
       {showForm&&<MediaForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
@@ -1790,7 +1836,7 @@ const CQResearchTab = ({campaigns, citations}) => {
 
       <PageHeader label="// cq research" title="CQ Research"/>
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
+      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
         <StatCard label="Bounties" value={bounties.length} sub="Posts published" c="var(--accent)"/>
         <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="#4a7fa8"/>
         <StatCard label="Media Outlets" value={uniqueOutlets.length} sub="Unique publications" c="var(--accent)"/>
@@ -1839,7 +1885,7 @@ const CQResearchTab = ({campaigns, citations}) => {
 
       {/* Leaderboards */}
       {(topHeadlines.length>0||topOutlets.length>0||tierEntries.length>0)&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16}}>
+        <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16}}>
 
           {/* Top Headlines */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
@@ -1905,16 +1951,16 @@ const CQResearchTab = ({campaigns, citations}) => {
               ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
               :<div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {tierEntries.map(([tier,count])=>{
-                  const col=getTierColor(tier).color;
+                  const tc=getTierColor(tier);
                   const pct=(count/cits.length)*100;
                   return (
                     <div key={tier}>
-                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                        <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                        <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
                       </div>
                     </div>
                   );
@@ -2008,7 +2054,6 @@ const CQResearchTab = ({campaigns, citations}) => {
 
 const AnalyticsTab = ({campaigns, citations, clientName}) => {
   const [range, setRange]           = useState("all");
-  const [showMore, setShowMore]     = useState(false);
   const [granularity, setGranularity] = useState("daily"); // "daily" | "weekly"
 
   const totalBounties  = campaigns.length;
@@ -2119,7 +2164,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       </div>
 
       {/* Stat cards — 4 primary + impressions if available */}
-      <div style={{display:"grid",gridTemplateColumns:`repeat(${totalImpressions>0?5:4},1fr)`,gap:14,marginBottom:28}}>
+      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:`repeat(${totalImpressions>0?5:4},1fr)`,gap:14,marginBottom:28}}>
         {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
           <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8}}>{s.label}</div>
@@ -2138,7 +2183,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
         <>
           {/* Combined chart */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}}>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{granularity === "daily" ? "Daily" : "Weekly"} Activity & Running Total</div>
                 {/* Daily / Weekly toggle */}
@@ -2151,7 +2196,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                   ))}
                 </div>
               </div>
-              <div style={{display:"flex",gap:16}}>
+              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                 {[{color:"rgba(26,58,92,0.3)",label:`Bounties (${granularity==="daily"?"daily":"weekly"})`},{color:"rgba(74,127,168,0.5)",label:`Citations (${granularity==="daily"?"daily":"weekly"})`},{color:"#1a3a5c",label:"Bounties (total)",line:true},{color:"#4a7fa8",label:"Citations (total)",line:true}].map((l,i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
                     {l.line
@@ -2296,7 +2341,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
               return (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:16}}>
+                  <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:16}}>
                     <Panel title="Top Topics" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
                       {topTopics.length ? topTopics.map((r,i)=>(
                         <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
@@ -2315,22 +2360,11 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     </Panel>
                   </div>
 
-                  {/* More breakdowns toggle */}
-                  <button onClick={()=>setShowMore(v=>!v)}
-                    style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 16px",cursor:"pointer",marginTop:14,transition:"all .15s",width:"100%",justifyContent:"center",letterSpacing:"0.04em"}}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
-                    <span style={{display:"inline-block",transform:showMore?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
-                    {showMore ? "Hide breakdowns" : "More breakdowns"}
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:"var(--surface3)",color:"var(--dim)",marginLeft:4}}>Tier · Language · Direct Rel · Asset · Branding</span>
-                  </button>
-
-                  {showMore && <>
                   {/* Row 2: Media Tier, Language, Direct Relationship */}
                   {(()=>{
                     const tierMap={}, langMap={}, drMap={};
                     citations.forEach(c=>{
-                      if(c.mediaTier){const t=String(c.mediaTier).trim();const tk=normKey(t);if(tk)tierMap[tk]=(tierMap[tk]||0)+1;}
+                      if(c.mediaTier){const t=String(c.mediaTier).trim();if(t)tierMap[t]=(tierMap[t]||0)+1;}
                       if(c.language){const l=c.language.trim();const lk=normKey(l);if(lk)langMap[lk]=(langMap[lk]||0)+1;}
                       if(c.directRelationship){const d=c.directRelationship.trim();const dk=normKey(d);if(dk)drMap[dk]=(drMap[dk]||0)+1;}
                     });
@@ -2343,19 +2377,19 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     // using global getTierColor
                     if(!tierEntries.length&&!langEntries.length&&!drEntries.length) return null;
                     return (
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:14}}>
+                      <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:14}}>
                         <Panel title="Media Tier Breakdown" badge={`${citations.length} citations`}>
                           {tierEntries.length ? tierEntries.map(([tier,count])=>{
-                            const col=getTierColor(tier).color;
+                            const tc=getTierColor(tier);
                             const pct=(count/citations.length)*100;
                             return (
                               <div key={tier} style={{marginBottom:10}}>
-                                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
-                                  <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                                  <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                                 </div>
                                 <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                                  <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .5s"}}/>
+                                  <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s"}}/>
                                 </div>
                               </div>
                             );
@@ -2388,7 +2422,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     const maxBrand=brandEntries[0]?.[1]||1;
                     if(!assetEntries.length&&!brandEntries.length) return null;
                     return (
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:14}}>
+                      <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:14}}>
                         <Panel title="Top Assets">
                           {assetEntries.length ? assetEntries.map(([asset,count],i)=>(
                             <Row key={asset} rank={i+1} label={asset} value={count} pct={(count/maxAsset)*100} color="var(--accent)"/>
@@ -2402,7 +2436,6 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                       </div>
                     );
                   })()}
-                  </>}
 
                   {modal==="topics" && (
                     <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
@@ -2704,7 +2737,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       </div>
 
       {/* Stat cards with WoW delta */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
+      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
         {[
           {label:"Bounties",      curr:weekBounties.length,  prev:mode==="weekly"?prevBounties.length:null,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
           {label:"Citations",     curr:weekCitations.length, prev:mode==="weekly"?prevCitations.length:null, sub:"Media mentions",    c:"#4a7fa8",       key:"citations"},
@@ -2728,7 +2761,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       </div>
 
       {/* Activity chart + recent feed — side by side */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,marginBottom:14}}>
+      <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,marginBottom:14}}>
 
         {/* Daily bar chart */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
@@ -2824,7 +2857,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
       {/* Bottom row: 2x2 grid */}
       {(topAuthors.length>0||topOutlets.length>0||topHeadlines.length>0||tierEntries.length>0)&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
 
         {/* Top headlines */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
@@ -2863,16 +2896,16 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data this week</div>
             :<div style={{display:"flex",flexDirection:"column",gap:10}}>
               {tierEntries.map(([tier,count])=>{
-                const col=getTierColor(tier).color;
+                const tc=getTierColor(tier);
                 const pct=(count/weekCitations.length)*100;
                 return (
                   <div key={tier}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                      <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                      <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
                 );
@@ -3101,7 +3134,7 @@ ${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopic
 </div>`:""}
 
 ${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
-  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const col=getTierColor(tier).color;const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;color:${col};font-size:10px">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const tc=getTierColor(tier);const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;font-size:10px;padding:2px 8px;border-radius:4px;background:${tc.bg};border:1px solid ${tc.border};color:${tc.color}">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${tc.color};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclDR&&drEntries.length?`<div class="panel"><div class="ph">Direct Relationship</div><table><tbody>${drEntries.map(([d,v],i)=>bRow(i+1,d,v,drEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
@@ -3188,7 +3221,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
           </div>
 
           {/* Live preview counts */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+          <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
             {[
               {label:"Bounties",  value:b.length,  c:"var(--accent)"},
               {label:"Citations", value:c.length,  c:"#4a7fa8"},
@@ -3695,6 +3728,7 @@ export default function App() {
   const [clientActiveCid,setClientActiveCid] = useState(null);
   const [showPdfModal,setShowPdfModal] = useState(false);
   const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
+  const [sidebarOpen,setSidebarOpen] = useState(false);
   const sidebarCampaignRef = useRef(null);
 
   const showToast=(msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800)};
@@ -4026,8 +4060,14 @@ export default function App() {
 
       {/* LAYOUT */}
       <div style={{display:"flex",minHeight:"100vh"}}>
+        {/* Mobile overlay */}
+        <div className={`cq-overlay${sidebarOpen?" active":""}`} style={{display:"none",position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",zIndex:499}} onClick={()=>setSidebarOpen(false)}/>
+        {/* Mobile hamburger */}
+        <button className="cq-hamburger" onClick={()=>setSidebarOpen(v=>!v)} style={{display:"none",position:"fixed",top:12,left:12,zIndex:501,width:36,height:36,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.1)",color:"var(--accent)",fontSize:16,padding:0}}>
+          {sidebarOpen?"✕":"☰"}
+        </button>
         {/* SIDEBAR */}
-        <nav style={{width:216,flexShrink:0,background:"#0d1f33",borderRight:"1px solid rgba(255,255,255,0.07)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
+        <nav className={`cq-sidebar${sidebarOpen?" open":""}`} style={{width:216,flexShrink:0,background:"#0d1f33",borderRight:"1px solid rgba(255,255,255,0.07)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
           <div style={{padding:"4px 10px",marginBottom:16}}>
             <div style={{fontSize:13,fontWeight:600,letterSpacing:"-0.01em",color:"#ffffff"}}>CryptoQuant</div>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
@@ -4130,7 +4170,7 @@ export default function App() {
         </nav>
 
         {/* MAIN CONTENT */}
-        <main style={{flex:1,padding:"32px 36px 80px",minWidth:0,overflowX:"hidden"}}>
+        <main className="cq-main" style={{flex:1,padding:"32px 36px 80px",minWidth:0,overflowX:"hidden"}}>
 
         {/* NO CAMPAIGN SELECTED warning for data tabs */}
         {!effectiveCid && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine") && programs.length>0 && (
@@ -4151,7 +4191,7 @@ export default function App() {
         </main>
       </div>
 
-      <footer style={{borderTop:"1px solid var(--border)",padding:"14px 36px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <footer className="cq-footer" style={{borderTop:"1px solid var(--border)",padding:"14px 36px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
           {programs.length} campaign{programs.length!==1?"s":""} · {campaigns.length} entries · {citations.length} citations · <span style={{color:"var(--green)"}}>synced</span>
