@@ -345,7 +345,7 @@ const LoginScreen = ({onLogin}) => {
         <div style={{position:"relative",zIndex:1}}>
           <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGQAZADASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAcJBggDBAUCAf/EAEcQAAEEAQMBBQQGBQgJBQAAAAABAgMEBQYHESEIEjFBURM3YXEiMlJ1gbMJFEJykRUXI1dic6GiJDNDU4OSlbLSJbHBwuH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A0yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAc1SrZtypDVrzWJF8GRMVyr+CGQVNvdfW2d+pofU1hvrFip3J/g0DGQc9+nbx92ajfqz1LUD1jmgnjVkkbk6K1zV6oqeinAAAAAAAAAAAAAAAAd7GYfLZR3dxmLvXV544r13Sf9qKe5FttuLKxHxaB1U9q+Dm4ewqf9gGKgye1t5r+qxX2tDangYicq6TEztRE/Fpj9ypapTLDcrTVpU8WSxqx38FA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPV0pp3OaqzkGE05i7WTyNheI4IGd53xVfJrU83LwieageUZdtxtprncO66tpDTtvIoxeJZ0RI4Iv3pXKjEX4c8r5Ipt1sd2PsLiYocxubMzMX1RHNxcD1bWhX0e9OFlXw6Jw3xT6SdTajG0aWMoQ4/G069OpAxGQwQRoyONqeTWp0RANO9vOxNzHHZ1/qxWuXq6nh2eHzmkTx9URn4+ZPGkOzxs7pljP1XROPvTNTrNkkW25y+vEnLUX5IhKgA62Nx2PxtdK+Oo1acKf7OvE2Nv8GoiHZAAqn7R/v61x992fzFI/JA7R/v61x992fzFI/AAAAAAABnWz+1Gs90s1+oaYxyurxORLV+fllasi/bdx1X0a3ly+nHKgYKSxtX2e9z9wmx2sdg3YzGP4VMhk+YInIvmxFRXPT4taqfE3P2S7M+gtu0r5K9Amo9QRojluXY0WKJ/rFF1RvwVe870VCcQNV9A9i3RuOjZPrLP5HO2eEV0FVEq10XzTze75o5vyJt0rs5tbphrP5G0Jg4ZGfVmlrJPKn/ABJO87/EzsAfMUccUbY4o2xsanDWtThE/A+gAB18hQo5GutfIU69uFfGOeJr2r+CpwdgARdrDs+bP6obIt3RGOpzP6+2xyLUci+vEao1V+aKQPuH2Jo1bLZ0DqxzXdVbSy7OUXr4JNGnTp6sX5m5IAqZ3I2w13t3ZSLVunLdCJ7lbFZ4SSvKv9mRvLVXz45548UMNLkMlRpZKjNQyNOvcqTt7k0FiNJI5G+jmuRUVPgpq7vn2QcDm4p8xtrJFg8kiK9cZK5y1Z180Y5eViXx4Tq3wThqdUDREHrau01ntJZ6xgtS4q1i8jXXiSCdnC8eTkXwc1eOjkVUXyVTyQAAAAAAAAAAAAAAAAAAAAAAAAABnex22Oc3W1xBp3Ef0EDU9reuuYqsqwovVy+rl8Gt819E5VA+9kdqdTbsapTD4GJIa0PD71+Vq+xqsVfFfVy9eGp1XhfBEVUsf2b2p0jtXp9Mbpyki2ZGp+uZCZEWxacnm53k3nwanRPnyq+ptjoXTu3Wka2mtNU0gqwp3pJHcLJYkVPpSSO/acvHyROEThERDJwAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwAAAAGwvZF2Cl3Myiao1LG+LSVGbuqzlWuyErevs2r5MTp3nJ+6nXlWhxdl/s55Tc6aPUeolnxekon9Ho3iW+qL1bFz4M8UWTr16JyvKtsF0vp/C6XwVbB6fxtfHY6q3uwwQN4a34+qqviqryqr1U7tGrWo04aVKvFWrQRtjhhiYjWRsanCNaidERE6cIcwAAAAAAAAAAAAAAAAGD7x7W6U3S027E6jpJ7ZjXfqd6NESeo9f2mL5p0Tlq9F4+SpXBvntNqXabVTsTmY1sUZlc7H5GNipFaYnp9l6cp3mqvKfFFRVtXMd3G0ZgNfaSuaZ1JTbZpWWcI5ET2kL/2ZI1VF7r08l/BeUVUAqJBn2+m12c2o1tLgMt/T1ZUWXH3mt4Zah54R3wcng5vkvqioq4CAAAAAAAAAAAAAAAAAAAAAAd/T2HyWoM7SwmIqyW8henbBXhYnV73LwifBPj4InUtG7P8Atdi9qNAV8BT7k+Qm4nydxE62J1Trx6Nb9Vqeic+Kqq6/fo+NqmxVJ908zV5lm79bCo9PqtRVbLMnxVeWJ8n+puIAAAAAAAAAAAFU/aP9/WuPvuz+YpH5IHaP9/WuPvuz+YpH4AA/WornI1qKqqvCInmBIvZ52vyG6+4tXAQe0hxsKfrGUttT/UQIvXj+25eGtTr1XnjhFLQ9OYbGaewNHB4apHUx9GBsFeFngxjU4T5r6qvVV5VSM+yptdFthtbVqWoGszuTRtzKvVv0myK36MKr6RovHHh3leqeJLYAAAAAAAAAAAAAAAAAAAAABgG/O2OJ3W0DZ09f7kFxnM2OuK3l1adE6L8Wr4OTzRfVEVKuNT4PJ6a1DfwGZquq5ChO6CxE79lzV46L5ovii+CoqKXDGoP6QfatLeNr7pYeunt6iMq5hrU6viVUSKb5tVe4q+jm+TQNJQAAAAAAAAAAAAAAAAAAPc0Dpq9rHWuH0vjW82snbZXYvkxFX6T1+DW8uX4Ip4ZtP+jo0emT3DzGsrEfMOFqJBXVf9/PynKfKNr0X99AN4NL4WhpzTmOwGLhbDSx9aOtAxE8GsaiJ+PTlV81PRAAAAAAAAAAAACqftH+/rXH33Z/MUj8kDtH+/rXH33Z/MUj8ATp2Jdvma43mrXr9dZcVp9iZCxynLXyovELF+bvpceaRqnmQWWKdgjRyac2SZnJ4e5d1FZdbc5WojvYsVY4m/Lo96f3gGwgAAAAAAAAAAAAAAAAAAAAAAAB0dQ4ihn8FfwmUgbYo36769iNf2mParVT+CneAFQ+4+lruidd5nSmQ62MZbfB3v8AeN8WPT4OarXfiY+bX/pG9HpQ1rgta1ouIsrWdUtORP8AbQ8K1V+KsciJ/dmqAAAAAAAAAAAAAAAAAAsb7BWnW4Xs/wBPIOj7s2auz3XKvirUd7Jv4cRcp+98SuQtl2MxiYbZnRuN7qNdDhKntERP21ia53+ZVAzMAAAAAAAAAAAABVP2j/f1rj77s/mKR+SB2j/f1rj77s/mKR+By1YJrVqKrXjWSaZ6RxsTxc5V4RP4lvui8JBprSGH09WRqQ4yjDUZ3fBUjYjefx45Ktuz/i25ne7RmOkb345MzWfI3jnljJEe5P4NUtfAAAAAAAAAAAAAAAAAAAAAAAAAAACCe3Xp5uc7PWTtozvTYa1Bfj4Tr9b2T/8AJK5fwK3S23eLFJm9ptW4lW95bWGtRsT+0sTu6v4LwpUkAAAAAAAAAAAAAAAAALitPwJWwOPrI3uJFViYjfThiJwU6lxWn7CW8Dj7SLyk1WKRF+bEUDvAAAAAAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwJe7GsCWO0ro+NW97iaw/j92tK7/4LOisXsaTJB2ltHvc7uos1hnP71aVvH488FnQAAAAAAAAAAAAAAAAAAAAAAAAAAAcN6BLNKes5EVJY3MVF8F5TgptLkr07atKey76sMbpF+SJyU2gAAAAAAAAAAAAAAAAC2bY3KNzOzWjckj+86bC1faL/AG0ia1/+ZFKmSxzsF6hTNdn6lQc9HS4a7YpO69e6rvat5/CXhP3QJ8AAAAAAAAAAAAAVT9o/39a4++7P5ikfkgdo/wB/WuPvuz+YpH4Gddn7Jph98NF33ORrGZqsyRyrxwx8iMcv8HKWvFNlSxLUtw2oHqyaGRskbk8nIvKL/FC37R2ag1JpLEahqq32OTow22ceCJIxHcfhyB6oAAAAAAAAAAAAAAAAAAAAAAAAAAxXeDJtwu1Grcqr+4tXDW5Gqnj3khd3U/FeEKkSyLt16hbg+z1k6jX9ybMWoKEfr1f7R3+SJyfiVugAAAAAAAAAAAAAAAADar9HNrBmN19mtGWZkbHmarbFVrl8Z4OVVqfFY3OVfhGaqnu7famvaM1vh9VY7rZxltlhreeEkRF+kxV9HN5avwVQLewedpfNY/UmnMdn8VMk1HI1o7MD/Vj2oqc+i9eFTyXk9EAAAAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwBYr2CdYJqPZCPCTy965p60+o5FXlywuX2kTvl9JzE/uyuonfsP6+Zoveetjr06RYzULEx8yuX6LZlXmF3/P9D5SKBZCAAAAAAAAAAB8TxMngkhk73ckarXd1ytXhU4XhU6p80PsAaF9qnRu7G1uVfnMHr7Wd3SFuXiKVczZc+k9V6RSr3/D7L/PwXr4wR/ObuT/WDqz/AKzY/wDMtgzOMx+ZxVrFZWnDdo24lingmYjmSMVOFRUUrq7VOwGQ2tyr85g2TXdIW5eIpV5c+k9V6RSr6fZf5+C9fEI0/nN3J/rB1Z/1mx/5j+c3cn+sHVn/AFmx/wCZiQAy5m5+5THo9u4WrOWryn/rFhf/ALm8nZO7QtTcihFpfVE0NXV1eP6LujWZFjU6vYngkiJ1cxP3k6co2u058fct46/BfoWZqtuvI2WGaJ6tfG9q8o5qp1RUXzAuRBrz2Tu0LU3IoRaX1RNDV1dXj+i7o1mRY1Or2J4JIidXMT95OnKN2GAAHR1Dl6GAwV/N5SdtejQrvsWJF/ZYxquVf4IBpL+kb1gl/WmC0TWm5ixVZ1y01q9PbTdGoqerWN5T4SGp5kO5Gqrut9eZrVmQRWz5O2+fud5Xezaq8MYir5NajWp8EQx4AAAAAAAAAAAAAAAAAAAN1v0e+6bJ6NjazMWeJoO/awqvX67F5dNCnxReXonor/Q3CKd9N5nJadz9HO4e0+pkKE7Z68zF6te1eU+aeSp4KnKKWkbB7n4rdbQFbUFFY4b0aJDkqaO61p0Tqnr3F8Wr5p8UXgJAAAAAAAAAAAFU/aP9/WuPvuz+YpH5IHaP9/WuPvuz+YpH4A+o3vjkbJG5zHtVFa5q8Kip5ofIAtB7LO6MW6O11XIWZmLnMdxUysaL19oifRl49Ht+l6c95P2SVyq/s7bpX9p9xK2diSSfFzolfKVWr/roFXqqJ4d9q/Sb8U454VS0LT+XxufwlPNYe5Fcx92Fs1eeNeWvY5OUX/8APFF6KB3gAAAAAAAAAAOpmcZj8zirWKytOG7RtxLFPBMxHMkYqcKiop2wBW/2qdgMhtblX5zBsmu6Qty8RSry59J6r0ilX0+y/wA/BevjA5cbmcZj8zirWKytOG7RtxLFPBMxHMkYqcKiopXV2qdgchtZlXZzBsmu6Qty8RSry59J6r0ilX0+y/z8F6+IQOAAOfH3LeOvwX6FmarbryNlhmierXxvavKOaqdUVF8ywvsndoWpuRQi0vqiaGrq6vH9F3RrMixqdXsTwSRE6uYn7ydOUbXac+PuW8dfgv0LM1W3XkbLDNE9Wvje1eUc1U6oqL5gXImoX6QjdJtTF1trsPa/0m33LWYVjvqRIvMUK/Fyoj1Tx4a3ycfe3XbBxybTZGXV0Pf1ljK6NqxsYqR5R6/RY/p0YqLwr06dOVbz9VNM9U53Kam1Ffz+atOtZG/M6axK79py+ieSJ4InkiIgHmgAAAAAAAAAAAAAAAAAAAABnuxm6Gc2o1vFqDEf09eREhv0nu4Zah55Vvwcni13kvqiqi4EALdNttb6d3C0lV1Npm6lmnOnDmr0kgkT60cjf2XJz4fJU5RUVckKqNjt2dTbTaoTLYST9YpTKjb+OleqRWmJ6/ZcnK8OROU+KKqLY/s5ulpPdPTjctpu4nt42tS5RlXieo9U+q5PNPHhydF4+aIGcAAAAAAAAqn7R/v61x992fzFI/JA7R/v61x992fzFI/AAAAbFdkDf2XbrKR6S1RZc/SVyVVZK7lVx0rvF6efs1X6zfJfpJ15R2uoAuUrTwWq0VmtNHPBKxHxyRuRzXtVOUcip0VFTrychXX2Xu0flNtZotN6odaymk3uRI0R3elx6qvV0fPiz1Z+LeF5R1gems7h9S4Stm8Dka+Rx1pnfhsQP7zXJ4L8lReUVF6oqKigeiAAAAAAAAAAB1MzjMfmcVaxWVpw3aNuJYp4JmI5kjFThUVFO2AK3+1TsBkNrcq/OYNk13SFuXiKVeXPpPVekUq+n2X+fgvXxgcuNzOMx+ZxVrFZWnDdo24lingmYjmSMVOFRUUrq7VOwGQ2tyr85g2TXdIW5eIpV5c+k9V6RSr6fZf5+C9fEIHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD1tI6lz2ks9XzumsraxeRrrzHPA/hePNqp4OavHVqoqL5op5IA3u2M7X2BzcUGH3KjiweSREYmTha5as6+SvanKxL4cr1b4ry1OibRY29SyVGG/jrle5Unb34p68iSRyN9WuTlFT4oU3mZ7abo6726tum0lqG1RievMtVVSSvIvq6N3Lefjxz8QLZQab7fdtqFzY6+vNJPY7ojrmIfyi+qrFIvKJ8nr8iedIb/7QaoYz9R1xjKsrunscg9aj0X0/pe6ir8lUCTwcFG5UvVm2aNqC1A76skMiPavyVOhzgVT9o/39a4++7P5ikfkgdo/39a4++7P5ikfgAAAAAAz7ZvdvWW1eYdc01eRaszkW1j7HL69jj7TeU4dx+0iov4dDAQBZZsp2ldv9xmwY+zabp3PvREWhekRGSO9IpejX/BF7rl+z05JsKZyXNrO0Tuht+yKpSza5bFxqiJQyiLPG1qJx3WO5R7E9Ea5E+AFngNXdA9tDQ+TZHBrDC5LT9lU+lNAn61X+fKcSJ8kYvzJs0ru1tnqhsf8AIeucFZkk+rA622KZf+G/h/8AgBmwPxjmvYj2ORzXJyiovKKh+gADht2q1OB09uxDXhb9aSV6Nan4r0A5gRprDfnaPSzXpktc4qaZnPMFGRbcnP2VSJHd1fnwQTuH22aETJK2gdKTWZPBtzLP7jE+KRRqquRfi9vyA27vW6lCnLcvWYataFqvlmmkRjGNTxVzl6InxU1U7Rvao0dDhcjpHRtGpqua3C6vYs2Y+9QYi9FREXrMvy4b4Lyvgan7m7r6+3HnR+rNRWbldru9HTZxFXj9OI28NVU+0vLviYQB+r1Xnjj4H4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHYoXrtCb21G5Yqy/bhkVjv4opklTczceo3u1NwNWV0444izFhv/s/4GJgDsZK9dyV+fIZG5Yu3LD1knsWJFkklevVXOc7lVVfVTrgAAAAAAAAAAAAAAHpYnPZ3EcfyTmslQ4XlP1a0+Lj/AJVQ96HdPc6BiRw7jawjYng1mbson+DzDwBllvczce41WW9wNWWGqnCpLmLDk/xeY7kMjkMjN7bIXrVyX7c8rpHfxVTqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//9k=" alt="CryptoQuant" style={{width:52,height:52,objectFit:"contain",mixBlendMode:"screen",marginBottom:32}}/>
           <div style={{fontSize:11,fontFamily:"'IBM Plex Mono',monospace",letterSpacing:"0.12em",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",marginBottom:12}}>CryptoQuant</div>
-          <div style={{fontSize:28,fontWeight:600,color:"#ffffff",lineHeight:1.25,letterSpacing:"-0.02em",marginBottom:16}}>Bounty Program<br/>Tracker</div>
+          <div style={{fontSize:28,fontWeight:600,color:"#ffffff",lineHeight:1.25,letterSpacing:"-0.02em",marginBottom:16}}>Campaign<br/>Intelligence</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.6,maxWidth:280}}>Analytics suite for managing bounty programs, media citations, and campaign performance.</div>
         </div>
         <div style={{position:"relative",zIndex:1}}>
@@ -814,7 +814,8 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, readOnly=false}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false}) => {
+  const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
   const [filterDateFrom,setDateFrom] = useState("");
@@ -828,37 +829,234 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
 
   const resetFilters = () => { setSearch(""); setFA("all"); setDateFrom(""); setDateTo(""); setPage(1); };
 
-  const canAdd  = !readOnly;
-  const canEdit = entry => !readOnly && (currentUser.role==="admin" || entry.author===currentUser.displayName||entry.author===currentUser.username);
+  const activeCampaigns = contentMode==="cq_research" ? campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research") : campaigns;
+  const activeCitations = contentMode==="cq_research" ? citations.filter(c=>(c.author||"").toLowerCase()==="cq research") : [];
 
-  const filtered = useMemo(()=>campaigns.filter(c=>{
+  const canAdd  = !readOnly && contentMode==="all";
+  const canEdit = entry => !readOnly && contentMode==="all" && (currentUser.role==="admin" || entry.author===currentUser.displayName||entry.author===currentUser.username);
+
+  const filtered = useMemo(()=>activeCampaigns.filter(c=>{
     const q = search.toLowerCase();
     const matchQ = !q || (c.title||"").toLowerCase().includes(q)||(c.author||"").toLowerCase().includes(q);
     const matchA = filterAuthor==="all" || c.author===filterAuthor;
     const matchFrom = !filterDateFrom || (c.date||"") >= filterDateFrom;
     const matchTo   = !filterDateTo   || (c.date||"") <= filterDateTo;
     return matchQ && matchA && matchFrom && matchTo;
-  }),[campaigns,search,filterAuthor,filterDateFrom,filterDateTo]);
+  }),[activeCampaigns,search,filterAuthor,filterDateFrom,filterDateTo]);
 
   const sortedFiltered = useMemo(()=>[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[filtered]);
   const paged = useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE),[sortedFiltered,page]);
-  const authors = useMemo(()=>[...new Set(campaigns.map(c=>c.author).filter(Boolean))],[campaigns]);
-  const withTw=campaigns.filter(c=>c.twitterLink).length;
-  const clientNames=[...new Set(campaigns.map(c=>c.client).filter(Boolean))];
+  const authors = useMemo(()=>[...new Set(activeCampaigns.map(c=>c.author).filter(Boolean))],[activeCampaigns]);
+  const withTw=activeCampaigns.filter(c=>c.twitterLink).length;
+  const clientNames=[...new Set(activeCampaigns.map(c=>c.client).filter(Boolean))];
   const dateRange = useMemo(()=>{
-    const sortedDates = campaigns.filter(c=>c.date).map(c=>c.date).sort();
+    const sortedDates = activeCampaigns.filter(c=>c.date).map(c=>c.date).sort();
     return sortedDates.length?(sortedDates[0]===sortedDates[sortedDates.length-1]?fmtDate(sortedDates[0]):`${fmtDate(sortedDates[0]).split(",")[0]} – ${fmtDate(sortedDates[sortedDates.length-1]).split(",")[0]}`):"—";
-  },[campaigns]);
+  },[activeCampaigns]);
+
+  // CQ Research analytics data
+  const cqResearchData = useMemo(()=>{
+    if(contentMode!=="cq_research") return null;
+    const cits = activeCitations;
+    const uniqueOutlets = [...new Set(cits.map(c=>c.media).filter(Boolean))];
+
+    const outletMap={};
+    cits.forEach(c=>{const m=(c.media||"").trim();if(m){const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]={label:m,count:0};outletMap[mk].count++;}});
+    const topOutlets=Object.values(outletMap).sort((a,b)=>b.count-a.count).slice(0,6);
+    const maxOutlet=topOutlets[0]?.count||1;
+
+    const headlineMap={};
+    cits.forEach(c=>{const h=((c.headline||c.topic)||"").trim();if(!h)return;const hk=h.toLowerCase();if(!headlineMap[hk])headlineMap[hk]={label:h,count:0};headlineMap[hk].count++;});
+    const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,6);
+    const maxHeadline=topHeadlines[0]?.count||1;
+
+    const tierMap={};
+    cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
+    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+
+    // Chart data
+    const chartMap = {};
+    activeCampaigns.forEach(b => {
+      const day = b.date; if(!day) return;
+      if(!chartMap[day]) chartMap[day] = {day, bounties:0, citations:0};
+      chartMap[day].bounties++;
+    });
+    cits.forEach(c => {
+      const day = c.date; if(!day) return;
+      if(!chartMap[day]) chartMap[day] = {day, bounties:0, citations:0};
+      chartMap[day].citations++;
+    });
+    const chartData = Object.values(chartMap).sort((a,b)=>a.day.localeCompare(b.day)).map(w => ({
+      ...w,
+      label: new Date(w.day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
+    }));
+
+    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,chartData,cits};
+  },[contentMode,activeCampaigns,activeCitations]);
+
+  // CQ Research citations pagination
+  const [cqCitPage,setCqCitPage] = useState(1);
+  const [viewCitation,setViewCitation] = useState(null);
+  const cqCitRef = useRef(null);
+  const pagedCqCits = cqResearchData ? cqResearchData.cits.slice((cqCitPage-1)*PAGE_SIZE, cqCitPage*PAGE_SIZE) : [];
 
   return (
     <>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
-        <StatCard label="Total Posts"       value={campaigns.length} sub={dateRange}                                    c="var(--accent)"/>
-        <StatCard label="Unique Authors"     value={authors.length}   sub="Contributing analysts"                        c="var(--purple)"/>
+      {/* Content mode pills */}
+      <div style={{display:"flex",alignItems:"center",gap:2,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,width:"fit-content",animation:"fadeUp .5s ease both"}}>
+        {[{id:"all",label:"All Content"},{id:"cq_research",label:"CQ Research"}].map(m=>(
+          <button key={m.id} onClick={()=>{setContentMode(m.id);setPage(1);setCqCitPage(1);resetFilters();}}
+            style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 16px",borderRadius:6,border:"none",background:contentMode===m.id?"var(--surface)":"transparent",color:contentMode===m.id?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:contentMode===m.id?600:400,boxShadow:contentMode===m.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",letterSpacing:"0.02em"}}>
+            {m.label}
+          </button>
+        ))}
       </div>
 
-      {/* Bounty activity chart */}
-      {campaigns.length > 1 && (()=>{
+      {/* Stat cards */}
+      {contentMode==="all" ? (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+          <StatCard label="Total Posts"       value={activeCampaigns.length} sub={dateRange}                                    c="var(--accent)"/>
+          <StatCard label="Unique Authors"     value={authors.length}   sub="Contributing analysts"                        c="var(--purple)"/>
+        </div>
+      ) : (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
+          <StatCard label="Bounties" value={activeCampaigns.length} sub="Posts published" c="var(--accent)"/>
+          <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="#4a7fa8"/>
+          <StatCard label="Media Outlets" value={cqResearchData?.uniqueOutlets.length||0} sub="Unique publications" c="var(--accent)"/>
+        </div>
+      )}
+
+      {/* CQ Research analytics */}
+      {contentMode==="cq_research"&&cqResearchData&&(<>
+        {/* Chart */}
+        {cqResearchData.chartData.length > 0 && (
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .04s both"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
+              <div style={{display:"flex",gap:14}}>
+                {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
+                  <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
+                    <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={200}>
+              <ComposedChart data={cqResearchData.chartData} margin={{top:4,right:8,left:0,bottom:0}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(cqResearchData.chartData.length/8)-1)}/>
+                <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
+                <Tooltip content={({active,payload,label})=>{
+                  if(!active||!payload?.length) return null;
+                  return (
+                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
+                      {payload.map(p=>(
+                        <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                          <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{p.dataKey}:</span>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}/>
+                <Bar dataKey="bounties"  fill="#1a3a5c" fillOpacity={0.35} radius={[3,3,0,0]}/>
+                <Bar dataKey="citations" fill="#4a7fa8" fillOpacity={0.45} radius={[3,3,0,0]}/>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+
+        {/* Leaderboards */}
+        {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
+            {/* Top Headlines */}
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Headlines</div>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topHeadlines.length}</span>
+              </div>
+              {cqResearchData.topHeadlines.length===0
+                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+                :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                  {cqResearchData.topHeadlines.map((h,i)=>(
+                    <div key={h.label}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                          <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
+                        </div>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                      </div>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{width:`${(h.count/cqResearchData.maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              }
+            </div>
+            {/* Top Outlets */}
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Outlets</div>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.uniqueOutlets.length}</span>
+              </div>
+              {cqResearchData.topOutlets.length===0
+                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+                :<div style={{display:"flex",flexDirection:"column",gap:9}}>
+                  {cqResearchData.topOutlets.map((o,i)=>(
+                    <div key={o.label}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                          <span title={o.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
+                        </div>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                      </div>
+                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                        <div style={{width:`${(o.count/cqResearchData.maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              }
+            </div>
+            {/* Media Tier */}
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Media Tier</div>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.cits.length} total</span>
+              </div>
+              {cqResearchData.tierEntries.length===0
+                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
+                :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {cqResearchData.tierEntries.map(([tier,count])=>{
+                    const col=getTierColor(tier).color;
+                    const pct=(count/cqResearchData.cits.length)*100;
+                    return (
+                      <div key={tier}>
+                        <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>Tier {tier}</span>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:col}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                        </div>
+                        <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                          <div style={{width:`${pct}%`,height:"100%",background:col,borderRadius:99,transition:"width .4s"}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              }
+            </div>
+          </div>
+        )}
+      </>)}
+
+      {/* Bounty activity chart (All mode only) */}
+      {contentMode==="all"&&activeCampaigns.length > 1 && (()=>{
         const GranularityToggle = ({value, onChange}) => (
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
             {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
@@ -882,7 +1080,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
             } catch { return null; }
           };
           const buckets = {};
-          campaigns.forEach(c => {
+          activeCampaigns.forEach(c => {
             const key = gran === "daily" ? c.date : weekKey(c.date);
             if(!key) return;
             if(!buckets[key]) buckets[key] = { period:key, count:0 };
@@ -896,7 +1094,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
             });
 
           const authorCounts = {};
-          campaigns.forEach(c => { if(c.author) authorCounts[c.author]=(authorCounts[c.author]||0)+1; });
+          activeCampaigns.forEach(c => { if(c.author) authorCounts[c.author]=(authorCounts[c.author]||0)+1; });
           const topAuthors = Object.entries(authorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
           const maxAuthor = topAuthors[0]?.[1] || 1;
 
@@ -965,7 +1163,7 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
-              {currentUser.role==="admin"&&campaigns.length>0&&<button onClick={()=>{const cid=campaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
+              {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {showFilters&&(
@@ -999,13 +1197,13 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
         );
       })()}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
-        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"11px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
-        {!campaigns.length
+        {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
               <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
-              <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No entries yet</div>
+              <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>{contentMode==="cq_research"?"No CQ Research entries":"No entries yet"}</div>
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
             </div>
           : filtered.length===0
@@ -1016,9 +1214,9 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
                 const editable=canEdit(c);
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`}}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
-                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
+                    onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                       <span style={{display:"block",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                     </div>
@@ -1060,6 +1258,43 @@ const CampaignTable = ({campaigns, onSave, onDelete, onDeleteAll, currentUser, r
         }
         <Pagination page={page} total={sortedFiltered.length} onChange={p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'})}}/>
       </div>
+      {/* CQ Research citations table */}
+      {contentMode==="cq_research"&&cqResearchData&&cqResearchData.cits.length>0&&(
+        <div ref={cqCitRef} style={{marginTop:20}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqResearchData.cits.length}</span>
+            </div>
+            {pagedCqCits.map((c,i)=>{
+              const tc=getTierColor(c.mediaTier);
+              return (
+                <div key={c.id} onClick={()=>setViewCitation(c)}
+                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
+                  onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</div>
+                    {c.mediaTier&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,marginTop:2,display:"inline-block"}}>Tier {c.mediaTier}</span>}
+                  </div>
+                  <div style={{minWidth:0}}>
+                    {c.headline&&<div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
+                    {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
+                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                  </div>
+                  <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
+                  <div onClick={e=>e.stopPropagation()}>
+                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10}}>—</span>}
+                  </div>
+                </div>
+              );
+            })}
+            <Pagination page={cqCitPage} total={cqResearchData.cits.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
+          </div>
+        </div>
+      )}
+      {viewCitation&&<CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
       {view&&<BountyDetailModal entry={view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
@@ -1409,8 +1644,8 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
         );
       })()}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
-            <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
-              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+            <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1425,9 +1660,9 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                     const dp=fmtDate(c.date).split(", ");
                     const editable=canEdit(c);
                     return (
-                      <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer"}}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
+                        onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                           <span style={{display:"block",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                         </div>
@@ -3131,7 +3366,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   );
 };
 
-const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}) => {
+const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations, darkMode}) => {
   const [syncing,setSyncing] = useState(false);
   const [result,setResult]   = useState(null);
   const isSyncing = useRef(false);
@@ -3206,12 +3441,15 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations}
     isSyncing.current = false;
   };
   return (
-    <div style={{display:"flex",alignItems:"center",gap:8}}>
-      {result&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:result.startsWith("✓")?"#166534":"var(--red)"}}>{result}</span>}
+    <div style={{display:"flex",alignItems:darkMode?"stretch":"center",flexDirection:darkMode?"column":"row",gap:darkMode?6:8}}>
       <button onClick={doSync} disabled={syncing}
-        style={{display:"flex",alignItems:"center",gap:5,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}}>
+        style={darkMode
+          ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
+          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
+        }>
         {syncing?<><Icons.Spin/>Syncing…</>:"⟳ Sync Sheet"}
       </button>
+      {result&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.9)":"rgba(252,165,165,0.9)"):(result.startsWith("✓")?"#166534":"var(--red)"),textAlign:darkMode?"center":"left"}}>{result}</span>}
     </div>
   );
 };
@@ -3453,9 +3691,11 @@ export default function App() {
   const [loading,setLoading]     = useState(true);
   const [saving,setSaving]       = useState(false);
   const [toast,setToast]         = useState(null);
-  const [tab,setTab]             = useState("campaign");
+  const [tab,setTab]             = useState("weekly");
   const [clientActiveCid,setClientActiveCid] = useState(null);
   const [showPdfModal,setShowPdfModal] = useState(false);
+  const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
+  const sidebarCampaignRef = useRef(null);
 
   const showToast=(msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800)};
 
@@ -3478,6 +3718,13 @@ export default function App() {
 
   // Sync state → hash whenever tab or activeCid changes
   useEffect(()=>{ if(user && tab) pushHash(tab, activeCid); },[tab, activeCid]);
+
+  // Close sidebar campaign dropdown on click outside
+  useEffect(()=>{
+    const h = e => { if(sidebarCampaignRef.current&&!sidebarCampaignRef.current.contains(e.target)) setSidebarCampaignOpen(false); };
+    document.addEventListener("mousedown",h);
+    return ()=>document.removeEventListener("mousedown",h);
+  },[]);
 
   // Listen for browser back/forward
   useEffect(()=>{
@@ -3527,11 +3774,13 @@ export default function App() {
   useEffect(()=>{
     (async()=>{
       try {
-        const [loadedUsers, loadedPrograms, loadedCamps, loadedCits] = await Promise.all([
+        const [loadedUsers, loadedPrograms, loadedCamps, loadedCits, nexoSeeded, nexoCitSeeded] = await Promise.all([
           db.getUsers().catch(()=>[]),
           db.getPrograms().catch(()=>[]),
           db.getCampaigns().catch(()=>[]),
           db.getCitations().catch(()=>[]),
+          db.getFlag(NEXO_SEEDED_KEY).catch(()=>false),
+          db.getFlag(NEXO_CIT_SEEDED_KEY).catch(()=>false),
         ]);
 
         // Bootstrap admin if no users exist
@@ -3541,12 +3790,20 @@ export default function App() {
           setUsers([adminUser]);
         } else {
           setUsers(loadedUsers);
+          // Restore session from localStorage
+          try {
+            const savedId = localStorage.getItem("cq_session");
+            if(savedId) {
+              const saved = loadedUsers.find(u=>u.id===savedId);
+              if(saved) setUser(saved);
+              else localStorage.removeItem("cq_session");
+            }
+          } catch{}
         }
 
         setPrograms(loadedPrograms);
 
         // Seed Nexo bounties if not yet done
-        const nexoSeeded = await db.getFlag(NEXO_SEEDED_KEY).catch(()=>false);
         if(!nexoSeeded) {
           const nexoCampaign = loadedPrograms.find(c=>c.name.toLowerCase()==="nexo");
           if(nexoCampaign && !loadedCamps.some(c=>c.campaignId===nexoCampaign.id)) {
@@ -3563,7 +3820,6 @@ export default function App() {
         }
 
         // Seed Nexo citations if not yet done
-        const nexoCitSeeded = await db.getFlag(NEXO_CIT_SEEDED_KEY).catch(()=>false);
         if(!nexoCitSeeded) {
           const nexoCampaign2 = loadedPrograms.find(c=>c.name.toLowerCase()==="nexo");
           if(nexoCampaign2 && !loadedCits.some(c=>c.campaignId===nexoCampaign2.id)) {
@@ -3721,13 +3977,19 @@ export default function App() {
     return activeCid ? citations.filter(c=>c.campaignId===activeCid) : [];
   },[citations,user,activeCid,clientAllowedIds,clientActiveCid]);
 
+  const handleLogin = (u) => { setUser(u); try{localStorage.setItem("cq_session",u.id);}catch{} };
+  const handleLogout = () => { setUser(null); try{localStorage.removeItem("cq_session");}catch{} };
+
+  if(!user && !loading) return (<><style>{css}</style><LoginScreen onLogin={handleLogin}/></>);
+
   if(loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"var(--bg)",flexDirection:"column",gap:14}}>
+      <style>{css}</style>
       <Icons.Spin/><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",letterSpacing:"0.08em"}}>LOADING…</div>
     </div>
   );
 
-  if(!user) return (<><style>{css}</style><LoginScreen onLogin={setUser}/></>);
+  if(!user) return (<><style>{css}</style><LoginScreen onLogin={handleLogin}/></>);
 
   const rm = ROLE_META[user.role]||ROLE_META.author;
   const readOnly = user.role==="client";
@@ -3745,15 +4007,13 @@ export default function App() {
 
   const TABS = user.role==="admin"
     ? [
-        {id:"weekly",         label:"Weekly Summary", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
         {id:"campaigns_mgmt", label:"Campaigns",     icon:<Icons.Brief/>,     accent:"var(--accent)", count:programs.length},
         {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
       ]
     : [
         {id:"weekly",      label:"Weekly Summary",  icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
-        {id:"campaign",    label:"Bounties",         icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
+        {id:"campaign",    label:"Content",           icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
         {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
-        {id:"cq_research", label:"CQ Research",      icon:<Icons.Chart/>,     accent:"var(--accent)", count:""},
         ...(user.role==="client"?[{id:"analytics", label:"Analytics", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""}]:[]),
         ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
       ];
@@ -3764,54 +4024,104 @@ export default function App() {
       {toast&&<Toast msg={toast.msg} type={toast.type}/>}
       {showPdfModal&&effectiveClient&&<PdfReportModal campaigns={scopedCampaigns} citations={scopedCitations} campaignName={effectiveClient.name} onClose={()=>setShowPdfModal(false)}/>}
 
-      {/* HEADER */}
-      <header style={{position:"sticky",top:0,zIndex:100,background:"#ffffff",borderBottom:"1px solid var(--border)",boxShadow:"0 1px 0 var(--border)",padding:"0 32px",display:"flex",alignItems:"center",justifyContent:"space-between",height:56}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <img src="data:image/png;base64,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" alt="CryptoQuant" style={{width:32,height:32,objectFit:"contain"}}/>
-          <span style={{fontSize:15,fontWeight:600,letterSpacing:"-0.01em",color:"var(--text)"}}>CryptoQuant <span style={{color:"var(--dim)",fontWeight:400}}>Bounty Tracker</span></span>
-        </div>
-      </header>
-
       {/* LAYOUT */}
-      <div style={{display:"flex",minHeight:"calc(100vh - 56px)"}}>
+      <div style={{display:"flex",minHeight:"100vh"}}>
         {/* SIDEBAR */}
-        <nav style={{width:216,flexShrink:0,background:"var(--surface)",borderRight:"1px solid var(--border)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:56,height:"calc(100vh - 56px)",overflowY:"auto"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Navigation</div>
+        <nav style={{width:216,flexShrink:0,background:"#0d1f33",borderRight:"1px solid rgba(255,255,255,0.07)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
+          <div style={{padding:"4px 10px",marginBottom:16}}>
+            <div style={{fontSize:13,fontWeight:600,letterSpacing:"-0.01em",color:"#ffffff"}}>CryptoQuant</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
+          </div>
+
+          {/* CAMPAIGN SELECTOR — admin uses CampaignsPanel drill-in instead */}
+          {user.role!=="admin"&&(()=>{
+            const visibleCampaigns = user.role==="client"
+              ? allowedClientCampaigns
+              : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id));
+            const currentCid = user.role==="client" ? (clientActiveCid||allowedClientCampaigns[0]?.id||null) : activeCid;
+            const activeCl = visibleCampaigns.find(c=>c.id===currentCid);
+            const setCid = user.role==="client" ? setClientActiveCid : setActiveCid;
+            if(!visibleCampaigns.length) return (
+              <div style={{padding:"0 10px",marginBottom:16}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",marginBottom:6}}>Campaign</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"rgba(255,255,255,0.35)",padding:"8px 0"}}>No campaigns assigned.</div>
+              </div>
+            );
+            return (
+              <div ref={sidebarCampaignRef} style={{padding:"0 4px",marginBottom:16}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 6px",marginBottom:6}}>Campaign</div>
+                <button onClick={()=>setSidebarCampaignOpen(v=>!v)}
+                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:sidebarCampaignOpen?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",border:"1px solid "+(sidebarCampaignOpen?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)"),borderRadius:6,cursor:"pointer",transition:"all .15s",textAlign:"left"}}
+                  onMouseEnter={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="rgba(255,255,255,0.06)"}}
+                  onMouseLeave={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="rgba(255,255,255,0.04)"}}>
+                  {activeCl&&<div style={{width:7,height:7,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
+                  <span style={{flex:1,fontSize:12,fontWeight:500,color:activeCl?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.4)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select…"}</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.3)",transition:"transform .15s",display:"inline-block",transform:sidebarCampaignOpen?"rotate(180deg)":"none"}}>▾</span>
+                </button>
+                {sidebarCampaignOpen&&(
+                  <div style={{marginTop:4,background:"#162a42",border:"1px solid rgba(255,255,255,0.12)",borderRadius:8,overflow:"hidden",animation:"fadeUp .15s ease",maxHeight:240,overflowY:"auto"}}>
+                    {visibleCampaigns.map((cl,i)=>{
+                      const ia=currentCid===cl.id;
+                      const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
+                      const cc=citations.filter(c=>c.campaignId===cl.id).length;
+                      return (
+                        <button key={cl.id} onClick={()=>{setCid(cl.id);pushHash(tab,cl.id);setSidebarCampaignOpen(false);}}
+                          style={{display:"flex",alignItems:"center",gap:8,padding:"9px 10px",width:"100%",background:ia?"rgba(255,255,255,0.08)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid rgba(255,255,255,0.06)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
+                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="rgba(255,255,255,0.05)"}}
+                          onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
+                          <div style={{width:7,height:7,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
+                          <span style={{flex:1,fontSize:12,fontWeight:ia?600:400,color:ia?"rgba(255,255,255,0.95)":"rgba(255,255,255,0.5)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
+                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.3)"}}>{bc+cc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Navigation</div>
           {TABS.map(t=>{
             const ia=tab===t.id;
             return (
               <button key={t.id} onClick={()=>navigate(t.id)}
-                style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"var(--accent-light)":"transparent",color:ia?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
-                onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--text)";}}}
-                onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}}>
-                <span style={{color:ia?"var(--accent)":"var(--dim)",flexShrink:0}}>{t.icon}</span>
+                style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"rgba(255,255,255,0.1)":"transparent",color:ia?"#ffffff":"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
+                onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}}
+                onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}}>
+                <span style={{color:ia?"#ffffff":"rgba(255,255,255,0.4)",flexShrink:0}}>{t.icon}</span>
                 <span style={{flex:1}}>{t.label}</span>
-                {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.1)":"var(--surface2)",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>}
+                {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)",color:ia?"#ffffff":"rgba(255,255,255,0.4)"}}>{t.count}</span>}
               </button>
             );
           })}
-          {/* PDF Report — hide for admin on campaigns_mgmt (drill view has its own button) */}
+          {/* PDF Report — visible when a campaign is active */}
           {effectiveCid && tab!=="campaigns_mgmt" && (
             <button onClick={()=>setShowPdfModal(true)}
-              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--text)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}>
-              <span style={{color:"var(--dim)",flexShrink:0,fontSize:12}}>↓</span>
+              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
+              <span style={{color:"rgba(255,255,255,0.35)",flexShrink:0,fontSize:12}}>↓</span>
               <span style={{flex:1}}>PDF Report</span>
             </button>
           )}
-          <div style={{marginTop:"auto",paddingTop:16,borderTop:"1px solid var(--border)"}}>
-            {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
-            <div style={{padding:"8px 12px",borderRadius:8,background:"var(--surface2)",border:"1px solid var(--border)"}}>
+          {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
+            <div style={{marginTop:"auto",padding:"0 4px",marginBottom:10}}>
+              <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations} darkMode/>
+            </div>
+          )}
+          <div style={{marginTop:effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)?0:"auto",paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+            {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.4)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
+            <div style={{padding:"8px 12px",borderRadius:8,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                <div style={{width:22,height:22,borderRadius:"50%",background:rm.bg,border:`1px solid ${rm.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:rm.color,flexShrink:0}}>{initials(user.username)}</div>
-                <span style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
+                <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:"rgba(255,255,255,0.8)",flexShrink:0}}>{initials(user.username)}</div>
+                <span style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.9)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
               </div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase"}}>{rm.label}</span>
-                <button onClick={()=>setUser(null)} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid var(--border)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--dim)",transition:"all .15s"}}
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.55)",textTransform:"uppercase"}}>{rm.label}</span>
+                <button onClick={handleLogout} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--dim)"}}>
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
                   <Icons.Logout/>
                 </button>
               </div>
@@ -3822,163 +4132,22 @@ export default function App() {
         {/* MAIN CONTENT */}
         <main style={{flex:1,padding:"32px 36px 80px",minWidth:0,overflowX:"hidden"}}>
 
-        {/* CLIENT switcher + notice */}
-        {user.role==="client"&&(
-          <div style={{marginBottom:20,animation:"fadeUp .5s ease .05s both"}}>
-            {allowedClientCampaigns.length===0 ? (
-              <div style={{padding:"12px 16px",background:"rgba(220,38,38,0.05)",border:"1px solid rgba(220,38,38,0.15)",borderRadius:10,display:"flex",alignItems:"center",gap:10}}>
-                <Icons.Eye/>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>No campaigns have been shared with your account yet. Contact your admin.</span>
-              </div>
-            ) : allowedClientCampaigns.length===1 ? (
-              <div style={{padding:"10px 16px",background:"rgba(26,58,92,0.04)",border:"1px solid rgba(26,58,92,0.15)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <Icons.Eye/>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>Read-only · <span style={{color:effectiveClient?.color||"var(--accent)"}}>{effectiveClient?.name||"your campaign"}</span></span>
-                </div>
-                {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
-                  <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
-                )}
-              </div>
-            ) : (()=>{
-              const CampaignDropdown = () => {
-                const [open,setOpen] = useState(false);
-                const ref = useRef(null);
-                const activeCl = allowedClientCampaigns.find(c=>c.id===(clientActiveCid||allowedClientCampaigns[0]?.id));
-                useEffect(()=>{
-                  const h = e => { if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
-                  document.addEventListener("mousedown",h);
-                  return ()=>document.removeEventListener("mousedown",h);
-                },[]);
-                return (
-                  <div ref={ref} style={{marginBottom:20,animation:"fadeUp .5s ease .05s both"}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Your Campaign</div>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <button onClick={()=>setOpen(v=>!v)}
-                        style={{flex:1,display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"var(--surface)",border:`1px solid ${open?"var(--border2)":"var(--border)"}`,borderRadius:8,cursor:"pointer",transition:"all .15s",boxShadow:open?"0 0 0 3px rgba(26,58,92,0.08)":"none",textAlign:"left"}}>
-                        {activeCl&&<div style={{width:8,height:8,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
-                        <span style={{flex:1,fontSize:13,fontWeight:500,color:"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select campaign"}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:open?"rotate(180deg)":"none"}}>▾</span>
-                      </button>
-                      {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
-                        <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations}/>
-                      )}
-                    </div>
-                    {open&&(
-                      <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.08)",overflow:"hidden",animation:"fadeUp .15s ease"}}>
-                        {allowedClientCampaigns.map((cl,i)=>{
-                          const ia=cl.id===(clientActiveCid||allowedClientCampaigns[0]?.id);
-                          const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
-                          const cc=citations.filter(c=>c.campaignId===cl.id).length;
-                          return (
-                            <button key={cl.id} onClick={()=>{setClientActiveCid(cl.id);pushHash(tab,cl.id);setOpen(false);}}
-                              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",width:"100%",background:ia?"var(--accent-light)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<allowedClientCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
-                              onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
-                              onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
-                              <div style={{width:8,height:8,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
-                              <span style={{flex:1,fontSize:13,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
-                              <div style={{display:"flex",gap:8,flexShrink:0}}>
-                                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc}<span style={{opacity:.5}}> b</span></span>
-                                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{cc}<span style={{opacity:.5}}> c</span></span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              };
-              return <CampaignDropdown/>;
-            })()}
-          </div>
-        )}
-
         {/* NO CAMPAIGN SELECTED warning for data tabs */}
         {!effectiveCid && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine") && programs.length>0 && (
           <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,animation:"fadeUp .5s ease .1s both"}}>
-            <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
-            <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>Select a campaign above to view data</div>
+            <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>Select a campaign in the sidebar to view data</div>
           </div>
         )}
 
-        {/* CAMPAIGN SWITCHER — admin/author only */}
-        {user.role!=="client" && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine"||tab==="campaigns_mgmt") && tab!=="campaigns_mgmt" && (()=>{
-          const visibleCampaigns = user.role==="admin"
-            ? programs
-            : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id));
-          const CampaignDropdown = () => {
-            const [open,setOpen] = useState(false);
-            const ref = useRef(null);
-            const activeCl = visibleCampaigns.find(c=>c.id===activeCid);
-            useEffect(()=>{
-              const h = e => { if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
-              document.addEventListener("mousedown",h);
-              return ()=>document.removeEventListener("mousedown",h);
-            },[]);
-            return (
-              <div ref={ref} style={{marginBottom:24,animation:"fadeUp .5s ease .04s both"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>
-                  {visibleCampaigns.length===0?"Campaigns":"Active Campaign"}
-                </div>
-                {!visibleCampaigns.length ? (
-                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 16px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8}}>
-                    <Icons.Brief/>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                      {user.role==="admin"?"No campaigns yet. ":"No campaigns assigned to your account. Contact an admin."}
-                    </span>
-                    {user.role==="admin"&&<button onClick={()=>setTab("campaigns_mgmt")} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--accent)",background:"transparent",border:"none",cursor:"pointer",textDecoration:"underline"}}>Create your first campaign →</button>}
-                  </div>
-                ) : (
-                  <button onClick={()=>setOpen(v=>!v)}
-                    style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 14px",background:"var(--surface)",border:`1px solid ${open?"var(--border2)":"var(--border)"}`,borderRadius:8,cursor:"pointer",transition:"all .15s",boxShadow:open?"0 0 0 3px rgba(26,58,92,0.08)":"none",textAlign:"left"}}>
-                    {activeCl&&<div style={{width:8,height:8,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
-                    <span style={{flex:1,fontSize:13,fontWeight:500,color:activeCl?"var(--text)":"var(--dim)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select a campaign…"}</span>
-                    {activeCl&&(()=>{
-                      const bc=campaigns.filter(c=>c.campaignId===activeCl.id).length;
-                      const cc=citations.filter(c=>c.campaignId===activeCl.id).length;
-                      return <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>{bc}b · {cc}c</span>;
-                    })()}
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:open?"rotate(180deg)":"none",flexShrink:0}}>▾</span>
-                  </button>
-                )}
-                {open&&visibleCampaigns.length>0&&(
-                  <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 4px 16px rgba(0,0,0,0.08)",overflow:"hidden",animation:"fadeUp .15s ease"}}>
-                    {visibleCampaigns.map((cl,i)=>{
-                      const ia=activeCid===cl.id;
-                      const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
-                      const cc=citations.filter(c=>c.campaignId===cl.id).length;
-                      return (
-                        <button key={cl.id} onClick={()=>{setActiveCid(cl.id);pushHash(tab,cl.id);setOpen(false);}}
-                          style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",width:"100%",background:ia?"var(--accent-light)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
-                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
-                          onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
-                          <span style={{flex:1,fontSize:13,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
-                          <div style={{display:"flex",gap:8,flexShrink:0}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc}<span style={{opacity:.5}}> b</span></span>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{cc}<span style={{opacity:.5}}> c</span></span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          };
-          return <CampaignDropdown/>;
-        })()}
-
         {/* CONTENT */}
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {tab==="analytics"&&user.role==="client"&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.clientName}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
-        {tab==="cq_research"&&<CQResearchTab campaigns={scopedCampaigns} citations={scopedCitations}/>}
+        {/* cq_research merged into Content tab */}
         </main>
       </div>
 

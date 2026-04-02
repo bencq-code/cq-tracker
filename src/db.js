@@ -182,7 +182,7 @@ export const db = {
 
   // ── Bounties ──
   async getCampaigns() {
-    const data = await fetchAll("bounties", q => q.select("*").order("date", { ascending: false }));
+    const data = await fetchAll("bounties", q => q.select("id,campaign_id,date,author,title,cq_link,author_twitter_link,analytics_link,cq_twitter_link,telegram_link,category,asset,twitter_impressions,telegram_impressions,sheet_row_no,created_by,created_at").order("date", { ascending: false }));
     return data.map(fromCampaign);
   },
   async setCampaigns(campaigns) {
@@ -200,7 +200,7 @@ export const db = {
 
   // ── Citations ──
   async getCitations() {
-    const data = await fetchAll("citations", q => q.select("*").order("date", { ascending: false }));
+    const data = await fetchAll("citations", q => q.select("id,campaign_id,date,media,reporter,author,topic,headline,article_link,media_tier,direct_relationship,language,asset,branding,sheet_row_no,created_by,created_at").order("date", { ascending: false }));
     return data.map(fromCitation);
   },
   async setCitations(citations) {
