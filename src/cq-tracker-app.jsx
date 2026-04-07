@@ -2573,11 +2573,27 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   };
 
   // ── DAILY BAR DATA ───────────────────────────────────────
-  const days = Array.from({length:7},(_,i)=>{
-    const d=new Date(weekStartStr+"T00:00:00");
-    d.setDate(d.getDate()+i);
-    return toLocalDateStr(d);
-  });
+  const days = (()=>{
+    if(mode==="custom"){
+      let startStr=effectiveFrom, endStr=effectiveTo;
+      if(!startStr||!endStr){
+        const allDates=[...weekBounties.map(c=>c.date),...weekCitations.map(c=>c.date)].filter(Boolean).sort();
+        if(!allDates.length) return [];
+        if(!startStr) startStr=allDates[0];
+        if(!endStr)   endStr=allDates[allDates.length-1];
+      }
+      const start=new Date(startStr+"T00:00:00");
+      const end=new Date(endStr+"T00:00:00");
+      const out=[]; const cur=new Date(start);
+      while(cur<=end && out.length<92){ out.push(toLocalDateStr(cur)); cur.setDate(cur.getDate()+1); }
+      return out;
+    }
+    return Array.from({length:7},(_,i)=>{
+      const d=new Date(weekStartStr+"T00:00:00");
+      d.setDate(d.getDate()+i);
+      return toLocalDateStr(d);
+    });
+  })();
   const dayData = days.map(day=>({
     day,
     label: new Date(day+"T00:00:00").toLocaleDateString("en-US",{weekday:"short"}),
@@ -2611,7 +2627,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
     const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
 
     return {topAuthors,maxAuthorTotal,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
-  },[weekBounties.length, weekCitations.length]);
+  },[weekBounties.length, weekCitations.length, effectiveFrom, effectiveTo, mode]);
 
   // using global getTierColor
 
@@ -2619,49 +2635,78 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const recentAll = useMemo(()=>[
     ...weekBounties.map(b=>({...b,_type:"bounty"})),
     ...weekCitations.map(c=>({...c,_type:"citation"})),
-  ].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6),[weekBounties.length, weekCitations.length]);
+  ].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,6),[weekBounties.length, weekCitations.length, effectiveFrom, effectiveTo, mode]);
 
   // ── DRILL VIEW ───────────────────────────────────────────
   if(drill){
-    const items=drill==="bounties"?weekBounties:weekCitations;
+    let items=[], itemKind="citation", drillTitle="Media Citations";
+    const eq=(a,b)=>(a||"").trim().toLowerCase()===(b||"").trim().toLowerCase();
+    if(drill.type==="bounties"){
+      items=weekBounties; itemKind="bounty"; drillTitle="Bounties";
+    } else if(drill.type==="citations"){
+      items=weekCitations; itemKind="citation"; drillTitle="Media Citations";
+    } else if(drill.type==="headline"){
+      items=weekCitations.filter(c=>eq(c.headline||c.topic, drill.value));
+      itemKind="citation"; drillTitle=`Headline · ${drill.value}`;
+    } else if(drill.type==="tier"){
+      items=weekCitations.filter(c=>(c.mediaTier||"").trim()===drill.value);
+      itemKind="citation"; drillTitle=`Tier ${drill.value}`;
+    } else if(drill.type==="outlet"){
+      items=weekCitations.filter(c=>eq(c.media, drill.value));
+      itemKind="citation"; drillTitle=`Outlet · ${drill.value}`;
+    } else if(drill.type==="author"){
+      const bs=weekBounties.filter(b=>eq(b.author, drill.value)).map(b=>({...b,_type:"bounty"}));
+      const cs=weekCitations.filter(c=>eq(c.author, drill.value)).map(c=>({...c,_type:"citation"}));
+      items=[...bs,...cs];
+      itemKind="mixed"; drillTitle=`Author · ${drill.value}`;
+    }
     const sorted=[...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
     const visible=drillExpanded?sorted:sorted.slice(0,10);
+    const renderRow=(item)=>{
+      const kind = itemKind==="mixed" ? item._type : itemKind;
+      if(kind==="bounty"){
+        return <>
+          <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
+        </>;
+      }
+      return <>
+        <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
+        {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
+      </>;
+    };
+    const rowLink=(item)=>{
+      const kind = itemKind==="mixed" ? item._type : itemKind;
+      return kind==="bounty" ? item.cqLink : item.articleLink;
+    };
     return (
       <div style={{animation:"fadeUp .4s ease both"}}>
         <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
           ← Back to Summary
         </button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
-        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{drill==="bounties"?"Bounties":"Media Citations"} This Period <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
+        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{drillTitle} <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
           {sorted.length===0
             ?<div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
             :<>
               <div style={{maxHeight:"520px",overflowY:"auto"}}>
-                {visible.map((item,i)=>(
+                {visible.map((item,i)=>{
+                  const link=rowLink(item);
+                  return (
                   <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
-                    <div style={{minWidth:0}}>
-                      {drill==="bounties"
-                        ? <>
-                            <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
-                          </>
-                        : <>
-                            <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-                            {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
-                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
-                          </>
-                      }
-                    </div>
-                    {(drill==="bounties"?item.cqLink:item.articleLink)&&(
-                      <a href={drill==="bounties"?item.cqLink:item.articleLink} target="_blank" rel="noreferrer"
+                    <div style={{minWidth:0}}>{renderRow(item)}</div>
+                    {link&&(
+                      <a href={link} target="_blank" rel="noreferrer"
                         style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {sorted.length>10&&(
                 <button onClick={()=>setDrillExpanded(v=>!v)}
@@ -2692,7 +2737,16 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           {/* Mode toggle */}
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
             {[["weekly","Weekly"],["custom","Custom"]].map(([m,label])=>(
-              <button key={m} onClick={()=>{setMode(m);setDrill(null);}}
+              <button key={m} onClick={()=>{
+                setMode(m);
+                setDrill(null);
+                if(m==="custom"&&!customFrom){
+                  const prevMonday=new Date(todayMonday);
+                  prevMonday.setDate(prevMonday.getDate()-7);
+                  setCustomFrom(toLocalDateStr(prevMonday));
+                  if(!customTo) setCustomTo(toLocalDateStr(new Date()));
+                }
+              }}
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:mode===m?"var(--surface)":"transparent",color:mode===m?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===m?700:400,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
                 {label}
               </button>
@@ -2744,7 +2798,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           {label:"Active Authors",curr:authorsSet.size,      prev:null,                 sub:"Contributors",      c:"var(--accent)", key:null},
           {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"#4a7fa8",      key:null},
         ].map((s,i)=>(
-          <div key={i} onClick={s.key?()=>{setDrill(s.key);setDrillExpanded(false);}:undefined}
+          <div key={i} onClick={s.key?()=>{setDrill({type:s.key});setDrillExpanded(false);}:undefined}
             style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
             onMouseEnter={e=>{if(s.key){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
             onMouseLeave={e=>{if(s.key){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
@@ -2840,12 +2894,12 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           }
           {(weekBounties.length+weekCitations.length)>6&&(
             <div style={{marginTop:8,display:"flex",gap:8}}>
-              {weekBounties.length>0&&<button onClick={()=>{setDrill("bounties");setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+              {weekBounties.length>0&&<button onClick={()=>{setDrill({type:"bounties"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(26,58,92,0.3)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
                 All bounties →
               </button>}
-              {weekCitations.length>0&&<button onClick={()=>{setDrill("citations");setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+              {weekCitations.length>0&&<button onClick={()=>{setDrill({type:"citations"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.color="#4a7fa8";e.currentTarget.style.borderColor="rgba(74,127,168,0.3)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
                 All citations →
@@ -2869,7 +2923,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No citations this week</div>
             :<div style={{display:"flex",flexDirection:"column",gap:9}}>
               {topHeadlines.map((h,i)=>(
-                <div key={h.label}>
+                <div key={h.label} onClick={()=>{setDrill({type:"headline",value:h.label});setDrillExpanded(false);}}
+                  style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="rgba(74,127,168,0.06)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
                       <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
@@ -2899,7 +2956,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                 const tc=getTierColor(tier);
                 const pct=(count/weekCitations.length)*100;
                 return (
-                  <div key={tier}>
+                  <div key={tier} onClick={()=>{setDrill({type:"tier",value:tier});setDrillExpanded(false);}}
+                    style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background=tc.bg}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                       <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
                       <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
@@ -2926,7 +2986,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                 {topAuthors.map((a,i)=>{
                   const total=a.bounties+a.citations;
                   return (
-                    <div key={a.name}>
+                    <div key={a.name} onClick={()=>{setDrill({type:"author",value:a.name});setDrillExpanded(false);}}
+                      style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.05)"}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
                           <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
@@ -2959,12 +3022,17 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             {topOutlets.length===0
               ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage this week</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
-                {topOutlets.map(([outlet,count],i)=>(
-                  <div key={outlet}>
+                {topOutlets.map(([outlet,count],i)=>{
+                  const display=weekCitations.find(c=>(c.media||"").toLowerCase()===outlet)?.media || outlet;
+                  return (
+                  <div key={outlet} onClick={()=>{setDrill({type:"outlet",value:display});setDrillExpanded(false);}}
+                    style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(74,127,168,0.06)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
-                        <span title={outlet} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{outlet}</span>
+                        <span title={display} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{display}</span>
                       </div>
                       <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
                     </div>
@@ -2972,7 +3040,8 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                       <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             }
           </div>
