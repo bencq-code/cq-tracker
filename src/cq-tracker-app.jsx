@@ -188,20 +188,68 @@ const css = `
   --positive:#166534;
   --negative:#b91c1c;
   --tag:#1a3a5c;
+  --row-tint:rgba(26,58,92,0.03);
+  --row-tint-strong:rgba(26,58,92,0.05);
+  --row-tint-weak:rgba(26,58,92,0.015);
+  --accent-glow:rgba(26,58,92,0.1);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.05);
+  --shadow-md:0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.1);
+  --input-shadow:inset 0 1px 3px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] {
+  --bg:#0b1420;
+  --surface:#111d2d;
+  --surface2:#162637;
+  --surface3:#1c2f44;
+  --border:#1f3347;
+  --border2:#2b4662;
+  --text:#e8eef6;
+  --muted:#a8b4c4;
+  --dim:#6b7a8e;
+  --accent:#6ea8e0;
+  --accent-light:#18273b;
+  --positive:#4ade80;
+  --negative:#f87171;
+  --green:#4ade80;
+  --red:#f87171;
+  --yellow:#fbbf24;
+  --orange:#fb923c;
+  --purple:#a78bfa;
+  --tag:#6ea8e0;
+  --row-tint:rgba(110,168,224,0.06);
+  --row-tint-strong:rgba(110,168,224,0.1);
+  --row-tint-weak:rgba(110,168,224,0.03);
+  --accent-glow:rgba(110,168,224,0.18);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
+  --input-shadow:inset 0 1px 3px rgba(0,0,0,0.2);
+  color-scheme:dark;
 }
 body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','Inter',sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
 .tabular { font-variant-numeric: tabular-nums; }
 ::-webkit-scrollbar{width:4px;height:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px} ::-webkit-scrollbar-thumb:hover{background:var(--dim)}
 input,select,textarea { color-scheme:light; }
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea { color-scheme:dark; }
 input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.5}
+[data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.6}
 a { color:var(--accent); }
 button { font-family:'Plus Jakarta Sans','Inter',sans-serif; letter-spacing:-0.01em; }
-input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid rgba(26,58,92,0.1) !important; outline-offset:0 !important; }
-tr:hover td { background:rgba(26,58,92,0.03) !important; transition:background .1s; }
-.row-hover:hover { background:rgba(26,58,92,0.03) !important; }
-tbody tr:nth-child(even) td { background:rgba(26,58,92,0.015); }
-tbody tr:nth-child(even):hover td { background:rgba(26,58,92,0.04) !important; }
+input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid var(--accent-glow) !important; outline-offset:0 !important; }
+tr:hover td { background:var(--row-tint) !important; transition:background .1s; }
+.row-hover:hover { background:var(--row-tint) !important; }
+tbody tr:nth-child(even) td { background:var(--row-tint-weak); }
+tbody tr:nth-child(even):hover td { background:var(--row-tint-strong) !important; }
 h1,h2,h3,h4 { letter-spacing:-0.02em; }
+/* Dark mode: soften inline light-grays so cards don't wash out */
+[data-theme="dark"] .cq-main { background:var(--bg); }
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea { background:var(--surface2); color:var(--text); border-color:var(--border); }
+[data-theme="dark"] input::placeholder,[data-theme="dark"] textarea::placeholder { color:var(--dim); }
+[data-theme="dark"] option { background:var(--surface); color:var(--text); }
+[data-theme="dark"] th { background:var(--surface2) !important; color:var(--dim) !important; border-color:var(--border) !important; }
+[data-theme="dark"] td { border-color:var(--border) !important; color:var(--text); }
+[data-theme="dark"] thead { background:var(--surface) !important; }
 @media(max-width:1100px){
   .cq-main{padding:28px 20px 60px!important;}
   .cq-stat-grid{grid-template-columns:repeat(2,1fr)!important;}
@@ -273,6 +321,8 @@ const Icons = {
   Globe:()=><Ic d={<><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>}/>,
   Key:   ()=><Ic d={<><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></>}/>,
   Analytics:()=><Ic d={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>}/>,
+  Sun:   ()=><Ic d={<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></>}/>,
+  Moon:  ()=><Ic d={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}/>,
 };
 
 // Shared UI
@@ -1285,9 +1335,9 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         </>
                       ):<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--border2)"}}>—</span>}
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:c.author}));}}}>
                       <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,flexShrink:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)"}}>{initials(c.author)}</div>
-                      <span title={c.author||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{c.author}</span>
+                      <span title={c.author||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0,textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author}</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
                       {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
@@ -1716,7 +1766,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                           <span title={c.media||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{c.media||"—"}</span>
                         </div>
                         <div title={c.reporter||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.reporter||"—"}</div>
-                        <div title={c.author||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.author||"—"}</div>
+                        <div title={c.author||""} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:c.author}));}}} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:c.author?"var(--accent)":"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,cursor:c.author?"pointer":"default",textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author||"—"}</div>
                         <div style={{paddingRight:8,minWidth:0}}>
                           <div title={c.topic||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{c.topic||"—"}</div>
                           {c.headline&&<div title={c.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
@@ -2986,7 +3036,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                 {topAuthors.map((a,i)=>{
                   const total=a.bounties+a.citations;
                   return (
-                    <div key={a.name} onClick={()=>{setDrill({type:"author",value:a.name});setDrillExpanded(false);}}
+                    <div key={a.name} onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:a.name}))}
                       style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
                       onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.05)"}
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
@@ -3782,9 +3832,541 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
 };
 
 // ─────────────────────────────────────────────────────────
+//  AUTHORS TAB — directory of contributors in current campaign
+// ─────────────────────────────────────────────────────────
+const AuthorsTab = ({campaigns, citations}) => {
+  const [sort, setSort] = useState("activity"); // activity | recent | name
+  const [search, setSearch] = useState("");
+
+  // Compute the last 8 weeks (Mondays, oldest → newest)
+  const sparkWeeks = useMemo(()=>{
+    const out = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay()+6)%7));
+    for(let i=7;i>=0;i--){
+      const d = new Date(monday); d.setDate(monday.getDate() - i*7);
+      out.push(d.toISOString().slice(0,10));
+    }
+    return out;
+  },[]);
+
+  const authors = useMemo(()=>{
+    const weekKey = iso => {
+      try {
+        const d = new Date(iso+"T00:00:00");
+        if(isNaN(d.getTime())) return null;
+        const monday = new Date(d);
+        monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+        return monday.toISOString().slice(0,10);
+      } catch { return null; }
+    };
+    const map = {};
+    const push = (name, type, date) => {
+      if(!name) return;
+      const key = name.trim().toLowerCase();
+      if(!key) return;
+      if(!map[key]) map[key] = {name:name.trim(), bounties:0, citations:0, dates:[], weeks:new Set(), spark:Object.fromEntries(sparkWeeks.map(w=>[w,0]))};
+      map[key][type==="bounty"?"bounties":"citations"]++;
+      if(date){
+        map[key].dates.push(date);
+        const wk = weekKey(date);
+        if(wk){
+          map[key].weeks.add(wk);
+          if(map[key].spark[wk]!==undefined) map[key].spark[wk]++;
+        }
+      }
+    };
+    campaigns.forEach(c=>push(c.author, "bounty", c.date));
+    citations.forEach(c=>push(c.author, "citation", c.date));
+    return Object.values(map).map(a=>{
+      const sorted = [...a.dates].sort();
+      return {
+        ...a,
+        total: a.bounties+a.citations,
+        firstDate: sorted[0]||null,
+        lastDate: sorted[sorted.length-1]||null,
+        activeWeeks: a.weeks.size,
+        sparkData: sparkWeeks.map(w=>a.spark[w]||0),
+      };
+    });
+  },[campaigns, citations, sparkWeeks]);
+
+  const filtered = useMemo(()=>{
+    const q = search.trim().toLowerCase();
+    const base = q ? authors.filter(a=>a.name.toLowerCase().includes(q)) : authors;
+    const sorted = [...base];
+    if(sort==="activity") sorted.sort((a,b)=>b.total-a.total || (b.lastDate||"").localeCompare(a.lastDate||""));
+    else if(sort==="recent") sorted.sort((a,b)=>(b.lastDate||"").localeCompare(a.lastDate||"") || b.total-a.total);
+    else if(sort==="name") sorted.sort((a,b)=>a.name.localeCompare(b.name));
+    return sorted;
+  },[authors, sort, search]);
+
+  const maxTotal = authors.reduce((m,a)=>Math.max(m,a.total),1);
+
+  // Summary metrics
+  const totalBounties = useMemo(()=>authors.reduce((s,a)=>s+a.bounties,0),[authors]);
+  const totalCitations = useMemo(()=>authors.reduce((s,a)=>s+a.citations,0),[authors]);
+  const mostActive = useMemo(()=>[...authors].sort((a,b)=>b.total-a.total)[0],[authors]);
+  const avgPerAuthor = authors.length ? ((totalBounties+totalCitations)/authors.length).toFixed(1) : "0";
+
+  // Days since last active — returns label + muted color
+  const daysSince = iso => {
+    if(!iso) return null;
+    try {
+      const d = new Date(iso+"T00:00:00");
+      const now = new Date(); now.setHours(0,0,0,0);
+      const diff = Math.floor((now - d) / (24*60*60*1000));
+      if(diff<=0) return "today";
+      if(diff===1) return "yesterday";
+      if(diff<7) return `${diff}d ago`;
+      if(diff<30) return `${Math.floor(diff/7)}w ago`;
+      if(diff<365) return `${Math.floor(diff/30)}mo ago`;
+      return `${Math.floor(diff/365)}y ago`;
+    } catch { return null; }
+  };
+
+  // Activity status pill (recency)
+  const activityStatus = iso => {
+    if(!iso) return {label:"inactive", color:"var(--border2)", bg:"var(--surface2)"};
+    try {
+      const d = new Date(iso+"T00:00:00");
+      const now = new Date(); now.setHours(0,0,0,0);
+      const diff = Math.floor((now - d) / (24*60*60*1000));
+      if(diff<=7)  return {label:"active",  color:"#16a34a", bg:"rgba(22,163,74,0.1)"};
+      if(diff<=30) return {label:"recent",  color:"#d97706", bg:"rgba(217,119,6,0.1)"};
+      return {label:"dormant", color:"var(--dim)", bg:"var(--surface2)"};
+    } catch { return null; }
+  };
+
+  // Sparkline component
+  const Sparkline = ({data, color}) => {
+    const max = Math.max(...data, 1);
+    const W = 100, H = 22;
+    const bw = W/data.length;
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{display:"block"}}>
+        {data.map((v,i)=>{
+          const h = (v/max) * H;
+          return <rect key={i} x={i*bw+0.5} y={H-h} width={bw-1} height={h||1} rx="0.5" fill={color} opacity={v===0?0.15:0.7+(v/max)*0.3}/>;
+        })}
+      </svg>
+    );
+  };
+
+  return (
+    <div style={{animation:"fadeUp .5s ease both"}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:14}}>
+        <div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// contributors</div>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Authors <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{authors.length}</span></h2>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{position:"relative"}}>
+            <div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"var(--dim)",pointerEvents:"none"}}><Icons.Search/></div>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search authors…" style={{...iStyle,padding:"7px 10px 7px 30px",fontSize:11,width:220}}/>
+          </div>
+          <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
+            {[["activity","Activity"],["recent","Recent"],["name","Name"]].map(([v,l])=>(
+              <button key={v} onClick={()=>setSort(v)}
+                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:sort===v?"var(--surface)":"transparent",color:sort===v?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:sort===v?700:400,boxShadow:sort===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Summary stat strip */}
+      {authors.length>0 && (
+        <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:18}}>
+          {[
+            {label:"Contributors",   val:authors.length,            sub:"Active in campaign",  c:"var(--accent)"},
+            {label:"Total Bounties", val:totalBounties,             sub:"Posts published",     c:"var(--accent)"},
+            {label:"Citations",      val:totalCitations,            sub:"Media mentions",      c:"#4a7fa8"},
+            {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"#4a7fa8"},
+          ].map((s,i)=>(
+            <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{s.label}</div>
+              <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1,marginBottom:4}}>{s.val}</div>
+              <div title={s.sub} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sub}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Table */}
+      {filtered.length===0
+        ? <div style={{textAlign:"center",padding:"80px 20px",background:"var(--surface)",border:"1px dashed var(--border)",borderRadius:12}}>
+            <div style={{fontSize:32,opacity:.15,marginBottom:8}}>◎</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{search?"No authors match your search":"No authors in this campaign yet"}</div>
+          </div>
+        : <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+            {/* Header row */}
+            <div style={{display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"12px 18px",background:"var(--surface2)",borderBottom:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>
+              <div style={{textAlign:"center"}}>#</div>
+              <div>Author</div>
+              <div style={{textAlign:"right"}}>Bounties</div>
+              <div style={{textAlign:"right"}}>Citations</div>
+              <div style={{textAlign:"right"}}>Weeks</div>
+              <div style={{textAlign:"right"}}>Last Active</div>
+              <div style={{textAlign:"right"}}>Last 8 Weeks</div>
+            </div>
+            {filtered.map((a,i)=>{
+              const ac = getAuthorColor(a.name);
+              const last = daysSince(a.lastDate);
+              const status = activityStatus(a.lastDate);
+              const isTopByActivity = sort==="activity" && i<3;
+              const rankMedals = ["#d4af37","#a8a8a8","#cd7f32"]; // gold, silver, bronze
+              const isLast = i===filtered.length-1;
+              return (
+                <div key={a.name} onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:a.name}))}
+                  style={{position:"relative",display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"14px 18px",borderBottom:isLast?"none":"1px solid var(--border)",cursor:"pointer",transition:"background .15s ease",animation:`rowIn .35s ease ${i*.02}s both`}}
+                  onMouseEnter={e=>{e.currentTarget.style.background=`${ac.color}08`}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="transparent"}}>
+                  {/* Left accent bar on hover via author-color border */}
+                  <div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:ac.color,opacity:isTopByActivity?1:0.35}}/>
+
+                  {/* Rank */}
+                  <div style={{textAlign:"center",position:"relative"}}>
+                    {isTopByActivity ? (
+                      <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:"50%",background:rankMedals[i]+"22",border:`1px solid ${rankMedals[i]}`,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:700,color:rankMedals[i]}}>{i+1}</div>
+                    ) : (
+                      <span className="tabular" style={{fontSize:12,color:"var(--dim)",fontWeight:500}}>{i+1}</span>
+                    )}
+                  </div>
+
+                  {/* Author: avatar + name + status */}
+                  <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}>
+                    <div style={{width:36,height:36,flexShrink:0,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:600,background:ac.bg,color:ac.color,border:`1.5px solid ${ac.color}`,boxShadow:`0 0 0 2px ${ac.color}12`}}>{initials(a.name)}</div>
+                    <div style={{minWidth:0,flex:1}}>
+                      <div title={a.name} style={{fontSize:14,fontWeight:600,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",letterSpacing:"-0.01em",marginBottom:2}}>{a.name}</div>
+                      {status && (
+                        <span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 6px",borderRadius:99,background:status.bg,color:status.color,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                          <span style={{width:4,height:4,borderRadius:"50%",background:status.color}}/>{status.label}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bounties */}
+                  <div className="tabular" style={{textAlign:"right",fontSize:16,fontWeight:700,letterSpacing:"-0.02em",color:a.bounties>0?"var(--accent)":"var(--border2)"}}>{a.bounties}</div>
+
+                  {/* Citations */}
+                  <div className="tabular" style={{textAlign:"right",fontSize:16,fontWeight:700,letterSpacing:"-0.02em",color:a.citations>0?"#4a7fa8":"var(--border2)"}}>{a.citations}</div>
+
+                  {/* Weeks */}
+                  <div className="tabular" style={{textAlign:"right",fontSize:14,fontWeight:600,color:"var(--text)"}}>{a.activeWeeks}</div>
+
+                  {/* Last active */}
+                  <div style={{textAlign:"right",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{last||"—"}</div>
+
+                  {/* Sparkline */}
+                  <div style={{width:"100%"}}>
+                    <Sparkline data={a.sparkData} color={ac.color}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+      }
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────
+//  AUTHOR DETAIL TAB
+// ─────────────────────────────────────────────────────────
+const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) => {
+  const eq = (a,b) => (a||"").trim().toLowerCase()===(b||"").trim().toLowerCase();
+  const bounties = useMemo(()=>campaigns.filter(c=>eq(c.author,authorName)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[campaigns,authorName]);
+  const cits     = useMemo(()=>citations.filter(c=>eq(c.author,authorName)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[citations,authorName]);
+
+  // Display name (use the casing from the data)
+  const displayName = bounties[0]?.author || cits[0]?.author || authorName;
+  const ac = getAuthorColor(displayName);
+
+  // Date stats
+  const allDates = [...bounties.map(b=>b.date), ...cits.map(c=>c.date)].filter(Boolean).sort();
+  const firstDate = allDates[0] || null;
+  const lastDate  = allDates[allDates.length-1] || null;
+
+  // Top outlets covering them
+  const outletMap = {};
+  cits.forEach(c=>{const m=(c.media||"").trim();if(!m)return;const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]={label:m,count:0};outletMap[mk].count++;});
+  const topOutlets = Object.values(outletMap).sort((a,b)=>b.count-a.count).slice(0,8);
+  const maxOutlet = topOutlets[0]?.count||1;
+
+  // Tier breakdown
+  const tierMap = {};
+  cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
+  const tierEntries = Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+
+  // Weekly average + longest streak (in weeks with activity)
+  const weekKey = iso => {
+    try {
+      const d = new Date(iso+"T00:00:00");
+      if(isNaN(d.getTime())) return null;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+      return monday.toISOString().slice(0,10);
+    } catch { return null; }
+  };
+  const weekSet = new Set();
+  allDates.forEach(d=>{const k=weekKey(d);if(k)weekSet.add(k);});
+  const totalWeeksSpan = (() => {
+    if(!firstDate||!lastDate) return 0;
+    const a = new Date(firstDate+"T00:00:00");
+    const b = new Date(lastDate+"T00:00:00");
+    const ms = b - a;
+    return Math.max(1, Math.ceil(ms/(7*24*60*60*1000))+1);
+  })();
+  const totalActivity = bounties.length + cits.length;
+  const weeklyAvg = totalWeeksSpan ? (totalActivity/totalWeeksSpan).toFixed(1) : "0";
+
+  // Longest consecutive-week streak with activity
+  const longestStreak = (() => {
+    if(!weekSet.size) return 0;
+    const sorted = [...weekSet].sort();
+    let best = 1, cur = 1;
+    for(let i=1;i<sorted.length;i++){
+      const prev = new Date(sorted[i-1]+"T00:00:00");
+      const here = new Date(sorted[i]+"T00:00:00");
+      const diffWeeks = Math.round((here-prev)/(7*24*60*60*1000));
+      if(diffWeeks===1){ cur++; if(cur>best) best=cur; }
+      else cur = 1;
+    }
+    return best;
+  })();
+
+  // Daily activity heatmap (last 90 days)
+  const today = new Date(); today.setHours(0,0,0,0);
+  const heatDays = [];
+  for(let i=89;i>=0;i--){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const k = d.toISOString().slice(0,10);
+    const b = bounties.filter(x=>x.date===k).length;
+    const c = cits.filter(x=>x.date===k).length;
+    heatDays.push({date:k, b, c, total:b+c});
+  }
+  const maxHeat = Math.max(...heatDays.map(d=>d.total),1);
+
+  // Separated timelines
+  const bountyTimeline   = useMemo(()=>bounties.map(b=>({...b,_type:"bounty"})),[bounties]);
+  const citationTimeline = useMemo(()=>cits.map(c=>({...c,_type:"citation"})),[cits]);
+
+  const [timelineTab, setTimelineTab] = useState("bounties"); // bounties | citations
+  const [showAll, setShowAll] = useState(false);
+  const activeTimeline = timelineTab==="bounties" ? bountyTimeline : citationTimeline;
+  const visibleTimeline = showAll ? activeTimeline : activeTimeline.slice(0,20);
+
+  return (
+    <div style={{animation:"fadeUp .4s ease both"}}>
+      {/* Back button */}
+      <button onClick={onBack}
+        style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
+        ← Back
+      </button>
+
+      {/* Header card */}
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"22px 26px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
+          <div style={{width:64,height:64,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:600,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(displayName)}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Author profile</div>
+              {program && (
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:99,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>
+                  <span style={{width:6,height:6,borderRadius:"50%",background:program.color}}/>{program.name}
+                </span>
+              )}
+            </div>
+            <h2 style={{fontSize:26,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)",marginBottom:6}}>{displayName}</h2>
+            {firstDate && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Active {fmtDate(firstDate)} → {fmtDate(lastDate)}</div>}
+          </div>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:18}}>
+        {[
+          {label:"Bounties", val:bounties.length, c:"var(--accent)"},
+          {label:"Citations", val:cits.length, c:"#4a7fa8"},
+          {label:"Active Weeks", val:weekSet.size, c:"var(--accent)"},
+          {label:"Weekly Avg", val:weeklyAvg, c:"#4a7fa8"},
+          {label:"Longest Streak", val:`${longestStreak}w`, c:"var(--accent)"},
+        ].map((s,i)=>(
+          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{s.label}</div>
+            <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{s.val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Heatmap (90 days) */}
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Last 90 Days</div>
+          <div style={{display:"flex",gap:14,alignItems:"center"}}>
+            <div style={{display:"flex",alignItems:"center",gap:4}}>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>less</span>
+              {[0.15,0.35,0.6,0.85,1].map((o,i)=>(
+                <div key={i} style={{width:10,height:10,borderRadius:2,background:`rgba(26,58,92,${o})`}}/>
+              ))}
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>more</span>
+            </div>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(90,1fr)",gap:2}}>
+          {heatDays.map(d=>{
+            const intensity = d.total===0 ? 0 : 0.15 + (d.total/maxHeat)*0.85;
+            return (
+              <div key={d.date} title={`${d.date}: ${d.b}b · ${d.c}c`}
+                style={{aspectRatio:"1",borderRadius:2,background:d.total===0?"var(--surface2)":`rgba(26,58,92,${intensity})`,border:d.total===0?"1px solid var(--border)":"none"}}/>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Two-column: outlets + tier + programs */}
+      <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
+        {/* Top outlets */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Top Outlets Covering Them</div>
+          {topOutlets.length===0
+            ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage</div>
+            : <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {topOutlets.map((o,i)=>(
+                <div key={o.label}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                      <span title={o.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
+                    </div>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                  </div>
+                  <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                    <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          }
+        </div>
+
+        {/* Media Tier */}
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Media Tier</div>
+          {tierEntries.length===0
+            ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data</div>
+            : <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {tierEntries.map(([tier,count])=>{
+                const tc=getTierColor(tier);
+                const pct=(count/cits.length)*100;
+                return (
+                  <div key={tier}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                      <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          }
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)",gap:12,flexWrap:"wrap"}}>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Full Timeline</div>
+          <div style={{display:"flex",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
+            {[
+              {id:"bounties",  label:"Bounties",  count:bountyTimeline.length,   accent:"var(--accent)"},
+              {id:"citations", label:"Citations", count:citationTimeline.length, accent:"#4a7fa8"},
+            ].map(t=>{
+              const active = timelineTab===t.id;
+              return (
+                <button key={t.id} onClick={()=>{setTimelineTab(t.id);setShowAll(false);}}
+                  style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:active?"var(--surface2)":"transparent",color:active?t.accent:"var(--dim)",cursor:"pointer",fontWeight:active?700:500,boxShadow:active?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                  <span style={{width:6,height:6,borderRadius:"50%",background:t.accent,opacity:active?1:0.4}}/>
+                  {t.label}
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:99,background:active?t.accent+"15":"var(--surface2)",color:active?t.accent:"var(--dim)",fontWeight:600}}>{t.count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        {activeTimeline.length===0
+          ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No {timelineTab} recorded</div>
+          : <>
+            <div style={{maxHeight:"560px",overflowY:"auto"}}>
+              {visibleTimeline.map((item,i)=>{
+                const link = item._type==="bounty" ? item.cqLink : item.articleLink;
+                return (
+                  <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 14px 1fr auto",alignItems:"flex-start",gap:12,padding:"12px 20px",borderBottom:i<visibleTimeline.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",paddingTop:2}}>{item.date}</div>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",marginTop:6}}/>
+                    <div style={{minWidth:0}}>
+                      {item._type==="bounty"
+                        ? <>
+                            <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
+                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Bounty</div>
+                          </>
+                        : <>
+                            <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
+                            {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+                            <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",textTransform:"uppercase",letterSpacing:"0.06em"}}>Citation</span>
+                              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>· {item.media}</span>
+                            </div>
+                          </>
+                      }
+                    </div>
+                    {link && (
+                      <a href={link} target="_blank" rel="noreferrer"
+                        style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {activeTimeline.length>20 && (
+              <button onClick={()=>setShowAll(v=>!v)}
+                style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)"}}
+                onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)"}}>
+                {showAll?`▲ SHOW LESS`:`▼ SHOW ALL ${activeTimeline.length} ENTRIES`}
+              </button>
+            )}
+          </>
+        }
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────
 //  ROOT APP
 // ─────────────────────────────────────────────────────────
 export default function App() {
+  const [theme, setTheme] = useState(() => {
+    if(typeof window === "undefined") return "light";
+    return localStorage.getItem("cq_theme") || "light";
+  });
+  useEffect(()=>{
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("cq_theme", theme);
+  },[theme]);
+  const toggleTheme = () => setTheme(t => t==="dark" ? "light" : "dark");
+
   useEffect(()=>{
     document.title = "CryptoQuant Bounty Tracker";
     const link = document.querySelector("link[rel~='icon']") || Object.assign(document.createElement('link'),{rel:'icon'});
@@ -3806,6 +4388,7 @@ export default function App() {
   const [showPdfModal,setShowPdfModal] = useState(false);
   const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
   const [sidebarOpen,setSidebarOpen] = useState(false);
+  const [authorView,setAuthorView] = useState(null); // active author detail name
   const sidebarCampaignRef = useRef(null);
 
   const showToast=(msg,type="success")=>{setToast({msg,type});setTimeout(()=>setToast(null),2800)};
@@ -3813,22 +4396,40 @@ export default function App() {
   // ── URL HASH ROUTING ──
   const parseHash = () => {
     const parts = window.location.hash.replace(/^#\/?/,"").split("/").filter(Boolean);
-    if(parts[0]==="c" && parts[1] && parts[2]) return {cid:parts[1], tab:parts[2]};
-    if(parts[0]) return {cid:null, tab:parts[0]};
-    return {cid:null, tab:null};
+    if(parts[0]==="u" && parts[1]) return {cid:null, tab:"author", author:decodeURIComponent(parts[1])};
+    if(parts[0]==="c" && parts[1] && parts[2]) return {cid:parts[1], tab:parts[2], author:null};
+    if(parts[0]) return {cid:null, tab:parts[0], author:null};
+    return {cid:null, tab:null, author:null};
   };
-  const pushHash = (newTab, newCid) => {
-    const hash = newCid ? `#/c/${newCid}/${newTab}` : `#/${newTab}`;
+  const pushHash = (newTab, newCid, authorName) => {
+    let hash;
+    if(newTab==="author" && authorName) hash = `#/u/${encodeURIComponent(authorName)}`;
+    else if(newCid) hash = `#/c/${newCid}/${newTab}`;
+    else hash = `#/${newTab}`;
     if(window.location.hash !== hash) window.history.pushState(null,"",hash);
   };
   const navigate = (newTab, newCid=activeCid) => {
     setTab(newTab);
     if(newCid !== undefined) setActiveCid(newCid);
+    if(newTab!=="author") setAuthorView(null);
     pushHash(newTab, newCid);
+  };
+  const navigateToAuthor = (name) => {
+    if(!name) return;
+    setAuthorView(name);
+    setTab("author");
+    pushHash("author", null, name);
   };
 
   // Sync state → hash whenever tab or activeCid changes
-  useEffect(()=>{ if(user && tab) pushHash(tab, activeCid); },[tab, activeCid]);
+  useEffect(()=>{ if(user && tab) pushHash(tab, activeCid, authorView); },[tab, activeCid, authorView]);
+
+  // Listen for author-navigation events from nested components
+  useEffect(()=>{
+    const h = e => navigateToAuthor(e.detail);
+    window.addEventListener("cq-nav-author", h);
+    return ()=>window.removeEventListener("cq-nav-author", h);
+  },[activeCid]);
 
   // Close sidebar campaign dropdown on click outside
   useEffect(()=>{
@@ -3840,8 +4441,10 @@ export default function App() {
   // Listen for browser back/forward
   useEffect(()=>{
     const onPop = () => {
-      const {cid, tab:t} = parseHash();
+      const {cid, tab:t, author} = parseHash();
       if(t) setTab(t);
+      if(t==="author") setAuthorView(author);
+      else setAuthorView(null);
       if(cid !== undefined) setActiveCid(cid);
     };
     window.addEventListener("popstate", onPop);
@@ -3852,19 +4455,22 @@ export default function App() {
   // so it works regardless of which loads first
   useEffect(()=>{
     if(!user||!programs.length) return;
-    const {cid:hashCid, tab:hashTab} = parseHash();
+    const {cid:hashCid, tab:hashTab, author:hashAuthor} = parseHash();
+    if(hashTab==="author" && hashAuthor) setAuthorView(hashAuthor);
     if(user.role==="admin"){
       if(hashTab) { setTab(hashTab); setActiveCid(hashCid||null); }
       else { setTab("campaigns_mgmt"); setActiveCid(null); }
     } else if(user.role==="author"){
       const allowed = (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
       const mostRecent = allowed.map(id=>programs.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
-      if(hashTab && hashCid && allowed.includes(hashCid)) { setTab(hashTab); setActiveCid(hashCid); }
+      if(hashTab==="author") { setTab("author"); }
+      else if(hashTab && hashCid && allowed.includes(hashCid)) { setTab(hashTab); setActiveCid(hashCid); }
       else { setTab("weekly"); setActiveCid(mostRecent?.id||null); }
     } else if(user.role==="client"){
       const allowed = (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
       const mostRecent = allowed.map(id=>programs.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
-      if(hashTab && hashCid && allowed.includes(hashCid)) { setTab(hashTab); setClientActiveCid(hashCid); }
+      if(hashTab==="author") { setTab("author"); }
+      else if(hashTab && hashCid && allowed.includes(hashCid)) { setTab(hashTab); setClientActiveCid(hashCid); }
       else { setTab("weekly"); if(mostRecent) setClientActiveCid(mostRecent.id); }
     }
   },[user?.id, programs.length]);
@@ -4115,6 +4721,7 @@ export default function App() {
   const myAuthorName = (user.displayName||user.username).toLowerCase();
   const myBounties   = scopedCampaigns.filter(c=>(c.author||"").toLowerCase()===myAuthorName);
   const myCitations  = scopedCitations.filter(c=>(c.author||"").toLowerCase()===myAuthorName);
+  const scopedAuthorsCount = new Set([...scopedCampaigns.map(c=>(c.author||"").trim().toLowerCase()),...scopedCitations.map(c=>(c.author||"").trim().toLowerCase())].filter(Boolean)).size;
 
   const TABS = user.role==="admin"
     ? [
@@ -4125,6 +4732,7 @@ export default function App() {
         {id:"weekly",      label:"Weekly Summary",  icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
         {id:"campaign",    label:"Content",           icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
         {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
+        {id:"authors",     label:"Authors",          icon:<Icons.Users/>,     accent:"var(--accent)", count:scopedAuthorsCount},
         ...(user.role==="client"?[{id:"analytics", label:"Analytics", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""}]:[]),
         ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
       ];
@@ -4234,13 +4842,20 @@ export default function App() {
                 <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:"rgba(255,255,255,0.8)",flexShrink:0}}>{initials(user.username)}</div>
                 <span style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.9)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
               </div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.55)",textTransform:"uppercase"}}>{rm.label}</span>
-                <button onClick={handleLogout} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
-                  onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
-                  onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
-                  <Icons.Logout/>
-                </button>
+                <div style={{display:"flex",alignItems:"center",gap:4}}>
+                  <button onClick={toggleTheme} title={theme==="dark"?"Switch to light mode":"Switch to dark mode"} style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.3)";e.currentTarget.style.color="rgba(255,255,255,0.9)"}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
+                    {theme==="dark"?<Icons.Sun/>:<Icons.Moon/>}
+                  </button>
+                  <button onClick={handleLogout} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
+                    <Icons.Logout/>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -4250,7 +4865,7 @@ export default function App() {
         <main className="cq-main" style={{flex:1,padding:"32px 36px 80px",minWidth:0,overflowX:"hidden"}}>
 
         {/* NO CAMPAIGN SELECTED warning for data tabs */}
-        {!effectiveCid && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="mine") && programs.length>0 && (
+        {!effectiveCid && (tab==="weekly"||tab==="campaign"||tab==="media"||tab==="authors"||tab==="mine") && programs.length>0 && (
           <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,animation:"fadeUp .5s ease .1s both"}}>
             <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>Select a campaign in the sidebar to view data</div>
           </div>
@@ -4260,8 +4875,10 @@ export default function App() {
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="analytics"&&user.role==="client"&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.clientName}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
+        {tab==="author"&&authorView&&(effectiveCid||user.role==="client")&&<AuthorDetailTab key={authorView+"|"+effectiveCid} authorName={authorView} campaigns={scopedCampaigns} citations={scopedCitations} program={effectiveClient} onBack={()=>{ if(window.history.length>1) window.history.back(); else navigate("weekly"); }}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
         {/* cq_research merged into Content tab */}
