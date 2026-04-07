@@ -3404,6 +3404,14 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
   const [result,setResult]   = useState(null);
   const isSyncing = useRef(false);
   const norm = s => (s||'').trim().toLowerCase();
+  const normalizeDate = (d) => {
+    const s = (d||"").trim();
+    if(!s) return "";
+    // YYYY.MM.DD or YYYY/MM/DD → YYYY-MM-DD
+    const m = s.match(/^(\d{4})[.\/\-](\d{1,2})[.\/\-](\d{1,2})$/);
+    if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+    return s;
+  };
   const parseCSV = (text) => {
     const lines = text.split("\n").map(l=>l.replace(/\r$/,"")).filter(l=>l.trim());
     const firstCol = l => l.split(",")[0].replace(/^"|"$/g,"").replace(/\*/g,"").trim().toLowerCase();
@@ -3449,7 +3457,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
           const inNew=newBounties.some(b=>rowNo?b.sheetRowNo===rowNo:(link&&b.cqLink===link));
           const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(link&&exB.some(b=>b.cq_link===link));
           if(inNew||inDB){skipped++;continue;}
-          newBounties.push({id:uid(),campaignId:program.id,date:r["date"]||"",author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||r["cq analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||r["analyst twitter/x post"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||r["twitter/x link"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),category:titleCase(r["category"]||""),asset:titleCase(r["asset"]||""),twitterImpressions:(r["twitter impressions"]||r["cq twitter/x impressions"]||"").trim(),telegramImpressions:(r["telegram impressions"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
+          newBounties.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),author:norm(r["author"]),title:title.trim(),cqLink:link,analyticsLink:(r["analytics link"]||r["cq analytics link"]||"").trim(),authorTwitterLink:(r["author twitter/x"]||r["analyst twitter/x post"]||"").trim(),cqTwitterLink:(r["cq twitter/x"]||r["twitter/x link"]||"").trim(),telegramLink:(r["telegram link"]||"").trim(),category:titleCase(r["category"]||""),asset:titleCase(r["asset"]||""),twitterImpressions:(r["twitter impressions"]||r["cq twitter/x impressions"]||"").trim(),telegramImpressions:(r["telegram impressions"]||"").trim(),sheetRowNo:rowNo,createdBy:"sheet_sync"});
         }
       }
       if(program.sheetMedia){
@@ -3463,7 +3471,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
           const inNewM=newMedia.some(m=>rowNo2?m.sheetRowNo===rowNo2:(link&&m.articleLink===link));
           const inDBM=rowNo2?exM.some(m=>m.sheet_row_no===rowNo2):(link&&exM.some(m=>m.article_link===link));
           if(inNewM||inDBM){skipped++;continue;}
-          newMedia.push({id:uid(),campaignId:program.id,date:r["date"]||"",media:titleCase(media),reporter:titleCase(r["reporter"]||""),author:norm(r["author"]),topic:titleCase(r["topic"]||""),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:titleCase(r["direct relationship"]||""),language:titleCase(r["language"]||""),asset:titleCase(r["asset"]||""),branding:titleCase(r["branding"]||""),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
+          newMedia.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),media:titleCase(media),reporter:titleCase(r["reporter"]||""),author:norm(r["author"]),topic:titleCase(r["topic"]||""),articleLink:link,headline:(r["headline"]||"").trim(),mediaTier:(r["media tier"]||"").trim(),directRelationship:titleCase(r["direct relationship"]||""),language:titleCase(r["language"]||""),asset:titleCase(r["asset"]||""),branding:titleCase(r["branding"]||""),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
         }
       }
       if(newBounties.length){await db.batchInsertBounties(newBounties);setCampaigns(prev=>[...newBounties,...prev]);added+=newBounties.length;}
