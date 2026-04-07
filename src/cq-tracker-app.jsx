@@ -2308,7 +2308,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
               topicMap[tk].count++;
             });
             const allTopics  = Object.values(topicMap).sort((a,b)=>b.count-a.count);
-            const topTopics  = allTopics.slice(0,5);
+            const topTopics  = allTopics.slice(0,10);
             const maxTopic   = allTopics[0]?.count||1;
 
             // Authors
@@ -2391,12 +2391,117 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
               return (
                 <>
-                  <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:16}}>
-                    <Panel title="Top Topics" badge={`${allTopics.length} total`} onViewAll={allTopics.length>5?()=>setModal("topics"):null}>
-                      {topTopics.length ? topTopics.map((r,i)=>(
-                        <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
-                      )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                  {/* Row 1: Media Tier Breakdown — full width with rich per-tier cards */}
+                  {(()=>{
+                    const tierMap={};
+                    citations.forEach(c=>{
+                      if(c.mediaTier){const t=String(c.mediaTier).trim();if(t){if(!tierMap[t])tierMap[t]={count:0,outlets:{},authors:new Set(),dates:[]};tierMap[t].count++;
+                        const m=(c.media||"").trim();
+                        if(m){const mk=m.toLowerCase();if(!tierMap[t].outlets[mk])tierMap[t].outlets[mk]={label:m,count:0};tierMap[t].outlets[mk].count++;}
+                        const a=(c.author||"").trim();
+                        if(a)tierMap[t].authors.add(a.toLowerCase());
+                        if(c.date)tierMap[t].dates.push(c.date);
+                      }}
+                    });
+                    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+                    if(!tierEntries.length) return null;
+                    const totalTierCits = tierEntries.reduce((s,[,d])=>s+d.count,0);
+                    return (
+                      <div style={{marginTop:16}}>
+                        <Panel title="Media Tier Breakdown" badge={`${totalTierCits} citations`}>
+                          <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(tierEntries.length,4)},1fr)`,gap:14}}>
+                            {tierEntries.map(([tier,data])=>{
+                              const tc=getTierColor(tier);
+                              const pct=(data.count/totalTierCits)*100;
+                              const topOutlets=Object.values(data.outlets).sort((a,b)=>b.count-a.count).slice(0,3);
+                              const sortedDates=[...data.dates].sort();
+                              const lastDate=sortedDates[sortedDates.length-1]||null;
+                              return (
+                                <div key={tier} style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:10,padding:"16px 18px",overflow:"hidden"}}>
+                                  {/* Top accent stripe */}
+                                  <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:tc.color}}/>
+
+                                  {/* Tier badge + count */}
+                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,marginTop:4}}>
+                                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,letterSpacing:"0.04em"}}>TIER {tier}</span>
+                                    <span className="tabular" style={{fontSize:22,fontWeight:700,color:tc.color,letterSpacing:"-0.02em",lineHeight:1}}>{data.count}</span>
+                                  </div>
+
+                                  {/* Pct bar */}
+                                  <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginBottom:10}}>
+                                    <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s"}}/>
+                                  </div>
+
+                                  {/* Mini stats row */}
+                                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
+                                    <span><span style={{color:tc.color,fontWeight:600}}>{Math.round(pct)}%</span> share</span>
+                                    <span style={{color:"var(--border2)"}}>·</span>
+                                    <span><span style={{color:"var(--text)",fontWeight:600}}>{data.authors.size}</span> author{data.authors.size!==1?"s":""}</span>
+                                    <span style={{color:"var(--border2)"}}>·</span>
+                                    <span><span style={{color:"var(--text)",fontWeight:600}}>{Object.keys(data.outlets).length}</span> outlet{Object.keys(data.outlets).length!==1?"s":""}</span>
+                                  </div>
+
+                                  {/* Top outlets */}
+                                  <div style={{borderTop:"1px solid var(--border)",paddingTop:10}}>
+                                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:7,fontWeight:600}}>Top Outlets</div>
+                                    {topOutlets.length ? topOutlets.map((o,i)=>{
+                                      const oPct=(o.count/data.count)*100;
+                                      return (
+                                        <div key={o.label} style={{marginBottom:i<topOutlets.length-1?6:0}}>
+                                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:3}}>
+                                            <span title={o.label} style={{fontSize:11,color:"var(--text)",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>{o.label}</span>
+                                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:tc.color,fontWeight:600,flexShrink:0}}>{o.count}</span>
+                                          </div>
+                                          <div style={{height:2,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                                            <div style={{width:`${oPct}%`,height:"100%",background:tc.color,opacity:0.6,borderRadius:99}}/>
+                                          </div>
+                                        </div>
+                                      );
+                                    }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>—</div>}
+                                  </div>
+
+                                  {/* Footer: last activity */}
+                                  {lastDate && (
+                                    <div style={{marginTop:10,paddingTop:8,borderTop:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                                      Last seen {lastDate}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </Panel>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Row 2: Top Topics — full width, 2 columns filled top-to-bottom */}
+                  <div style={{marginTop:14}}>
+                    <Panel title="Top Topics" badge={`${allTopics.length} total`} onViewAll={allTopics.length>10?()=>setModal("topics"):null}>
+                      {topTopics.length ? (() => {
+                        const half = Math.ceil(topTopics.length/2);
+                        const leftCol  = topTopics.slice(0, half);
+                        const rightCol = topTopics.slice(half);
+                        return (
+                          <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 32px"}}>
+                            <div>
+                              {leftCol.map((r,i)=>(
+                                <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
+                              ))}
+                            </div>
+                            <div>
+                              {rightCol.map((r,i)=>(
+                                <Row key={r.topic} rank={half+i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })() : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
                     </Panel>
+                  </div>
+
+                  {/* Row 2: Top Authors + Top Outlets */}
+                  <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:14}}>
                     <Panel title="Top Authors" badge={`${allAuthors.length} total`} onViewAll={allAuthors.length>5?()=>setModal("authors"):null}>
                       {topAuthors.length ? topAuthors.map((r,i)=>{
                         const total=r.bounties+r.citations;
@@ -2410,41 +2515,20 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                     </Panel>
                   </div>
 
-                  {/* Row 2: Media Tier, Language, Direct Relationship */}
+                  {/* Row 4: Language + Direct Relationship */}
                   {(()=>{
-                    const tierMap={}, langMap={}, drMap={};
+                    const langMap={}, drMap={};
                     citations.forEach(c=>{
-                      if(c.mediaTier){const t=String(c.mediaTier).trim();if(t)tierMap[t]=(tierMap[t]||0)+1;}
                       if(c.language){const l=c.language.trim();const lk=normKey(l);if(lk)langMap[lk]=(langMap[lk]||0)+1;}
                       if(c.directRelationship){const d=c.directRelationship.trim();const dk=normKey(d);if(dk)drMap[dk]=(drMap[dk]||0)+1;}
                     });
-                    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
                     const langEntries=Object.entries(langMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
                     const drEntries=Object.entries(drMap).sort((a,b)=>b[1]-a[1]);
-                    const maxTier=Math.max(...tierEntries.map(e=>e[1]),1);
                     const maxLang=langEntries[0]?.[1]||1;
                     const maxDR=drEntries[0]?.[1]||1;
-                    // using global getTierColor
-                    if(!tierEntries.length&&!langEntries.length&&!drEntries.length) return null;
+                    if(!langEntries.length&&!drEntries.length) return null;
                     return (
-                      <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginTop:14}}>
-                        <Panel title="Media Tier Breakdown" badge={`${citations.length} citations`}>
-                          {tierEntries.length ? tierEntries.map(([tier,count])=>{
-                            const tc=getTierColor(tier);
-                            const pct=(count/citations.length)*100;
-                            return (
-                              <div key={tier} style={{marginBottom:10}}>
-                                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                                  <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
-                                </div>
-                                <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                                  <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s"}}/>
-                                </div>
-                              </div>
-                            );
-                          }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No tier data</div>}
-                        </Panel>
+                      <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginTop:14}}>
                         <Panel title="Language Breakdown" badge={`${langEntries.length} languages`}>
                           {langEntries.length ? langEntries.map(([lang,count],i)=>(
                             <Row key={lang} rank={i+1} label={lang} value={count} pct={(count/maxLang)*100} color="#4a7fa8"/>
