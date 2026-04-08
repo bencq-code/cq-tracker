@@ -97,24 +97,32 @@ const NEXO_CITATIONS = [
 
 // ── NEXO SEED DATA ──
 
+// Differentiated but muted palette — each entry is visually distinct but stays
+// in the cool/desaturated family so tags don't feel childish.
 const AUTHOR_PALETTE = [
-  {bg:"rgba(26,58,92,0.07)",color:"#1a3a5c"},{bg:"rgba(26,58,92,0.07)",color:"#243d55"},
-  {bg:"rgba(26,58,92,0.07)",color:"#1e4570"},{bg:"rgba(26,58,92,0.07)",color:"#152e48"},
-  {bg:"rgba(26,58,92,0.07)",color:"#1a3a5c"},{bg:"rgba(26,58,92,0.07)",color:"#243d55"},
-  {bg:"rgba(26,58,92,0.07)",color:"#1e4570"},{bg:"rgba(26,58,92,0.07)",color:"#152e48"},
+  {bg:"rgba(26,58,92,0.08)",  color:"#1a3a5c"}, // navy
+  {bg:"rgba(15,76,76,0.08)",  color:"#0f4c4c"}, // teal
+  {bg:"rgba(76,29,80,0.08)",  color:"#4c1d50"}, // plum
+  {bg:"rgba(86,62,20,0.08)",  color:"#563e14"}, // olive
+  {bg:"rgba(42,52,72,0.08)",  color:"#2a3448"}, // slate
+  {bg:"rgba(107,45,20,0.08)", color:"#6b2d14"}, // rust
+  {bg:"rgba(32,67,88,0.08)",  color:"#204358"}, // steel
+  {bg:"rgba(55,48,92,0.08)",  color:"#37305c"}, // indigo
 ];
 const CLIENT_PALETTE = [
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  {bg:"rgba(26,58,92,0.07)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
+  {bg:"rgba(26,58,92,0.08)", border:"rgba(26,58,92,0.22)",  color:"#1a3a5c"},
+  {bg:"rgba(15,76,76,0.08)", border:"rgba(15,76,76,0.22)",  color:"#0f4c4c"},
+  {bg:"rgba(76,29,80,0.08)", border:"rgba(76,29,80,0.22)",  color:"#4c1d50"},
+  {bg:"rgba(86,62,20,0.08)", border:"rgba(86,62,20,0.22)",  color:"#563e14"},
+  {bg:"rgba(42,52,72,0.08)", border:"rgba(42,52,72,0.22)",  color:"#2a3448"},
+  {bg:"rgba(107,45,20,0.08)",border:"rgba(107,45,20,0.22)", color:"#6b2d14"},
 ];
+// Tier colors are resolved via CSS variables so dark mode can shift them.
 const TIER_COLORS = {
-  "Tier 1":{bg:"rgba(22,101,52,0.08)",border:"rgba(22,101,52,0.2)",color:"#166534"},
-  "Tier 2":{bg:"rgba(26,58,92,0.08)",border:"rgba(26,58,92,0.2)",color:"#1a3a5c"},
-  "Tier 3":{bg:"rgba(107,118,133,0.08)",border:"rgba(107,118,133,0.2)",color:"#6b7685"},
+  "Tier 1":{bg:"var(--tier-1-bg)",border:"var(--tier-1-border)",color:"var(--tier-1)"},
+  "Tier 2":{bg:"var(--tier-2-bg)",border:"var(--tier-2-border)",color:"var(--tier-2)"},
+  "Tier 3":{bg:"var(--tier-3-bg)",border:"var(--tier-3-border)",color:"var(--tier-3)"},
+  "Tier 4":{bg:"var(--tier-4-bg)",border:"var(--tier-4-border)",color:"var(--tier-4)"},
 };
 const ROLE_META = {
   admin:  {label:"Admin",  color:"#1a3a5c", bg:"rgba(26,58,92,0.08)",  border:"rgba(26,58,92,0.2)"},
@@ -132,9 +140,10 @@ const getPaletteColor = (palette, ns, key) => {
 const getAuthorColor = n => getPaletteColor(AUTHOR_PALETTE,"author",n||"?");
 const getClientColor = n => getPaletteColor(CLIENT_PALETTE,"client",n||"?");
 const getTierColor = t => {
-  if(!t) return {bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
+  const fallback = {bg:"var(--tier-default-bg)",border:"var(--tier-default-border)",color:"var(--tier-default)"};
+  if(!t) return fallback;
   const key = t.toString().trim();
-  return TIER_COLORS[key] || TIER_COLORS[`Tier ${key}`] || {bg:"rgba(255,255,255,0.04)",border:"rgba(255,255,255,0.1)",color:"#6b849e"};
+  return TIER_COLORS[key] || TIER_COLORS[`Tier ${key}`] || fallback;
 };
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
@@ -146,7 +155,7 @@ const normKey   = s => (s||"").trim().toLowerCase();
 const PageHeader = ({label, title, children}) => (
   <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24,gap:16,flexWrap:"wrap"}}>
     <div>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1.2}}>{title}</h2>
     </div>
     {children&&<div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>{children}</div>}
@@ -196,6 +205,18 @@ const css = `
   --shadow-md:0 2px 8px rgba(0,0,0,0.08);
   --shadow-lg:0 8px 24px rgba(0,0,0,0.1);
   --input-shadow:inset 0 1px 3px rgba(0,0,0,0.04);
+  /* Tier colors — cohesive cool palette */
+  --tier-1:#166534; --tier-1-bg:rgba(22,101,52,0.08);  --tier-1-border:rgba(22,101,52,0.22);
+  --tier-2:#1a3a5c; --tier-2-bg:rgba(26,58,92,0.08);   --tier-2-border:rgba(26,58,92,0.22);
+  --tier-3:#6b7685; --tier-3-bg:rgba(107,118,133,0.08);--tier-3-border:rgba(107,118,133,0.22);
+  --tier-4:#7a5a1e; --tier-4-bg:rgba(122,90,30,0.08);  --tier-4-border:rgba(122,90,30,0.22);
+  --tier-default:#6b849e; --tier-default-bg:rgba(107,132,158,0.06); --tier-default-border:rgba(107,132,158,0.18);
+  /* Categorical chart colors — stay cool/cohesive */
+  --chart-1:#1a3a5c; --chart-2:#4a7fa8; --chart-3:#0f4c4c; --chart-4:#4c1d50; --chart-5:#563e14; --chart-6:#6b2d14;
+  /* Modal size tokens */
+  --modal-sm:380px; --modal-md:480px; --modal-lg:680px;
+  /* Radius scale */
+  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px;
 }
 [data-theme="dark"] {
   --bg:#0b1420;
@@ -225,6 +246,12 @@ const css = `
   --shadow-md:0 2px 8px rgba(0,0,0,0.4);
   --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
   --input-shadow:inset 0 1px 3px rgba(0,0,0,0.2);
+  /* Tier colors retuned for dark mode */
+  --tier-1:#4ade80; --tier-1-bg:rgba(74,222,128,0.10);  --tier-1-border:rgba(74,222,128,0.28);
+  --tier-2:#6ea8e0; --tier-2-bg:rgba(110,168,224,0.10); --tier-2-border:rgba(110,168,224,0.28);
+  --tier-3:#a8b4c4; --tier-3-bg:rgba(168,180,196,0.08); --tier-3-border:rgba(168,180,196,0.22);
+  --tier-4:#fbbf24; --tier-4-bg:rgba(251,191,36,0.10);  --tier-4-border:rgba(251,191,36,0.28);
+  --tier-default:#6b7a8e; --tier-default-bg:rgba(107,122,142,0.08); --tier-default-border:rgba(107,122,142,0.22);
   color-scheme:dark;
 }
 body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','Inter',sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
@@ -237,10 +264,11 @@ input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.5}
 a { color:var(--accent); }
 button { font-family:'Plus Jakarta Sans','Inter',sans-serif; letter-spacing:-0.01em; }
 input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid var(--accent-glow) !important; outline-offset:0 !important; }
-tr:hover td { background:var(--row-tint) !important; transition:background .1s; }
-.row-hover:hover { background:var(--row-tint) !important; }
+tr:hover td { background:var(--row-tint-strong) !important; transition:background .12s; }
+.row-hover:hover { background:var(--row-tint-strong) !important; }
 tbody tr:nth-child(even) td { background:var(--row-tint-weak); }
 tbody tr:nth-child(even):hover td { background:var(--row-tint-strong) !important; }
+.cq-empty-dash { color:var(--dim); opacity:0.45; }
 h1,h2,h3,h4 { letter-spacing:-0.02em; }
 /* Dark mode: soften inline light-grays so cards don't wash out */
 [data-theme="dark"] .cq-main { background:var(--bg); }
@@ -294,7 +322,7 @@ h1,h2,h3,h4 { letter-spacing:-0.02em; }
 //  DESIGN PRIMITIVES
 // ─────────────────────────────────────────────────────────
 const iStyle = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"10px 13px",outline:"none",width:"100%",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.04)",transition:"border-color .15s,box-shadow .15s",lineHeight:"1.4"};
-const lStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"};
+const lStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"};
 const Field = ({label,children,full}) => (
   <div style={{display:"flex",flexDirection:"column",gap:6,...(full?{gridColumn:"1/-1"}:{})}}>
     <label style={lStyle}>{label}</label>{children}
@@ -304,9 +332,9 @@ const Field = ({label,children,full}) => (
 // Icons
 const Ic = ({d,w=14,h=14,sw=2,extra}) => <svg width={w} height={h} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={extra}>{d}</svg>;
 const Icons = {
-  Plus:  ()=><Ic w={13} h={13} sw={2.5} d={<><path d="M12 5v14M5 12h14"/></>}/>,
-  Edit:  ()=><Ic w={11} h={11} d={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>}/>,
-  Trash: ()=><Ic w={11} h={11} d={<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></>}/>,
+  Plus:  ()=><Ic w={14} h={14} sw={2.5} d={<><path d="M12 5v14M5 12h14"/></>}/>,
+  Edit:  ()=><Ic w={12} h={12} d={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>}/>,
+  Trash: ()=><Ic w={12} h={12} d={<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></>}/>,
   Search:()=><Ic d={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></>}/>,
   X:     ()=><Ic d={<><path d="M18 6 6 18M6 6l12 12"/></>}/>,
   Spin:  ()=><Ic d={<path d="M21 12a9 9 0 1 1-6.219-8.56"/>} extra={{animation:"spin 1s linear infinite"}}/>,
@@ -334,7 +362,7 @@ const Toast = ({msg,type}) => (
 
 const ConfirmDelete = ({onConfirm,onCancel}) => (
   <div onClick={onCancel} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.6)",backdropFilter:"blur(8px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-    <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,padding:28,boxShadow:"0 24px 64px rgba(0,0,0,0.2)",width:"min(380px,100%)",animation:"modalIn .2s ease"}}>
+    <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,padding:28,boxShadow:"0 24px 64px rgba(0,0,0,0.2)",width:"min(var(--modal-sm),100%)",animation:"modalIn .2s ease"}}>
       <div style={{width:36,height:36,borderRadius:9,background:"rgba(185,28,28,0.08)",border:"1px solid rgba(185,28,28,0.18)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14,fontSize:16}}>⚠</div>
       <div style={{fontSize:16,fontWeight:600,color:"var(--text)",marginBottom:6,letterSpacing:"-0.01em"}}>Delete this entry?</div>
       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:24,lineHeight:1.6}}>This action is permanent and cannot be undone.</div>
@@ -355,10 +383,10 @@ const RowBtn = ({onClick,title,hb,hc,hbg,children}) => (
 );
 
 const StatCard = ({label,value,sub,c}) => (
-  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${c}`,borderRadius:10,padding:"16px 18px",position:"relative",boxShadow:"0 1px 3px rgba(0,0,0,0.03),0 4px 12px rgba(0,0,0,0.04)"}}>
-    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
+  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${c}`,borderRadius:"var(--r-lg)",padding:"16px 20px",position:"relative",boxShadow:"var(--shadow-sm)"}}>
+    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
     <div className="tabular" style={{fontSize:28,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{value}</div>
-    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sub}</div>
+    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sub}</div>
   </div>
 );
 
@@ -443,7 +471,7 @@ const LoginScreen = ({onLogin}) => {
 
       {/* RIGHT PANEL */}
       <div className="cq-login-right" style={{flex:1,background:"#f5f6f9",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
-        <div style={{width:"min(400px,100%)",animation:"fadeUp .5s ease both"}}>
+        <div style={{width:"min(var(--modal-sm),100%)",animation:"fadeUp .5s ease both"}}>
 
           <div style={{marginBottom:32}}>
             <div style={{fontSize:22,fontWeight:700,color:"var(--text)",letterSpacing:"-0.02em",marginBottom:6}}>{isRegister?"Create Account":"Sign In"}</div>
@@ -576,7 +604,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
   };
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(520px,100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
         <button onClick={onClose} style={{position:"absolute",top:18,right:18,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--purple)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} user</div>
         <div style={{fontSize:20,fontWeight:500,marginBottom:24}}>{isEdit?"Edit User":"Create User"}</div>
@@ -600,7 +628,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
         {/* Campaign access — authors and clients */}
         {(form.role==="client"||form.role==="author") && (
           <div style={{marginTop:16}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>
               Bounty Access
               {form.role==="author" && <span style={{marginLeft:8,color:"var(--muted)",textTransform:"none",fontSize:9,letterSpacing:0}}>— which campaigns this author can post to</span>}
             </div>
@@ -639,7 +667,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
         )}
 
         <div style={{marginTop:16,padding:"12px 14px",background:"var(--surface2)",borderRadius:8,border:"1px solid var(--border)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Role permissions</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Role permissions</div>
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",lineHeight:1.8}}>
             {form.role==="admin"  && "Full access · View, create, edit & delete all entries · Manage users"}
             {form.role==="author" && "Can post to assigned campaigns only · Edit only their own entries"}
@@ -691,7 +719,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
       <div className="cq-table-scroll"><div style={{minWidth:550}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 100px 1fr 120px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
-          {["User","Role","Bounty Access","Created",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+          {["User","Role","Bounty Access","Created",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {users.length===0 ? (
           <div style={{textAlign:"center",padding:"48px 20px",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No users yet</div>
@@ -777,7 +805,7 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
           <Field label="CryptoQuant Twitter Link" full><input type="url" value={form.cqTwitterLink||""} onChange={e=>set("cqTwitterLink",e.target.value)} placeholder="https://x.com/CryptoQuant_IO/…" style={iStyle}/></Field>
           <Field label="Telegram Link" full><input type="url" value={form.telegramLink||""} onChange={e=>set("telegramLink",e.target.value)} placeholder="https://t.me/cryptoquant_official/…" style={iStyle}/></Field>
           <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",gap:10}}>
                 <Field label="Category"><input value={form.category||""} onChange={e=>set("category",e.target.value)} placeholder="e.g. Spot, Macro" style={iStyle}/></Field>
@@ -843,7 +871,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const ac = getAuthorColor(entry.author);
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
     </div>
   );
@@ -855,11 +883,11 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(560px,100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
         {/* Header */}
         <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// bounty entry</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// bounty entry</div>
           <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.title||"—"}</h2>
         </div>
         {/* Scrollable body */}
@@ -867,7 +895,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <InfoBlock label="Date" value={fmtDate(entry.date)}/>
             <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Author</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Author</div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.author)}</div>
                 <span style={{fontSize:13,fontWeight:500}}>{entry.author||"—"}</span>
@@ -880,7 +908,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
           </div>
           {(entry.cqLink||entry.analyticsLink||entry.authorTwitterLink||entry.cqTwitterLink||entry.telegramLink)&&(
             <div style={{marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 <LinkBtn label="Quicktake" url={entry.cqLink}/>
                 <LinkBtn label="Analytics" url={entry.analyticsLink}/>
@@ -1022,7 +1050,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         {cqResearchData.chartData.length > 0 && (
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .04s both"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
               <div style={{display:"flex",gap:14}}>
                 {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
                   <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -1065,7 +1093,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             {/* Top Headlines */}
             <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Headlines</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topHeadlines.length}</span>
               </div>
               {cqResearchData.topHeadlines.length===0
@@ -1091,7 +1119,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             {/* Top Outlets */}
             <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Outlets</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.uniqueOutlets.length}</span>
               </div>
               {cqResearchData.topOutlets.length===0
@@ -1117,7 +1145,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             {/* Media Tier */}
             <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Media Tier</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.cits.length} total</span>
               </div>
               {cqResearchData.tierEntries.length===0
@@ -1192,7 +1220,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
                 <ResponsiveContainer width="100%" height={100}>
@@ -1217,7 +1245,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 </ResponsiveContainer>
               </div>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Authors</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Authors</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {topAuthors.map(([name,count],i)=>(
                     <div key={name}>
@@ -1259,18 +1287,18 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             {showFilters&&(
               <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
                   <select value={filterAuthor} onChange={e=>{setFA(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Authors</option>
                     {authors.map(a=><option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
                   <input type="date" value={filterDateFrom} onChange={e=>{setDateFrom(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
                   <input type="date" value={filterDateTo} onChange={e=>{setDateTo(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
               </div>
@@ -1289,7 +1317,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
+          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1298,7 +1326,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
             </div>
           : filtered.length===0
-            ? <div style={{textAlign:"center",padding:"40px 20px",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No matches</div>
+            ? <div style={{textAlign:"center",padding:"48px 20px"}}>
+                <div style={{fontSize:24,marginBottom:8,opacity:.25}}>⬡</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
+              </div>
             : paged.map((c,i)=>{
                 const ac=getAuthorColor(c.author);
                 const dp=fmtDate(c.date).split(", ");
@@ -1309,7 +1341,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                     onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                      <span style={{display:"block",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
+                      <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                     </div>
                     <div style={{paddingRight:14,minWidth:0}}>
                       <div title={c.title||""} style={{fontSize:12,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.title}</div>
@@ -1333,7 +1365,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                             <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,color:"#4a7fa8"}}>{Number(String(c.telegramImpressions).replace(/,/g,"")).toLocaleString()}</span>
                           </div>}
                         </>
-                      ):<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--border2)"}}>—</span>}
+                      ):<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:c.author}));}}}>
                       <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,flexShrink:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)"}}>{initials(c.author)}</div>
@@ -1356,7 +1388,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           <div className="cq-table-scroll"><div style={{minWidth:500}}>
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqResearchData.cits.length}</span>
             </div>
             {pagedCqCits.map((c,i)=>{
@@ -1374,11 +1406,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   <div style={{minWidth:0}}>
                     {c.headline&&<div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
                     {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
-                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </div>
                   <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
                   <div onClick={e=>e.stopPropagation()}>
-                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10}}>—</span>}
+                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10,opacity:0.45}}>—</span>}
                   </div>
                 </div>
               );
@@ -1403,17 +1435,17 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
     </div>
   );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(560px,100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
         {/* Header */}
         <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
           <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.headline||entry.topic||"—"}</h2>
           {entry.headline&&entry.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:4}}>{entry.topic}</div>}
         </div>
@@ -1422,7 +1454,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <InfoBlock label="Date" value={fmtDate(entry.date)}/>
             <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Outlet</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Outlet</div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:mc.bg,color:mc.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.media)}</div>
                 <span style={{fontSize:13,fontWeight:500}}>{entry.media||"—"}</span>
@@ -1439,7 +1471,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
           </div>
           {entry.articleLink&&(
             <div style={{marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
               <a href={entry.articleLink} target="_blank" rel="noreferrer"
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
                 Open Article ↗
@@ -1481,7 +1513,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
           <Field label="Headline" full><input value={form.headline||""} onChange={e=>set("headline",e.target.value)} placeholder="Full article headline" style={iStyle}/></Field>
           <Field label="Article Link" full><input type="url" value={form.articleLink||""} onChange={e=>set("articleLink",e.target.value)} placeholder="https://…" style={iStyle}/></Field>
           <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",gap:10}}>
                 <Field label="Media Tier"><input value={form.mediaTier||""} onChange={e=>set("mediaTier",e.target.value)} placeholder="e.g. Tier 1" style={iStyle}/></Field>
@@ -1603,7 +1635,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
             <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
                 <ResponsiveContainer width="100%" height={100}>
@@ -1629,7 +1661,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
               </div>
               {tierEntries.length > 0 && (
                 <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Media Tier Breakdown</div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Media Tier Breakdown</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {tierEntries.map(([tier,count])=>{
                       const pct = Math.round((count/citations.length)*100);
@@ -1650,7 +1682,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                 </div>
               )}
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12}}>Top Outlets</div>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Outlets</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {topOutlets.map(([name,count],i)=>(
                     <div key={name}>
@@ -1692,14 +1724,14 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
             {showFilters&&(
               <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
                   <select value={filterAuthor} onChange={e=>{setFA(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Authors</option>
                     {authors.map(a=><option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:160}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Outlet</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Outlet</span>
                   <select value={filterMedia} onChange={e=>{setFM(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Outlets</option>
                     {medias.map(m=><option key={m} value={m}>{m}</option>)}
@@ -1707,7 +1739,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                 </div>
                 {tiers.length>0&&(
                   <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:120}}>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</span>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</span>
                     <select value={filterTier} onChange={e=>{setFT(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                       <option value="all">All Tiers</option>
                       {tiers.map(t=><option key={t} value={t}>Tier {t}</option>)}
@@ -1715,11 +1747,11 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                   </div>
                 )}
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
                   <input type="date" value={filterDateFrom} onChange={e=>{setDateFrom(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
                   <input type="date" value={filterDateTo} onChange={e=>{setDateTo(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
               </div>
@@ -1740,7 +1772,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1749,7 +1781,11 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                   {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST CITATION</button>}
                 </div>
               : filtered.length===0
-                ? <div style={{textAlign:"center",padding:"40px 20px",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No matches</div>
+                ? <div style={{textAlign:"center",padding:"48px 20px"}}>
+                    <div style={{fontSize:24,marginBottom:8,opacity:.25}}>⬡</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
+                  </div>
                 : paged.map((c,i)=>{
                     const mc=getPaletteColor(AUTHOR_PALETTE,"media",c.media||"?");
                     const dp=fmtDate(c.date).split(", ");
@@ -1759,7 +1795,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                         onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                         onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                          <span style={{display:"block",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
+                          <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                         </div>
                         <div style={{display:"flex",alignItems:"center",gap:6,paddingRight:8,minWidth:0}}>
                           <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,flexShrink:0,background:mc.bg,color:mc.color,border:"1px solid var(--border2)"}}>{initials(c.media)}</div>
@@ -1778,7 +1814,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly}
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {c.articleLink
                             ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
-                            : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--border2)"}}>—</span>}
+                            : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                         </div>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
                           {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
@@ -1868,7 +1904,7 @@ const CQResearchTab = ({campaigns, citations}) => {
   const Section = ({title, count, children}) => (
     <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"1px solid var(--border)"}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>{title}</div>
+        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>{title}</div>
         <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{count}</span>
       </div>
       {children}
@@ -1896,7 +1932,7 @@ const CQResearchTab = ({campaigns, citations}) => {
       {chartData.length > 0 && (
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
             <div style={{display:"flex",gap:14}}>
               {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
                 <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -1940,7 +1976,7 @@ const CQResearchTab = ({campaigns, citations}) => {
           {/* Top Headlines */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Headlines</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
             </div>
             {topHeadlines.length===0
@@ -1967,7 +2003,7 @@ const CQResearchTab = ({campaigns, citations}) => {
           {/* Top Outlets */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Top Outlets</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{uniqueOutlets.length}</span>
             </div>
             {topOutlets.length===0
@@ -1994,7 +2030,7 @@ const CQResearchTab = ({campaigns, citations}) => {
           {/* Media Tier */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>Media Tier</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cits.length} total</span>
             </div>
             {tierEntries.length===0
@@ -2029,7 +2065,7 @@ const CQResearchTab = ({campaigns, citations}) => {
             <thead>
               <tr style={{borderBottom:"1px solid var(--border)"}}>
                 {["Date","Title","Analytics","Twitter","CQ Link"].map(h=>(
-                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -2041,13 +2077,13 @@ const CQResearchTab = ({campaigns, citations}) => {
                   <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{b.date||"—"}</td>
                   <td style={{fontSize:13,fontWeight:500,color:"var(--text)",padding:"11px 22px",maxWidth:360,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"—"}</td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
-                    {b.analyticsLink ? <a href={b.analyticsLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Analytics</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                    {b.analyticsLink ? <a href={b.analyticsLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Analytics</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
-                    {b.cqTwitterLink ? <a href={b.cqTwitterLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Tweet</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                    {b.cqTwitterLink ? <a href={b.cqTwitterLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Tweet</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
-                    {b.cqLink ? <a href={b.cqLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ View</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                    {b.cqLink ? <a href={b.cqLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ View</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </td>
                 </tr>
               ))}
@@ -2068,7 +2104,7 @@ const CQResearchTab = ({campaigns, citations}) => {
             <thead>
               <tr style={{borderBottom:"1px solid var(--border)"}}>
                 {["Date","Media","Headline / Topic","Reporter","Article"].map(h=>(
-                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -2082,11 +2118,11 @@ const CQResearchTab = ({campaigns, citations}) => {
                   <td style={{fontSize:12,color:"var(--muted)",padding:"11px 22px",maxWidth:360}}>
                     {c.headline&&<div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
                     {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
-                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)"}}>—</span>}
+                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",opacity:0.45}}>—</span>}
                   </td>
                   <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.reporter||"—"}</td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
-                    {c.articleLink ? <a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Read</a> : <span style={{color:"var(--dim)",fontSize:11}}>—</span>}
+                    {c.articleLink ? <a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Read</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </td>
                 </tr>
               ))}
@@ -2217,7 +2253,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:`repeat(${totalImpressions>0?5:4},1fr)`,gap:14,marginBottom:28}}>
         {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
           <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:8}}>{s.label}</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:8}}>{s.label}</div>
             <div className="tabular" style={{fontSize:30,fontWeight:700,color:"var(--text)",lineHeight:1,marginBottom:6,letterSpacing:"-0.03em"}}>{s.value}</div>
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
           </div>
@@ -2349,7 +2385,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
             // "View all" modal
             const AllModal = ({title, onClose, children}) => (
               <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-                <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(480px,100%)",maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
+                <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 22px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--text)"}}>{title}</div>
                     <button onClick={onClose} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
@@ -2380,9 +2416,9 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
               const [tierModal,setTierModal] = useState(null); // tier key or null
 
               const Panel = ({title,badge,onViewAll,children}) => (
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",minWidth:0,overflow:"hidden"}}>
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"20px 24px",boxShadow:"var(--shadow-sm)",minWidth:0,overflow:"hidden"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>{title}</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>{title}</div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       {badge&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{badge}</span>}
                       {onViewAll&&<button onClick={onViewAll} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",background:"none",border:"none",cursor:"pointer",padding:0,letterSpacing:"0.04em"}}>View all →</button>}
@@ -2471,7 +2507,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                                           </div>
                                         </div>
                                       );
-                                    }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>—</div>}
+                                    }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</div>}
                                   </div>
 
                                   {/* Footer: last activity */}
@@ -2970,7 +3006,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
             onMouseEnter={e=>{if(s.key){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
             onMouseLeave={e=>{if(s.key){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>
               {s.label}{s.key&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
             </div>
             <div className="tabular" style={{fontSize:30,fontWeight:700,letterSpacing:"-0.03em",color:s.curr===0?"var(--border2)":"var(--text)",lineHeight:1,marginBottom:6}}>{s.curr}</div>
@@ -2988,7 +3024,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         {/* Daily bar chart */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexShrink:0}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Daily Activity</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Daily Activity</div>
             <div style={{display:"flex",gap:14}}>
               {[{color:"var(--accent)",label:"Bounties"},{color:"#4a7fa8",label:"Citations"}].map((l,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
@@ -3034,7 +3070,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
         {/* Recent entries feed */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Recent Activity</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Recent Activity</div>
           {recentAll.length===0
             ? <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,padding:"20px 0"}}>
                 <div style={{fontSize:28,opacity:.15}}>◎</div>
@@ -3084,7 +3120,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         {/* Top headlines */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Headlines</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Headlines</div>
             <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
           </div>
           {topHeadlines.length===0
@@ -3114,7 +3150,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         {/* Media Tier */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Media Tier</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</div>
             <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{weekCitations.length} total</span>
           </div>
           {tierEntries.length===0
@@ -3145,7 +3181,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           {/* Top authors */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Authors</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Authors</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{authorsSet.size}</span>
             </div>
             {topAuthors.length===0
@@ -3184,7 +3220,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           {/* Top outlets */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Top Media Outlets</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Media Outlets</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{outletsSet.size}</span>
             </div>
             {topOutlets.length===0
@@ -3433,7 +3469,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
 
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(500px,100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
+      <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
 
         {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
@@ -3447,7 +3483,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
         {/* Body */}
         <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"70vh"}}>
           {/* Date range */}
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Date Range</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Date Range</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <Field label="From">
               <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
@@ -3546,7 +3582,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   return (
     <Portal>
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(440px,100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
         <button onClick={onClose} style={{position:"absolute",top:18,right:18,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
         <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--yellow)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} campaign</div>
         <div style={{fontSize:20,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Campaign":"New Campaign"}</div>
@@ -3574,7 +3610,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
             </button>
           </Field>
           <div style={{paddingTop:16,borderTop:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Data Entry Mode</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Data Entry Mode</div>
             <div style={{display:"flex",gap:8,marginBottom:14}}>
               {[{id:"manual",label:"✏ Manual Entry"},{id:"sheets",label:"⟳ Google Sheets"}].map(m=>(
                 <button key={m.id} onClick={()=>setDataMode(m.id)}
@@ -3606,7 +3642,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
               </div>
             )}
             <div style={{paddingTop:14,borderTop:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>General Spreadsheet Link</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>General Spreadsheet Link</div>
               <Field label="Google Sheet URL" full>
                 <input value={sheetLink} onChange={e=>setSheetLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/..." style={iStyle}/>
               </Field>
@@ -3761,7 +3797,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         <div style={{display:"flex",alignItems:"center",gap:14}}>
           <div style={{width:44,height:44,borderRadius:12,background:drillProgram.color+"18",border:`1px solid ${drillProgram.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:500,color:drillProgram.color}}>{initials(drillProgram.name)}</div>
           <div style={{borderLeft:`3px solid ${drillProgram.color}`,paddingLeft:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:500,marginBottom:3}}>// bounty detail</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:3}}>// bounty detail</div>
             <h2 style={{fontSize:24,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{drillProgram.name}</h2>
           </div>
         </div>
@@ -3880,7 +3916,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>
                 <span style={{fontSize:11,display:"inline-block",transform:open?"rotate(90deg)":"none",transition:"transform .18s",color:"var(--dim)",width:14,textAlign:"center"}}>▶</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:accentBg,border:`1px solid ${accentBorder}`,color:accent}}>{items.length}</span>
               </button>
               {open&&(
@@ -4106,7 +4142,7 @@ const AuthorsTab = ({campaigns, citations}) => {
             {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"#4a7fa8"},
           ].map((s,i)=>(
             <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{s.label}</div>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
               <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1,marginBottom:4}}>{s.val}</div>
               <div title={s.sub} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sub}</div>
             </div>
@@ -4122,7 +4158,7 @@ const AuthorsTab = ({campaigns, citations}) => {
           </div>
         : <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
             {/* Header row */}
-            <div style={{display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"12px 18px",background:"var(--surface2)",borderBottom:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>
+            <div style={{display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"12px 18px",background:"var(--surface2)",borderBottom:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>
               <div style={{textAlign:"center"}}>#</div>
               <div>Author</div>
               <div style={{textAlign:"right"}}>Bounties</div>
@@ -4316,7 +4352,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
           {label:"Longest Streak", val:`${longestStreak}w`, c:"var(--accent)"},
         ].map((s,i)=>(
           <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>{s.label}</div>
+            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
             <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{s.val}</div>
           </div>
         ))}
@@ -4325,7 +4361,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       {/* Heatmap (90 days) */}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Last 90 Days</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Last 90 Days</div>
           <div style={{display:"flex",gap:14,alignItems:"center"}}>
             <div style={{display:"flex",alignItems:"center",gap:4}}>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>less</span>
@@ -4351,7 +4387,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
         {/* Top outlets */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Top Outlets Covering Them</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Top Outlets Covering Them</div>
           {topOutlets.length===0
             ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage</div>
             : <div style={{display:"flex",flexDirection:"column",gap:9}}>
@@ -4375,7 +4411,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
 
         {/* Media Tier */}
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:14}}>Media Tier</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Media Tier</div>
           {tierEntries.length===0
             ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data</div>
             : <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -4402,7 +4438,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       {/* Timeline */}
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)",gap:12,flexWrap:"wrap"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Full Timeline</div>
+          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Full Timeline</div>
           <div style={{display:"flex",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
             {[
               {id:"bounties",  label:"Bounties",  count:bountyTimeline.length,   accent:"var(--accent)"},
@@ -4436,7 +4472,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                       {item._type==="bounty"
                         ? <>
                             <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Bounty</div>
+                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Bounty</div>
                           </>
                         : <>
                             <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
