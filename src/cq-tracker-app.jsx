@@ -278,6 +278,7 @@ h1,h2,h3,h4 { letter-spacing:-0.02em; }
 [data-theme="dark"] th { background:var(--surface2) !important; color:var(--dim) !important; border-color:var(--border) !important; }
 [data-theme="dark"] td { border-color:var(--border) !important; color:var(--text); }
 [data-theme="dark"] thead { background:var(--surface) !important; }
+[data-theme="dark"] .cq-login-right { background:var(--bg) !important; }
 @media(max-width:1100px){
   .cq-main{padding:28px 20px 60px!important;}
   .cq-stat-grid{grid-template-columns:repeat(2,1fr)!important;}
