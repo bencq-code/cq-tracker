@@ -2326,6 +2326,26 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
             const topOutlets = allOutlets.slice(0,5);
             const maxOutlet  = allOutlets[0]?.count||1;
 
+            // Media tiers (shared by Panel cards + "View all" modal)
+            const tierMap = {};
+            citations.forEach(c=>{
+              if(c.mediaTier){
+                const t=String(c.mediaTier).trim();
+                if(t){
+                  if(!tierMap[t]) tierMap[t]={count:0,outlets:{},authors:new Set(),dates:[],items:[]};
+                  tierMap[t].count++;
+                  const m=(c.media||"").trim();
+                  if(m){const mk=m.toLowerCase();if(!tierMap[t].outlets[mk])tierMap[t].outlets[mk]={label:m,count:0};tierMap[t].outlets[mk].count++;}
+                  const a=(c.author||"").trim();
+                  if(a) tierMap[t].authors.add(a.toLowerCase());
+                  if(c.date) tierMap[t].dates.push(c.date);
+                  tierMap[t].items.push(c);
+                }
+              }
+            });
+            const tierEntries = Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+            const totalTierCits = tierEntries.reduce((s,[,d])=>s+d.count,0);
+
             // "View all" modal
             const AllModal = ({title, onClose, children}) => (
               <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
@@ -2357,9 +2377,10 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
 
             const Leaderboards = () => {
               const [modal,setModal] = useState(null); // "topics"|"authors"|"outlets"
+              const [tierModal,setTierModal] = useState(null); // tier key or null
 
               const Panel = ({title,badge,onViewAll,children}) => (
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",minWidth:0,overflow:"hidden"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",fontWeight:600}}>{title}</div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -2392,24 +2413,10 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
               return (
                 <>
                   {/* Row 1: Media Tier Breakdown — full width with rich per-tier cards */}
-                  {(()=>{
-                    const tierMap={};
-                    citations.forEach(c=>{
-                      if(c.mediaTier){const t=String(c.mediaTier).trim();if(t){if(!tierMap[t])tierMap[t]={count:0,outlets:{},authors:new Set(),dates:[]};tierMap[t].count++;
-                        const m=(c.media||"").trim();
-                        if(m){const mk=m.toLowerCase();if(!tierMap[t].outlets[mk])tierMap[t].outlets[mk]={label:m,count:0};tierMap[t].outlets[mk].count++;}
-                        const a=(c.author||"").trim();
-                        if(a)tierMap[t].authors.add(a.toLowerCase());
-                        if(c.date)tierMap[t].dates.push(c.date);
-                      }}
-                    });
-                    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
-                    if(!tierEntries.length) return null;
-                    const totalTierCits = tierEntries.reduce((s,[,d])=>s+d.count,0);
-                    return (
-                      <div style={{marginTop:16}}>
-                        <Panel title="Media Tier Breakdown" badge={`${totalTierCits} citations`}>
-                          <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(tierEntries.length,4)},1fr)`,gap:14}}>
+                  {tierEntries.length>0 && (
+                    <div style={{marginTop:16}}>
+                      <Panel title="Media Tier Breakdown" badge={`${totalTierCits} citations`}>
+                        <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(tierEntries.length,4)},1fr)`,gap:14}}>
                             {tierEntries.map(([tier,data])=>{
                               const tc=getTierColor(tier);
                               const pct=(data.count/totalTierCits)*100;
@@ -2417,7 +2424,14 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                               const sortedDates=[...data.dates].sort();
                               const lastDate=sortedDates[sortedDates.length-1]||null;
                               return (
-                                <div key={tier} style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:10,padding:"16px 18px",overflow:"hidden"}}>
+                                <div
+                                  key={tier}
+                                  onClick={()=>setTierModal(tier)}
+                                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 6px 18px ${tc.border}`;}}
+                                  onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";}}
+                                  title={`View all ${data.count} citation${data.count!==1?"s":""} in Tier ${tier}`}
+                                  style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:10,padding:"16px 18px",overflow:"hidden",cursor:"pointer",transition:"transform .15s ease, box-shadow .15s ease"}}
+                                >
                                   {/* Top accent stripe */}
                                   <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:tc.color}}/>
 
@@ -2472,8 +2486,7 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                           </div>
                         </Panel>
                       </div>
-                    );
-                  })()}
+                  )}
 
                   {/* Row 2: Top Topics — full width, 2 columns filled top-to-bottom */}
                   <div style={{marginTop:14}}>
@@ -2484,12 +2497,12 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                         const rightCol = topTopics.slice(half);
                         return (
                           <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 32px"}}>
-                            <div>
+                            <div style={{minWidth:0}}>
                               {leftCol.map((r,i)=>(
                                 <Row key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
                               ))}
                             </div>
-                            <div>
+                            <div style={{minWidth:0}}>
                               {rightCol.map((r,i)=>(
                                 <Row key={r.topic} rank={half+i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>
                               ))}
@@ -2589,6 +2602,27 @@ const AnalyticsTab = ({campaigns, citations, clientName}) => {
                       {allOutlets.map((r,i)=><ModalRow key={r.media} rank={i+1} label={r.media} value={r.count} pct={(r.count/maxOutlet)*100} color="#4a7fa8"/>)}
                     </AllModal>
                   )}
+                  {tierModal!==null && tierMap[tierModal] && (()=>{
+                    const data = tierMap[tierModal];
+                    const tc = getTierColor(tierModal);
+                    const sortedItems = [...data.items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+                    return (
+                      <AllModal title={`Tier ${tierModal} Citations (${data.count})`} onClose={()=>setTierModal(null)}>
+                        {sortedItems.length ? sortedItems.map((c,i)=>(
+                          <div key={c.id||i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"9px 0",borderBottom:"1px solid var(--border)"}}>
+                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:tc.color,fontWeight:600,width:68,flexShrink:0,paddingTop:2}}>{c.date||"—"}</span>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div title={c.headline||c.topic||""} style={{fontSize:12,color:"var(--text)",fontWeight:500,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
+                              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                                {c.media||"—"}{c.author?` · ${c.author}`:""}
+                              </div>
+                            </div>
+                            {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗ Read</a>:null}
+                          </div>
+                        )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No citations</div>}
+                      </AllModal>
+                    );
+                  })()}
                 </>
               );
             };
