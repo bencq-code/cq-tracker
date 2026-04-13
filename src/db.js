@@ -71,10 +71,19 @@ const toClient = (c) => ({
   created_at:      c.createdAt || Date.now(),
 });
 
+const safeDate = (d) => {
+  if(!d) return "";
+  const s = String(d).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const t = new Date(s);
+  if(isNaN(t.getTime())) return "";
+  return s;
+};
+
 const fromCampaign = (r) => ({
   id:                r.id,
   campaignId:        r.campaign_id,
-  date:              r.date,
+  date:              safeDate(r.date),
   author:            r.author,
   title:             r.title,
   cqLink:            r.cq_link,
@@ -113,7 +122,7 @@ const toCampaign = (c) => ({
 const fromCitation = (r) => ({
   id:                 r.id,
   campaignId:         r.campaign_id,
-  date:               r.date,
+  date:               safeDate(r.date),
   media:              r.media,
   reporter:           r.reporter,
   author:             r.author,
