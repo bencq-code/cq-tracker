@@ -993,24 +993,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
     const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
 
-    // Chart data
-    const chartMap = {};
-    activeCampaigns.forEach(b => {
-      const day = b.date; if(!day) return;
-      if(!chartMap[day]) chartMap[day] = {day, bounties:0, citations:0};
-      chartMap[day].bounties++;
-    });
-    cits.forEach(c => {
-      const day = c.date; if(!day) return;
-      if(!chartMap[day]) chartMap[day] = {day, bounties:0, citations:0};
-      chartMap[day].citations++;
-    });
-    const chartData = Object.values(chartMap).sort((a,b)=>a.day.localeCompare(b.day)).map(w => ({
-      ...w,
-      label: new Date(w.day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
-    }));
-
-    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,chartData,cits};
+    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,cits};
   },[contentMode,activeCampaigns,activeCitations]);
 
   // CQ Research citations pagination
@@ -1047,47 +1030,6 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 
       {/* CQ Research analytics */}
       {contentMode==="cq_research"&&cqResearchData&&(<>
-        {/* Chart */}
-        {cqResearchData.chartData.length > 0 && (
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .04s both"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
-              <div style={{display:"flex",gap:14}}>
-                {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
-                  <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
-                    <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={cqResearchData.chartData} margin={{top:4,right:8,left:0,bottom:0}}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(cqResearchData.chartData.length/8)-1)}/>
-                <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-                <Tooltip content={({active,payload,label})=>{
-                  if(!active||!payload?.length) return null;
-                  return (
-                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
-                      {payload.map(p=>(
-                        <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{p.dataKey}:</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }}/>
-                <Bar dataKey="bounties"  fill="#1a3a5c" fillOpacity={0.35} radius={[3,3,0,0]}/>
-                <Bar dataKey="citations" fill="#4a7fa8" fillOpacity={0.45} radius={[3,3,0,0]}/>
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
         {/* Leaderboards */}
         {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
           <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
@@ -1879,25 +1821,6 @@ const CQResearchTab = ({campaigns, citations}) => {
     return {topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
   },[cits]);
 
-  // Build chart data — weekly buckets
-  const chartData = useMemo(() => {
-    const map = {};
-    bounties.forEach(b => {
-      const day = b.date; if(!day) return;
-      if(!map[day]) map[day] = {day, bounties:0, citations:0};
-      map[day].bounties++;
-    });
-    cits.forEach(c => {
-      const day = c.date; if(!day) return;
-      if(!map[day]) map[day] = {day, bounties:0, citations:0};
-      map[day].citations++;
-    });
-    return Object.values(map).sort((a,b)=>a.day.localeCompare(b.day)).map(w => ({
-      ...w,
-      label: new Date(w.day+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}),
-    }));
-  }, [bounties.length, cits.length]);
-
   const linkStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"};
   const onLink  = e=>e.currentTarget.style.textDecoration="underline";
   const offLink = e=>e.currentTarget.style.textDecoration="none";
@@ -1928,47 +1851,6 @@ const CQResearchTab = ({campaigns, citations}) => {
         <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="#4a7fa8"/>
         <StatCard label="Media Outlets" value={uniqueOutlets.length} sub="Unique publications" c="var(--accent)"/>
       </div>
-
-      {/* Chart */}
-      {chartData.length > 0 && (
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"20px 24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>Daily Activity</div>
-            <div style={{display:"flex",gap:14}}>
-              {[{color:"rgba(26,58,92,0.35)",label:"Bounties"},{color:"rgba(74,127,168,0.5)",label:"Citations"}].map(l=>(
-                <div key={l.label} style={{display:"flex",alignItems:"center",gap:5}}>
-                  <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <ComposedChart data={chartData} margin={{top:4,right:8,left:0,bottom:0}}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-              <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/8)-1)}/>
-              <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={24} allowDecimals={false}/>
-              <Tooltip content={({active,payload,label})=>{
-                if(!active||!payload?.length) return null;
-                return (
-                  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
-                    {payload.map(p=>(
-                      <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
-                        <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{p.dataKey}:</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              }}/>
-              <Bar dataKey="bounties"  fill="#1a3a5c" fillOpacity={0.35} radius={[3,3,0,0]}/>
-              <Bar dataKey="citations" fill="#4a7fa8" fillOpacity={0.45} radius={[3,3,0,0]}/>
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-      )}
 
       {/* Leaderboards */}
       {(topHeadlines.length>0||topOutlets.length>0||tierEntries.length>0)&&(
@@ -3783,75 +3665,10 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
   );
 };
 
-const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp,onDeleteCamp,onSaveMedia,onDeleteMedia,currentUser,showToast,setCampaigns,setCitations}) => {
+const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp,onDeleteCamp,onSaveMedia,onDeleteMedia,currentUser,showToast,setCampaigns,setCitations,onSelectCampaign}) => {
   const [showForm,setShowForm]   = useState(false);
   const [editClient,setEdit]     = useState(null);
   const [confirmId,setConfId]    = useState(null);
-  const [drillId,setDrillId]     = useState(null);
-  const [drillTab,setDrillTab]   = useState("daily");
-  const [showDrillPdf,setShowDrillPdf] = useState(false);
-
-  const drillProgram = programs.find(c=>c.id===drillId)||null;
-  const drillCamps  = campaigns.filter(c=>c.campaignId===drillId);
-  const drillCites  = citations.filter(c=>c.campaignId===drillId);
-
-  const Back = () => (
-    <button onClick={()=>setDrillId(null)}
-      style={{display:"inline-flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",background:"transparent",border:"none",cursor:"pointer",padding:"0 0 16px 0",letterSpacing:"0.04em"}}
-      onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"}
-      onMouseLeave={e=>e.currentTarget.style.color="var(--muted)"}>
-      ← Back to Campaigns
-    </button>
-  );
-
-  if (drillProgram) return (
-    <div style={{animation:"fadeUp .4s ease both"}}>
-      <Back/>
-      {/* Drill header */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
-        <div style={{display:"flex",alignItems:"center",gap:14}}>
-          <div style={{width:44,height:44,borderRadius:12,background:drillProgram.color+"18",border:`1px solid ${drillProgram.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:500,color:drillProgram.color}}>{initials(drillProgram.name)}</div>
-          <div style={{borderLeft:`3px solid ${drillProgram.color}`,paddingLeft:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:3}}>// bounty detail</div>
-            <h2 style={{fontSize:24,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{drillProgram.name}</h2>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:6,alignItems:"center"}}>
-          {(drillProgram.sheetBounties||drillProgram.sheetMedia)&&<DrillSync program={drillProgram} drillCamps={drillCamps} drillCites={drillCites} setCampaigns={setCampaigns} setCitations={setCitations}/>}
-          <button onClick={()=>setShowDrillPdf(true)}
-            style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 13px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",transition:"all .15s"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="var(--accent-light)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(26,58,92,0.25)"}}
-            onMouseLeave={e=>{e.currentTarget.style.background="var(--surface2)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
-            <span>↓</span> PDF
-          </button>
-          {currentUser.role==="admin"&&<RowBtn onClick={()=>{setEdit(drillProgram);setShowForm(true)}} title="Edit campaign" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
-          {currentUser.role==="admin"&&<RowBtn onClick={()=>setConfId(drillProgram.id)} title="Delete campaign" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
-        </div>
-      </div>
-      {/* Sub-tabs */}
-      <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:9,padding:4,width:"fit-content",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)"}}>
-        {[{id:"weekly",label:"Weekly Summary",count:""},{id:"posts",label:"Bounties",count:drillCamps.length},{id:"media",label:"Media Citations",count:drillCites.length},{id:"authors",label:"Authors",count:""},{id:"analytics",label:"Analytics",count:""},{id:"cq_research",label:"CQ Research",count:""}].map(t=>{
-          const ia=drillTab===t.id;
-          return (
-            <button key={t.id} onClick={()=>setDrillTab(t.id)}
-              style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 16px",borderRadius:8,border:`1px solid ${ia?"rgba(26,58,92,0.1)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:ia?700:400,letterSpacing:"0.04em",transition:"all .15s"}}>
-              {t.label}
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.07)":"transparent",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>
-            </button>
-          );
-        })}
-      </div>
-      {drillTab==="weekly"      && <WeeklySummaryTab key={drillProgram.id} campaigns={drillCamps} citations={drillCites} color={drillProgram.color}/>}
-      {drillTab==="posts"       && <CampaignTable campaigns={drillCamps} onSave={(f,ex)=>onSaveCamp(f,ex,drillId)} onDelete={onDeleteCamp} onDeleteAll={async(cid)=>{await db.deleteAllBounties(cid);setCampaigns(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
-      {drillTab==="media"       && <MediaTable citations={drillCites} onSave={(f,ex)=>onSaveMedia(f,ex,drillId)} onDelete={onDeleteMedia} onDeleteAll={async(cid)=>{await db.deleteAllCitations(cid);setCitations(prev=>prev.filter(c=>c.campaignId!==cid));}} currentUser={currentUser} readOnly={false}/>}
-      {drillTab==="authors"     && <AuthorsTab key={drillProgram.id} campaigns={drillCamps} citations={drillCites}/>}
-      {drillTab==="analytics"   && <AnalyticsTab campaigns={drillCamps} citations={drillCites} clientName={drillProgram.name}/>}
-      {drillTab==="cq_research" && <CQResearchTab campaigns={drillCamps} citations={drillCites}/>}
-      {showForm&&<CampaignForm initial={editClient} onSave={async f=>{await onSave(f,editClient);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
-      {confirmId&&<ConfirmDelete onConfirm={async()=>{await onDelete(confirmId);setConfId(null);setDrillId(null)}} onCancel={()=>setConfId(null)}/>}
-      {showDrillPdf&&<PdfReportModal campaigns={drillCamps} citations={drillCites} campaignName={drillProgram.name} onClose={()=>setShowDrillPdf(false)}/>}
-    </div>
-  );
 
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
@@ -3880,7 +3697,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           const citeCount = citations.filter(c=>c.campaignId===cl.id).length;
           const isLast = i === total - 1;
           return (
-            <div onClick={()=>{setDrillId(cl.id);setDrillTab("weekly")}}
+            <div onClick={()=>{if(onSelectCampaign) onSelectCampaign(cl.id)}}
               style={{display:"grid",gridTemplateColumns:"3px 1fr auto",alignItems:"center",borderBottom:isLast?"none":"1px solid var(--border)",cursor:"pointer",transition:"background .12s"}}
               onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
@@ -4629,8 +4446,10 @@ export default function App() {
     const {cid:hashCid, tab:hashTab, author:hashAuthor} = parseHash();
     if(hashTab==="author" && hashAuthor) setAuthorView(hashAuthor);
     if(user.role==="admin"){
-      if(hashTab) { setTab(hashTab); setActiveCid(hashCid||null); }
-      else { setTab("campaigns_mgmt"); setActiveCid(null); }
+      const mostRecent = [...programs].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
+      if(hashTab==="author") { setTab("author"); setActiveCid(hashCid||mostRecent?.id||null); }
+      else if(hashTab) { setTab(hashTab); setActiveCid(hashCid||mostRecent?.id||null); }
+      else { setTab("weekly"); setActiveCid(mostRecent?.id||null); }
     } else if(user.role==="author"){
       const allowed = (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
       const mostRecent = allowed.map(id=>programs.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
@@ -4894,19 +4713,18 @@ export default function App() {
   const myCitations  = scopedCitations.filter(c=>(c.author||"").toLowerCase()===myAuthorName);
   const scopedAuthorsCount = new Set([...scopedCampaigns.map(c=>(c.author||"").trim().toLowerCase()),...scopedCitations.map(c=>(c.author||"").trim().toLowerCase())].filter(Boolean)).size;
 
-  const TABS = user.role==="admin"
-    ? [
-        {id:"campaigns_mgmt", label:"Campaigns",     icon:<Icons.Brief/>,     accent:"var(--accent)", count:programs.length},
-        {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
-      ]
-    : [
-        {id:"weekly",      label:"Weekly Summary",  icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
-        {id:"campaign",    label:"Content",           icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
-        {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
-        {id:"authors",     label:"Authors",          icon:<Icons.Users/>,     accent:"var(--accent)", count:scopedAuthorsCount},
-        ...(user.role==="client"?[{id:"analytics", label:"Analytics", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""}]:[]),
-        ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
-      ];
+  const TABS = [
+    {id:"weekly",      label:"Weekly Summary",  icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
+    {id:"campaign",    label:"Content",           icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
+    {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
+    {id:"authors",     label:"Authors",          icon:<Icons.Users/>,     accent:"var(--accent)", count:scopedAuthorsCount},
+    ...(user.role==="client"||user.role==="admin"?[{id:"analytics", label:"Analytics", icon:<Icons.Analytics/>, accent:"var(--accent)", count:""}]:[]),
+    ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
+    ...(user.role==="admin"?[
+      {id:"campaigns_mgmt", label:"Campaigns",     icon:<Icons.Brief/>,     accent:"var(--accent)", count:programs.length},
+      {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
+    ]:[]),
+  ];
 
   return (
     <>
@@ -4929,11 +4747,13 @@ export default function App() {
             <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
           </div>
 
-          {/* CAMPAIGN SELECTOR — admin uses CampaignsPanel drill-in instead */}
-          {user.role!=="admin"&&(()=>{
-            const visibleCampaigns = user.role==="client"
-              ? allowedClientCampaigns
-              : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id));
+          {/* CAMPAIGN SELECTOR */}
+          {(()=>{
+            const visibleCampaigns = user.role==="admin"
+              ? programs
+              : user.role==="client"
+                ? allowedClientCampaigns
+                : programs.filter(c=>(user.allowedCampaigns||[]).includes(c.id));
             const currentCid = user.role==="client" ? (clientActiveCid||allowedClientCampaigns[0]?.id||null) : activeCid;
             const activeCl = visibleCampaigns.find(c=>c.id===currentCid);
             const setCid = user.role==="client" ? setClientActiveCid : setActiveCid;
@@ -4978,17 +4798,21 @@ export default function App() {
           })()}
 
           <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Navigation</div>
-          {TABS.map(t=>{
+          {TABS.map((t,idx)=>{
             const ia=tab===t.id;
+            const isFirstAdmin = user.role==="admin" && t.id==="campaigns_mgmt";
             return (
-              <button key={t.id} onClick={()=>navigate(t.id)}
-                style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"rgba(255,255,255,0.1)":"transparent",color:ia?"#ffffff":"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
-                onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}}
-                onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}}>
-                <span style={{color:ia?"#ffffff":"rgba(255,255,255,0.4)",flexShrink:0}}>{t.icon}</span>
-                <span style={{flex:1}}>{t.label}</span>
-                {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)",color:ia?"#ffffff":"rgba(255,255,255,0.4)"}}>{t.count}</span>}
-              </button>
+              <React.Fragment key={t.id}>
+                {isFirstAdmin&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 10px",marginTop:12,marginBottom:10}}>Admin</div>}
+                <button onClick={()=>navigate(t.id)}
+                  style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"rgba(255,255,255,0.1)":"transparent",color:ia?"#ffffff":"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
+                  onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}}
+                  onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}}>
+                  <span style={{color:ia?"#ffffff":"rgba(255,255,255,0.4)",flexShrink:0}}>{t.icon}</span>
+                  <span style={{flex:1}}>{t.label}</span>
+                  {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)",color:ia?"#ffffff":"rgba(255,255,255,0.4)"}}>{t.count}</span>}
+                </button>
+              </React.Fragment>
             );
           })}
           {/* PDF Report — visible when a campaign is active */}
@@ -5001,12 +4825,12 @@ export default function App() {
               <span style={{flex:1}}>PDF Report</span>
             </button>
           )}
-          {user.role!=="admin"&&effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
+          {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
             <div style={{marginTop:"auto",padding:"0 4px",marginBottom:10}}>
               <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations} darkMode/>
             </div>
           )}
-          <div style={{marginTop:user.role!=="admin"&&effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)?0:"auto",paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
+          <div style={{marginTop:effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)?0:"auto",paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
             {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.4)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
             <div style={{padding:"8px 12px",borderRadius:8,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
@@ -5047,10 +4871,10 @@ export default function App() {
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
-        {tab==="analytics"&&user.role==="client"&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.clientName}/>}
+        {tab==="analytics"&&(user.role==="client"||user.role==="admin")&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid}/>}
         {tab==="author"&&authorView&&(effectiveCid||user.role==="client")&&<AuthorDetailTab key={authorView+"|"+effectiveCid} authorName={authorView} campaigns={scopedCampaigns} citations={scopedCitations} program={effectiveClient} onBack={()=>{ if(window.history.length>1) window.history.back(); else navigate("weekly"); }}/>}
-        {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations}/>}
+        {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations} onSelectCampaign={(cid)=>navigate("weekly",cid)}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
         {/* cq_research merged into Content tab */}
         </main>
