@@ -2965,7 +2965,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",flexShrink:0,marginTop:5}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:1}}>
-                        {item._type==="bounty"?item.title:(item.topic||item.media||"—")}
+                        {item._type==="bounty"?item.title:(item.headline||item.media||"—")}
                       </div>
                       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
                         {item._type==="bounty"?item.author:item.media} · {item.date}
