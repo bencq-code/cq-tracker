@@ -31,13 +31,23 @@ const urlMatch = (html, bounties) => {
   return hits;
 };
 
-const stripHtml = (html) => html
-  .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
-  .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-  .replace(/<[^>]+>/g, " ")
-  .replace(/&[#\w]+;/g, " ")
-  .replace(/\s+/g, " ")
-  .trim();
+const extractArticleText = (html) => {
+  const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+  const mainMatch    = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  const target = articleMatch?.[1] || mainMatch?.[1] || html;
+  return target
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, " ")
+    .replace(/<form[^>]*>[\s\S]*?<\/form>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[#\w]+;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
 
 const authorKey = s => (s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const authorToks = s => (s||"").toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length >= 3);
@@ -140,12 +150,30 @@ export default async function handler(req, res) {
       });
     }
 
+    if (authorFiltered && candidates.length === 1) {
+      const b = candidates[0];
+      return res.status(200).json({
+        articleLink, campaignId, method: "author-singleton",
+        matches: [{
+          bountyId: b.id, title: b.title, date: b.date, author: b.author,
+          asset: b.asset, cqLink: b.cq_link,
+          confidence: "medium",
+          reason: `Only bounty by ${b.author} in this campaign — auto-matched on author alone.`,
+        }],
+        bountiesChecked: bounties.length,
+        candidatesConsidered: 1,
+        authorFiltered: true,
+        articleFetched: !!html,
+        fetchError,
+      });
+    }
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return res.status(500).json({ error: "ANTHROPIC_API_KEY not set in Vercel env vars" });
     }
 
-    const articleExcerpt = html ? stripHtml(html).slice(0, 2500) : "";
+    const articleExcerpt = html ? extractArticleText(html).slice(0, 6000) : "";
 
     const candidatesList = candidates.map(b =>
       `- id:${b.id} | ${b.date} | asset:${b.asset || "—"} | "${b.title}"`
@@ -256,6 +284,7 @@ Prefer precision over recall. An empty matches array is fine.`;
       candidatesConsidered: candidates.length,
       authorFiltered,
       articleFetched: !!html,
+      articleExcerptLength: articleExcerpt.length,
       fetchError,
       hallucinatedIds: hallucinated,
       usage: {

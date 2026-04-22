@@ -1465,6 +1465,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
                     {matchState.result.candidatesConsidered!=null && ` → ${matchState.result.candidatesConsidered} candidates`}
                     {matchState.result.authorFiltered && ` (author-filtered)`}
                     {matchState.result.articleFetched===false && ` · article fetch failed`}
+                    {matchState.result.articleExcerptLength!=null && ` · ${matchState.result.articleExcerptLength} char excerpt`}
                     {matchState.result.fetchError && ` (${matchState.result.fetchError})`}
                     {matchState.result.usage && ` · ${matchState.result.usage.input_tokens}+${matchState.result.usage.output_tokens} tok`}
                     {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
