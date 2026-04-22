@@ -1599,6 +1599,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
 
 const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,bounties,onCitedBountyUpdate}) => {
   const bountyById = useMemo(()=>Object.fromEntries((bounties||[]).map(b=>[b.id,b])),[bounties]);
+  const [batch,setBatch] = useState({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:""});
   const [search,setSearch]=useState("");
   const [filterAuthor,setFA]=useState("all");
   const [filterMedia,setFM]=useState("all");
@@ -1612,6 +1613,54 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const [page,setPage]=useState(1);
   const [showFilters,setShowFilters]=useState(false);
   const resetFilters=()=>{setSearch("");setFA("all");setFM("all");setFT("all");setDateFrom("");setDateTo("");setPage(1);};
+  const runAutoMatch = async (scope) => {
+    const unlinked = scope.filter(c => !c.citedBountyId && c.articleLink && c.campaignId);
+    if (!unlinked.length) {
+      setBatch({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:"No unlinked citations with an article link."});
+      return;
+    }
+    setBatch({running:true, total:unlinked.length, processed:0, saved:0, skipped:0, errors:0, lastMsg:""});
+    const CONCURRENCY = 3;
+    const queue = [...unlinked];
+    const worker = async () => {
+      while (queue.length) {
+        const cit = queue.shift();
+        if (!cit) break;
+        try {
+          const r = await fetch("/api/match-bounty", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+              articleLink: cit.articleLink || "",
+              campaignId: cit.campaignId || "",
+              citationDate: cit.date || "",
+              citationAuthor: cit.author || "",
+              citationHeadline: cit.headline || "",
+              citationTopic: cit.topic || "",
+              citationAsset: cit.asset || "",
+            }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+          const top = data.matches?.[0];
+          const autoSave = top && (
+            data.method === "url" ||
+            data.method === "author-singleton" ||
+            (data.method === "llm" && top.confidence === "high")
+          );
+          if (autoSave) {
+            await onCitedBountyUpdate(cit.id, top.bountyId, true);
+            setBatch(b => ({...b, processed: b.processed+1, saved: b.saved+1}));
+          } else {
+            setBatch(b => ({...b, processed: b.processed+1, skipped: b.skipped+1}));
+          }
+        } catch (e) {
+          setBatch(b => ({...b, processed: b.processed+1, errors: b.errors+1, lastMsg: e.message}));
+        }
+      }
+    };
+    await Promise.all(Array.from({length: CONCURRENCY}, worker));
+    setBatch(b => ({...b, running:false}));
+  };
   const canAdd=!readOnly;
   const canEdit=entry=>{
     if(readOnly)return false;
@@ -1781,8 +1830,38 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
               {currentUser.role==="admin"&&citations.length>0&&<button onClick={()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
+              {onCitedBountyUpdate && currentUser.role==="admin" && (()=>{
+                const unlinkedCount = filtered.filter(c=>!c.citedBountyId && c.articleLink).length;
+                return <button onClick={()=>{if(batch.running)return;if(!window.confirm(`Run bounty match on ${unlinkedCount} unlinked citation${unlinkedCount!==1?"s":""}? Only high-confidence matches will be auto-saved.`))return;runAutoMatch(filtered);}}
+                  disabled={batch.running||unlinkedCount===0}
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:batch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
+                  {batch.running?`MATCHING ${batch.processed}/${batch.total}…`:`🔗 AUTO-MATCH ${unlinkedCount} UNLINKED`}
+                </button>;
+              })()}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
             </div>
+            {(batch.running||batch.processed>0||batch.lastMsg)&&(
+              <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                {batch.running?(
+                  <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:200}}>
+                    <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${batch.total?(batch.processed/batch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
+                    </div>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{batch.processed}/{batch.total}</span>
+                  </div>
+                ):(
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                    {batch.total>0?`Auto-match done · `:""}
+                    <b style={{color:"#0f766e"}}>{batch.saved} saved</b> · {batch.skipped} skipped · {batch.errors} errors
+                    {batch.lastMsg && ` · ${batch.lastMsg}`}
+                  </span>
+                )}
+                {!batch.running && batch.processed>0 && (
+                  <button onClick={()=>setBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                )}
+              </div>
+            )}
             {showFilters&&(
               <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
@@ -4770,10 +4849,10 @@ export default function App() {
     setCitations(citations.filter(c=>c.id!==id));
     showToast("Citation deleted");
   };
-  const handleCitedBountyUpdate=async(citationId,bountyId)=>{
+  const handleCitedBountyUpdate=async(citationId,bountyId,silent=false)=>{
     await db.updateCitationCitedBounty(citationId,bountyId);
     setCitations(prev=>prev.map(c=>c.id===citationId?{...c,citedBountyId:bountyId||""}:c));
-    showToast(bountyId?"Bounty linked ✓":"Link cleared");
+    if(!silent) showToast(bountyId?"Bounty linked ✓":"Link cleared");
   };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
