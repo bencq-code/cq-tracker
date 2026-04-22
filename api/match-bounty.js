@@ -259,6 +259,7 @@ Prefer precision over recall. An empty matches array is fine.`;
       return res.status(500).json({ error: "LLM returned non-JSON", raw: textBlock.text });
     }
 
+    const confRank = { high: 3, medium: 2, low: 1 };
     const validated = (parsed.matches || [])
       .filter(m => Number.isInteger(m.candidateNumber) && m.candidateNumber >= 1 && m.candidateNumber <= candidates.length)
       .map(m => {
@@ -273,7 +274,8 @@ Prefer precision over recall. An empty matches array is fine.`;
           confidence: m.confidence,
           reason: m.reason,
         };
-      });
+      })
+      .sort((a, b) => (confRank[b.confidence]||0) - (confRank[a.confidence]||0));
     const hallucinated = (parsed.matches || []).filter(m =>
       !Number.isInteger(m.candidateNumber) || m.candidateNumber < 1 || m.candidateNumber > candidates.length
     ).length;
