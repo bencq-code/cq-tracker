@@ -1480,10 +1480,16 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
                   )}
                   {matchState.result.matches.length === 0 && matchState.result.topCandidates?.length > 0 && (
                     <div style={{marginTop:10,paddingTop:8,borderTop:"1px dashed var(--border)"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>Top candidates (below threshold):</div>
+                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>Top {matchState.result.topCandidates.length} candidates (below threshold):</div>
                       {matchState.result.topCandidates.map((c,i) => (
-                        <div key={i} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:2}}>
-                          <span style={{display:"inline-block",width:40}}>{c.score}</span>{c.title}
+                        <div key={c.bountyId||i} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:3,lineHeight:1.4}}>
+                          <div><span style={{display:"inline-block",width:40,color:"var(--accent)",fontWeight:600}}>{c.score}</span>{c.title}</div>
+                          <div style={{marginLeft:40,color:"var(--dim)"}}>
+                            {c.author||"—"} · {fmtDate(c.date)} · hits {c.hits}/{c.titleTokens}
+                            {c.headlineHits ? ` (${c.headlineHits} in headline)` : ""}
+                            {c.assetMatch ? " · asset✓" : ""}
+                            {c.exact ? " · exact✓" : ""}
+                          </div>
                         </div>
                       ))}
                     </div>

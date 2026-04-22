@@ -51,6 +51,7 @@ const keywordMatch = (html, bounties, ctx = {}) => {
   const articleNorm = normalize(articleText);
   const haystack = [articleText, citationHeadline, citationTopic].filter(Boolean).join(" ");
   const articleSet = new Set(tokens(haystack));
+  const headlineSet = new Set(tokens(citationHeadline || ""));
 
   const parseDate = d => { const t = new Date(d); return isNaN(t.getTime()) ? null : t.getTime(); };
   const citTs = citationDate ? parseDate(citationDate) : null;
@@ -61,11 +62,13 @@ const keywordMatch = (html, bounties, ctx = {}) => {
     if (titleTokens.length < 3) return null;
     const hits = titleTokens.filter(t => articleSet.has(t)).length;
     const jaccard = hits / titleTokens.length;
+    const headlineHits = titleTokens.filter(t => headlineSet.has(t)).length;
+    const headlineBonus = headlineHits >= 2 ? Math.min(0.4, headlineHits * 0.15) : 0;
     const titleNorm = normalize(b.title || "");
     const exact = titleNorm.length >= 12 && articleNorm.includes(titleNorm);
     const assetMatch = !!(citAssetKey && b.asset && b.asset.toLowerCase().trim() === citAssetKey);
     const assetBonus = (assetMatch && hits >= 2) ? 0.2 : 0;
-    let score = jaccard + (exact ? 0.4 : 0) + assetBonus;
+    let score = jaccard + (exact ? 0.4 : 0) + assetBonus + headlineBonus;
 
     if (citTs) {
       const bTs = parseDate(b.date);
@@ -75,7 +78,7 @@ const keywordMatch = (html, bounties, ctx = {}) => {
       }
     }
 
-    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, exact, assetMatch };
+    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, headlineHits, exact, assetMatch };
   }).filter(Boolean);
 
   return scored.sort((a, b) => b.score - a.score);
@@ -172,7 +175,7 @@ export default async function handler(req, res) {
       authorFiltered,
       matchedAuthors,
       htmlLength: html.length,
-      topCandidates: kwScored.slice(0, 3).map(s => ({ title: s.bounty.title, author: s.bounty.author, score: Number(s.score.toFixed(3)) })),
+      topCandidates: kwScored.slice(0, 10).map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, author: s.bounty.author, date: s.bounty.date, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, headlineHits: s.headlineHits, titleTokens: s.titleTokens, assetMatch: s.assetMatch, exact: s.exact })),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
