@@ -135,6 +135,7 @@ const fromCitation = (r) => ({
   asset:              r.asset || "",
   branding:           r.branding || "",
   sheetRowNo:         r.sheet_row_no || "",
+  citedBountyId:      r.cited_bounty_id || "",
   createdBy:          r.created_by,
   createdAt:          r.created_at,
 });
@@ -154,6 +155,7 @@ const toCitation = (c) => ({
   asset:               c.asset || "",
   branding:            c.branding || "",
   sheet_row_no:        c.sheetRowNo || "",
+  cited_bounty_id:     c.citedBountyId || null,
   created_by:          c.createdBy,
   created_at:          c.createdAt || Date.now(),
 });
@@ -209,7 +211,7 @@ export const db = {
 
   // ── Citations ──
   async getCitations() {
-    const data = await fetchAll("citations", q => q.select("id,campaign_id,date,media,reporter,author,topic,headline,article_link,media_tier,direct_relationship,language,asset,branding,sheet_row_no,created_by,created_at").order("date", { ascending: false }));
+    const data = await fetchAll("citations", q => q.select("id,campaign_id,date,media,reporter,author,topic,headline,article_link,media_tier,direct_relationship,language,asset,branding,sheet_row_no,cited_bounty_id,created_by,created_at").order("date", { ascending: false }));
     return data.map(fromCitation);
   },
   async setCitations(citations) {
@@ -243,6 +245,10 @@ export const db = {
   },
   async upsertCitation(entry) {
     const { error } = await supabase.from("citations").upsert(toCitation(entry), { onConflict: "id" });
+    if (error) throw error;
+  },
+  async updateCitationCitedBounty(citationId, bountyId) {
+    const { error } = await supabase.from("citations").update({ cited_bounty_id: bountyId || null }).eq("id", citationId);
     if (error) throw error;
   },
   async deleteCitation(id) {
