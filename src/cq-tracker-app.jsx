@@ -1385,6 +1385,9 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
         campaignId: entry.campaignId || "",
         citationDate: entry.date || "",
         citationAuthor: entry.author || "",
+        citationHeadline: entry.headline || "",
+        citationTopic: entry.topic || "",
+        citationAsset: entry.asset || "",
       });
       const r = await fetch(`/api/match-bounty?${params.toString()}`);
       if (!r.ok) throw new Error(`HTTP ${r.status} — run \`vercel dev\` locally, or deploy`);

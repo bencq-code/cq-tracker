@@ -42,15 +42,19 @@ const stripHtml = (html) => html
   .replace(/&[#\w]+;/g, " ");
 
 const normalize = (s) => (s||"").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
-const tokens = (s) => normalize(s).split(" ").filter(t => t.length >= 3 && !STOPWORDS.has(t));
+const stem = t => (t.length >= 5 && t.endsWith("s") && !t.endsWith("ss") && !t.endsWith("us") && !t.endsWith("is")) ? t.slice(0, -1) : t;
+const tokens = (s) => normalize(s).split(" ").filter(t => t.length >= 3 && !STOPWORDS.has(t)).map(stem);
 
-const keywordMatch = (html, bounties, citationDate) => {
+const keywordMatch = (html, bounties, ctx = {}) => {
+  const { citationDate, citationHeadline, citationTopic, citationAsset } = ctx;
   const articleText = stripHtml(html);
   const articleNorm = normalize(articleText);
-  const articleSet = new Set(tokens(articleText));
+  const haystack = [articleText, citationHeadline, citationTopic].filter(Boolean).join(" ");
+  const articleSet = new Set(tokens(haystack));
 
   const parseDate = d => { const t = new Date(d); return isNaN(t.getTime()) ? null : t.getTime(); };
   const citTs = citationDate ? parseDate(citationDate) : null;
+  const citAssetKey = (citationAsset||"").toLowerCase().trim();
 
   const scored = bounties.map(b => {
     const titleTokens = tokens(b.title || "");
@@ -59,7 +63,9 @@ const keywordMatch = (html, bounties, citationDate) => {
     const jaccard = hits / titleTokens.length;
     const titleNorm = normalize(b.title || "");
     const exact = titleNorm.length >= 12 && articleNorm.includes(titleNorm);
-    let score = jaccard + (exact ? 0.4 : 0);
+    const assetMatch = !!(citAssetKey && b.asset && b.asset.toLowerCase().trim() === citAssetKey);
+    const assetBonus = (assetMatch && hits >= 2) ? 0.2 : 0;
+    let score = jaccard + (exact ? 0.4 : 0) + assetBonus;
 
     if (citTs) {
       const bTs = parseDate(b.date);
@@ -69,7 +75,7 @@ const keywordMatch = (html, bounties, citationDate) => {
       }
     }
 
-    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, exact };
+    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, exact, assetMatch };
   }).filter(Boolean);
 
   return scored.sort((a, b) => b.score - a.score);
@@ -82,11 +88,14 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const input = req.method === "POST" ? (req.body || {}) : (req.query || {});
-  const articleLink    = input.articleLink;
-  const campaignId     = input.campaignId;
-  const citationDate   = input.citationDate || null;
-  const citationAuthor = (input.citationAuthor || "").trim();
-  const threshold      = Number(input.threshold ?? 0.5);
+  const articleLink      = input.articleLink;
+  const campaignId       = input.campaignId;
+  const citationDate     = input.citationDate || null;
+  const citationAuthor   = (input.citationAuthor || "").trim();
+  const citationHeadline = (input.citationHeadline || "").trim();
+  const citationTopic    = (input.citationTopic || "").trim();
+  const citationAsset    = (input.citationAsset || "").trim();
+  const threshold        = Number(input.threshold ?? 0.5);
   if (!articleLink || !campaignId) {
     return res.status(400).json({ error: "Missing articleLink or campaignId" });
   }
@@ -151,13 +160,13 @@ export default async function handler(req, res) {
     const matchedAuthors = authorFiltered
       ? [...new Set(kwPool.map(b => b.author).filter(Boolean))]
       : [];
-    const kwScored = keywordMatch(html, kwPool, citationDate);
+    const kwScored = keywordMatch(html, kwPool, { citationDate, citationHeadline, citationTopic, citationAsset });
     const top = kwScored.filter(s => s.score >= threshold).slice(0, 5);
     const confOf = s => s >= 0.8 ? "high" : s >= 0.6 ? "medium" : "low";
 
     return res.status(200).json({
       articleLink, campaignId, method: top.length ? "keyword" : "none",
-      matches: top.map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, date: s.bounty.date, author: s.bounty.author, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, titleTokens: s.titleTokens, exactTitleMatch: s.exact, confidence: confOf(s.score) })),
+      matches: top.map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, date: s.bounty.date, author: s.bounty.author, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, titleTokens: s.titleTokens, exactTitleMatch: s.exact, assetMatch: s.assetMatch, confidence: confOf(s.score) })),
       bountiesChecked: bounties.length,
       bountiesScored: kwPool.length,
       authorFiltered,
