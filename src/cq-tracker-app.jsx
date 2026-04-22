@@ -1376,6 +1376,23 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 // ─────────────────────────────────────────────────────────
 const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
+  const [matchState, setMatchState] = useState({loading:false, result:null, error:null});
+  const runMatch = async () => {
+    setMatchState({loading:true, result:null, error:null});
+    try {
+      const params = new URLSearchParams({
+        articleLink: entry.articleLink || "",
+        campaignId: entry.campaignId || "",
+        citationDate: entry.date || "",
+      });
+      const r = await fetch(`/api/match-bounty?${params.toString()}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status} — run \`vercel dev\` locally, or deploy`);
+      const data = await r.json();
+      setMatchState({loading:false, result:data, error:null});
+    } catch (e) {
+      setMatchState({loading:false, result:null, error:e.message});
+    }
+  };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
@@ -1419,6 +1436,55 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
                 Open Article ↗
               </a>
+            </div>
+          )}
+          {isEditable && entry.articleLink && entry.campaignId && (
+            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:10,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:matchState.result||matchState.error?10:0}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Bounty Match · prototype</div>
+                <button onClick={runMatch} disabled={matchState.loading}
+                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
+                  {matchState.loading?"MATCHING…":"🔗 FIND CITED BOUNTY"}
+                </button>
+              </div>
+              {matchState.error && (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:8}}>Error: {matchState.error}</div>
+              )}
+              {matchState.result && (
+                <div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:8}}>
+                    method: <b>{matchState.result.method}</b> · {matchState.result.bountiesChecked} bounties checked
+                    {matchState.result.htmlLength!=null && ` · article ${matchState.result.htmlLength} chars`}
+                    {matchState.result.fetchError && ` · fetch error: ${matchState.result.fetchError}`}
+                  </div>
+                  {matchState.result.matches.length === 0 ? (
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>No matches above threshold</div>
+                  ) : (
+                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                      {matchState.result.matches.map(m => (
+                        <div key={m.bountyId} style={{padding:"8px 10px",background:"var(--surface)",borderRadius:6,border:"1px solid var(--border)"}}>
+                          <div style={{fontSize:12,fontWeight:500,marginBottom:3}}>{m.title||"(untitled)"}</div>
+                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
+                            {m.author||"—"} · {fmtDate(m.date)} · conf: <b>{m.confidence}</b>
+                            {m.score!=null && ` · score: ${m.score}`}
+                            {m.matchedUrl && ` · via: ${(()=>{try{return new URL(m.matchedUrl).hostname}catch{return m.matchedUrl}})()}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {matchState.result.matches.length === 0 && matchState.result.topCandidates?.length > 0 && (
+                    <div style={{marginTop:10,paddingTop:8,borderTop:"1px dashed var(--border)"}}>
+                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>Top candidates (below threshold):</div>
+                      {matchState.result.topCandidates.map((c,i) => (
+                        <div key={i} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:2}}>
+                          <span style={{display:"inline-block",width:40}}>{c.score}</span>{c.title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
