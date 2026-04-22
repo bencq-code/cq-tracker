@@ -868,8 +868,15 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 //  BOUNTY DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
+const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary}) => {
   const ac = getAuthorColor(entry.author);
+  const [gen, setGen] = useState({loading:false, error:null});
+  const genSummary = async () => {
+    if (!onGenerateSummary) return;
+    setGen({loading:true, error:null});
+    try { await onGenerateSummary(entry.id); setGen({loading:false, error:null}); }
+    catch (e) { setGen({loading:false, error:e.message}); }
+  };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
@@ -917,6 +924,25 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
                 <LinkBtn label="CQ X" url={entry.cqTwitterLink}/>
                 <LinkBtn label="Telegram" url={entry.telegramLink}/>
               </div>
+            </div>
+          )}
+          {(entry.summary || (isEditable && onGenerateSummary && entry.cqLink)) && (
+            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:10,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:entry.summary?8:0}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
+                {isEditable && onGenerateSummary && entry.cqLink && (
+                  <button onClick={genSummary} disabled={gen.loading}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
+                    {gen.loading?"GENERATING…":(entry.summary?"REGENERATE":"📝 GENERATE")}
+                  </button>
+                )}
+              </div>
+              {entry.summary ? (
+                <div style={{fontSize:12,lineHeight:1.55,color:"var(--text)"}}>{entry.summary}</div>
+              ) : (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — click Generate to create one.</div>
+              )}
+              {gen.error && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
             </div>
           )}
         </div>
@@ -983,6 +1009,19 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     };
     await Promise.all(Array.from({length:CONCURRENCY}, worker));
     setSumBatch(s => ({...s, running:false}));
+  };
+  const generateSummaryOne = async (bountyId) => {
+    const r = await fetch("/api/summarize-bounty", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ bountyId, force: true }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    if (data.skipped) throw new Error(data.reason || "skipped");
+    if (data.summary && onBountySummaryUpdate) {
+      await onBountySummaryUpdate(bountyId, data.summary, false);
+    }
+    return data;
   };
 
   const activeCampaigns = contentMode==="cq_research" ? campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research") : campaigns;
@@ -1431,7 +1470,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
-      {view&&<BountyDetailModal entry={view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)}/>}
+      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
