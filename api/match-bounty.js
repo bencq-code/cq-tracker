@@ -70,15 +70,22 @@ const keywordMatch = (html, bounties, ctx = {}) => {
     const assetBonus = (assetMatch && hits >= 2) ? 0.2 : 0;
     let score = jaccard + (exact ? 0.4 : 0) + assetBonus + headlineBonus;
 
+    let daysBefore = null, dateMult = 1;
     if (citTs) {
       const bTs = parseDate(b.date);
       if (bTs) {
-        const daysBefore = (citTs - bTs) / 86400000;
-        if (daysBefore < -2 || daysBefore > 21) score *= 0.5;
+        daysBefore = (citTs - bTs) / 86400000;
+        if (daysBefore < -5) dateMult = 0.3;
+        else if (daysBefore < 0) dateMult = 0.8;
+        else if (daysBefore <= 14) dateMult = 1.0;
+        else if (daysBefore <= 45) dateMult = 0.85;
+        else if (daysBefore <= 90) dateMult = 0.65;
+        else dateMult = 0.45;
+        score *= dateMult;
       }
     }
 
-    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, headlineHits, exact, assetMatch };
+    return { bounty: b, score: Math.min(1, score), hits, titleTokens: titleTokens.length, headlineHits, exact, assetMatch, daysBefore: daysBefore == null ? null : Math.round(daysBefore), dateMult };
   }).filter(Boolean);
 
   return scored.sort((a, b) => b.score - a.score);
@@ -175,7 +182,7 @@ export default async function handler(req, res) {
       authorFiltered,
       matchedAuthors,
       htmlLength: html.length,
-      topCandidates: kwScored.slice(0, 10).map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, author: s.bounty.author, date: s.bounty.date, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, headlineHits: s.headlineHits, titleTokens: s.titleTokens, assetMatch: s.assetMatch, exact: s.exact })),
+      topCandidates: kwScored.slice(0, 10).map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, author: s.bounty.author, date: s.bounty.date, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, headlineHits: s.headlineHits, titleTokens: s.titleTokens, assetMatch: s.assetMatch, exact: s.exact, daysBefore: s.daysBefore, dateMult: s.dateMult })),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
