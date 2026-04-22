@@ -82,13 +82,27 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const input = req.method === "POST" ? (req.body || {}) : (req.query || {});
-  const articleLink  = input.articleLink;
-  const campaignId   = input.campaignId;
-  const citationDate = input.citationDate || null;
-  const threshold    = Number(input.threshold ?? 0.5);
+  const articleLink    = input.articleLink;
+  const campaignId     = input.campaignId;
+  const citationDate   = input.citationDate || null;
+  const citationAuthor = (input.citationAuthor || "").trim();
+  const threshold      = Number(input.threshold ?? 0.5);
   if (!articleLink || !campaignId) {
     return res.status(400).json({ error: "Missing articleLink or campaignId" });
   }
+  const authorKey    = s => (s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const authorTokens = s => (s||"").toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length >= 3);
+  const authorSim = (a, b) => {
+    if (!a || !b) return 0;
+    const ak = authorKey(a), bk = authorKey(b);
+    if (!ak || !bk) return 0;
+    if (ak === bk) return 1;
+    if (ak.length >= 3 && bk.length >= 3 && (ak.includes(bk) || bk.includes(ak))) return 0.9;
+    const aT = authorTokens(a), bT = authorTokens(b);
+    const shared = aT.filter(t => bT.includes(t)).length;
+    if (shared > 0) return 0.6 + Math.min(0.2, shared * 0.1);
+    return 0;
+  };
 
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -128,15 +142,28 @@ export default async function handler(req, res) {
       });
     }
 
-    const kwScored = keywordMatch(html, bounties, citationDate);
+    const AUTHOR_SIM_MIN = 0.6;
+    const authorScoped = citationAuthor
+      ? bounties.filter(b => authorSim(b.author, citationAuthor) >= AUTHOR_SIM_MIN)
+      : bounties;
+    const kwPool = authorScoped.length ? authorScoped : bounties;
+    const authorFiltered = kwPool !== bounties;
+    const matchedAuthors = authorFiltered
+      ? [...new Set(kwPool.map(b => b.author).filter(Boolean))]
+      : [];
+    const kwScored = keywordMatch(html, kwPool, citationDate);
     const top = kwScored.filter(s => s.score >= threshold).slice(0, 5);
     const confOf = s => s >= 0.8 ? "high" : s >= 0.6 ? "medium" : "low";
 
     return res.status(200).json({
       articleLink, campaignId, method: top.length ? "keyword" : "none",
       matches: top.map(s => ({ bountyId: s.bounty.id, title: s.bounty.title, date: s.bounty.date, author: s.bounty.author, asset: s.bounty.asset, score: Number(s.score.toFixed(3)), hits: s.hits, titleTokens: s.titleTokens, exactTitleMatch: s.exact, confidence: confOf(s.score) })),
-      bountiesChecked: bounties.length, htmlLength: html.length,
-      topCandidates: kwScored.slice(0, 3).map(s => ({ title: s.bounty.title, score: Number(s.score.toFixed(3)) })),
+      bountiesChecked: bounties.length,
+      bountiesScored: kwPool.length,
+      authorFiltered,
+      matchedAuthors,
+      htmlLength: html.length,
+      topCandidates: kwScored.slice(0, 3).map(s => ({ title: s.bounty.title, author: s.bounty.author, score: Number(s.score.toFixed(3)) })),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

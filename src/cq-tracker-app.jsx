@@ -1384,6 +1384,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
         articleLink: entry.articleLink || "",
         campaignId: entry.campaignId || "",
         citationDate: entry.date || "",
+        citationAuthor: entry.author || "",
       });
       const r = await fetch(`/api/match-bounty?${params.toString()}`);
       if (!r.ok) throw new Error(`HTTP ${r.status} — run \`vercel dev\` locally, or deploy`);
@@ -1453,7 +1454,8 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
               {matchState.result && (
                 <div>
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:8}}>
-                    method: <b>{matchState.result.method}</b> · {matchState.result.bountiesChecked} bounties checked
+                    method: <b>{matchState.result.method}</b> · {matchState.result.bountiesChecked} bounties
+                    {matchState.result.authorFiltered && ` → ${matchState.result.bountiesScored} by ${matchState.result.matchedAuthors?.join(", ")||entry.author}`}
                     {matchState.result.htmlLength!=null && ` · article ${matchState.result.htmlLength} chars`}
                     {matchState.result.fetchError && ` · fetch error: ${matchState.result.fetchError}`}
                   </div>
