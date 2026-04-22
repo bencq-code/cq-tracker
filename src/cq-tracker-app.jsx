@@ -1376,6 +1376,30 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 // ─────────────────────────────────────────────────────────
 const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
+  const [matchState, setMatchState] = useState({loading:false, result:null, error:null});
+  const runMatch = async () => {
+    setMatchState({loading:true, result:null, error:null});
+    try {
+      const r = await fetch("/api/match-bounty", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          articleLink: entry.articleLink || "",
+          campaignId: entry.campaignId || "",
+          citationDate: entry.date || "",
+          citationAuthor: entry.author || "",
+          citationHeadline: entry.headline || "",
+          citationTopic: entry.topic || "",
+          citationAsset: entry.asset || "",
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      setMatchState({loading:false, result:data, error:null});
+    } catch (e) {
+      setMatchState({loading:false, result:null, error:e.message});
+    }
+  };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
@@ -1419,6 +1443,57 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
                 Open Article ↗
               </a>
+            </div>
+          )}
+          {isEditable && entry.articleLink && entry.campaignId && (
+            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:10,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:matchState.result||matchState.error?10:0}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Bounty Match</div>
+                <button onClick={runMatch} disabled={matchState.loading}
+                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
+                  {matchState.loading?"MATCHING…":"🔗 FIND CITED BOUNTY"}
+                </button>
+              </div>
+              {matchState.error && (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:8}}>Error: {matchState.error}</div>
+              )}
+              {matchState.result && (
+                <div>
+                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:8}}>
+                    method: <b>{matchState.result.method}</b>
+                    {matchState.result.bountiesChecked!=null && ` · ${matchState.result.bountiesChecked} bounties`}
+                    {matchState.result.candidatesConsidered!=null && ` → ${matchState.result.candidatesConsidered} candidates`}
+                    {matchState.result.authorFiltered && ` (author-filtered)`}
+                    {matchState.result.articleFetched===false && ` · article fetch failed`}
+                    {matchState.result.fetchError && ` (${matchState.result.fetchError})`}
+                    {matchState.result.usage && ` · ${matchState.result.usage.input_tokens}+${matchState.result.usage.output_tokens} tok`}
+                    {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
+                  </div>
+                  {matchState.result.matches.length === 0 ? (
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>No match — {matchState.result.method==="none"?"no candidate bounties found":"model returned no confident match"}</div>
+                  ) : (
+                    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                      {matchState.result.matches.map(m => (
+                        <div key={m.bountyId} style={{padding:"10px 12px",background:"var(--surface)",borderRadius:6,border:"1px solid var(--border)"}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,marginBottom:4}}>
+                            <div style={{fontSize:12,fontWeight:500,lineHeight:1.35}}>{m.title||"(untitled)"}</div>
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,flexShrink:0,
+                              background: m.confidence==="high"?"rgba(15,118,110,0.1)":m.confidence==="medium"?"rgba(234,179,8,0.12)":"rgba(100,116,139,0.1)",
+                              color: m.confidence==="high"?"#0f766e":m.confidence==="medium"?"#a16207":"#475569",
+                              border: m.confidence==="high"?"1px solid rgba(15,118,110,0.25)":m.confidence==="medium"?"1px solid rgba(234,179,8,0.3)":"1px solid rgba(100,116,139,0.25)"
+                            }}>{m.confidence}</span>
+                          </div>
+                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
+                            {m.author||"—"} · {fmtDate(m.date)}{m.asset?` · ${m.asset}`:""}
+                          </div>
+                          {m.reason && <div style={{fontSize:11,color:"var(--muted)",lineHeight:1.45,fontStyle:"italic"}}>{m.reason}</div>}
+                          {m.cqLink && <a href={m.cqLink} target="_blank" rel="noreferrer" style={{display:"inline-block",marginTop:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none"}}>View bounty ↗</a>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
