@@ -933,7 +933,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate}) => {
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
@@ -945,8 +945,45 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   const [confirmId,setConfId]    = useState(null);
   const [view,setView]           = useState(null);
   const [showFilters,setShowFilters] = useState(false);
+  const [sumBatch,setSumBatch] = useState({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
 
   const resetFilters = () => { setSearch(""); setFA("all"); setDateFrom(""); setDateTo(""); setPage(1); };
+  const runSummarize = async (scope) => {
+    const unsumm = scope.filter(b => !b.summary && b.cqLink);
+    if (!unsumm.length) {
+      setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:"No un-summarized bounties with a cqLink."});
+      return;
+    }
+    setSumBatch({running:true,total:unsumm.length,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
+    const CONCURRENCY = 3;
+    const queue = [...unsumm];
+    const worker = async () => {
+      while (queue.length) {
+        const b = queue.shift();
+        if (!b) break;
+        try {
+          const r = await fetch("/api/summarize-bounty", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ bountyId: b.id }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+          if (data.skipped) {
+            setSumBatch(s => ({...s, processed: s.processed+1, skipped: s.skipped+1, lastMsg: data.reason}));
+          } else if (data.summary) {
+            if (onBountySummaryUpdate) await onBountySummaryUpdate(b.id, data.summary, true);
+            setSumBatch(s => ({...s, processed: s.processed+1, saved: s.saved+1}));
+          } else {
+            setSumBatch(s => ({...s, processed: s.processed+1, skipped: s.skipped+1}));
+          }
+        } catch (e) {
+          setSumBatch(s => ({...s, processed: s.processed+1, errors: s.errors+1, lastMsg: e.message}));
+        }
+      }
+    };
+    await Promise.all(Array.from({length:CONCURRENCY}, worker));
+    setSumBatch(s => ({...s, running:false}));
+  };
 
   const activeCampaigns = contentMode==="cq_research" ? campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research") : campaigns;
   const activeCitations = contentMode==="cq_research" ? citations.filter(c=>(c.author||"").toLowerCase()==="cq research") : [];
@@ -1225,8 +1262,38 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
               {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
+              {onBountySummaryUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
+                const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
+                return <button onClick={()=>{if(sumBatch.running)return;if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}}
+                  disabled={sumBatch.running||unsumCount===0}
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:sumBatch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
+                  {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
+                </button>;
+              })()}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
+            {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
+              <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                {sumBatch.running?(
+                  <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:200}}>
+                    <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${sumBatch.total?(sumBatch.processed/sumBatch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
+                    </div>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{sumBatch.processed}/{sumBatch.total}</span>
+                  </div>
+                ):(
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                    {sumBatch.total>0?`Summarize done · `:""}
+                    <b style={{color:"#0f766e"}}>{sumBatch.saved} saved</b> · {sumBatch.skipped} skipped · {sumBatch.errors} errors
+                    {sumBatch.lastMsg && ` · ${sumBatch.lastMsg}`}
+                  </span>
+                )}
+                {!sumBatch.running && sumBatch.processed>0 && (
+                  <button onClick={()=>setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                )}
+              </div>
+            )}
             {showFilters&&(
               <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
@@ -1502,7 +1569,13 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
                   </div>
                   {matchState.result.matches.length === 0 ? (
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>No match — {matchState.result.method==="none"?"no candidate bounties found":"model returned no confident match"}</div>
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                      No match — {
+                        matchState.result.bountiesChecked === 0 ? "this campaign has no bounties" :
+                        matchState.result.candidatesConsidered === 0 ? "no candidate bounties after filtering" :
+                        "model couldn't find a confident match"
+                      }
+                    </div>
                   ) : (
                     <div style={{display:"flex",flexDirection:"column",gap:6}}>
                       {matchState.result.matches.map(m => (
@@ -4854,6 +4927,10 @@ export default function App() {
     setCitations(prev=>prev.map(c=>c.id===citationId?{...c,citedBountyId:bountyId||""}:c));
     if(!silent) showToast(bountyId?"Bounty linked ✓":"Link cleared");
   };
+  const handleBountySummaryUpdate=async(bountyId,summary,silent=false)=>{
+    setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,summary:summary||""}:b));
+    if(!silent) showToast("Summary saved ✓");
+  };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
   const activeClient = programs.find(c=>c.id===activeCid)||null;
@@ -5076,7 +5153,7 @@ export default function App() {
 
         {/* CONTENT */}
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="analytics"&&(user.role==="client"||user.role==="admin")&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName}/>}

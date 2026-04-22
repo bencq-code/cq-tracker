@@ -96,6 +96,7 @@ const fromCampaign = (r) => ({
   twitterImpressions:r.twitter_impressions || "",
   telegramImpressions:r.telegram_impressions || "",
   sheetRowNo:        r.sheet_row_no || "",
+  summary:           r.summary || "",
   createdBy:         r.created_by,
   createdAt:         r.created_at,
 });
@@ -115,6 +116,7 @@ const toCampaign = (c) => ({
   twitter_impressions: c.twitterImpressions || "",
   telegram_impressions:c.telegramImpressions || "",
   sheet_row_no:        c.sheetRowNo || "",
+  summary:             c.summary || null,
   created_by:          c.createdBy,
   created_at:          c.createdAt || Date.now(),
 });
@@ -193,7 +195,7 @@ export const db = {
 
   // ── Bounties ──
   async getCampaigns() {
-    const data = await fetchAll("bounties", q => q.select("id,campaign_id,date,author,title,cq_link,author_twitter_link,analytics_link,cq_twitter_link,telegram_link,category,asset,twitter_impressions,telegram_impressions,sheet_row_no,created_by,created_at").order("date", { ascending: false }));
+    const data = await fetchAll("bounties", q => q.select("id,campaign_id,date,author,title,cq_link,author_twitter_link,analytics_link,cq_twitter_link,telegram_link,category,asset,twitter_impressions,telegram_impressions,sheet_row_no,summary,created_by,created_at").order("date", { ascending: false }));
     return data.map(fromCampaign);
   },
   async setCampaigns(campaigns) {
@@ -249,6 +251,10 @@ export const db = {
   },
   async updateCitationCitedBounty(citationId, bountyId) {
     const { error } = await supabase.from("citations").update({ cited_bounty_id: bountyId || null }).eq("id", citationId);
+    if (error) throw error;
+  },
+  async updateBountySummary(bountyId, summary) {
+    const { error } = await supabase.from("bounties").update({ summary: summary || null }).eq("id", bountyId);
     if (error) throw error;
   },
   async deleteCitation(id) {

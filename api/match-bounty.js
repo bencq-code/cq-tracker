@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
     const { data: bounties, error: dbErr } = await supabase
       .from("bounties")
-      .select("id,title,date,author,asset,cq_link,author_twitter_link,cq_twitter_link,analytics_link,telegram_link")
+      .select("id,title,date,author,asset,summary,cq_link,author_twitter_link,cq_twitter_link,analytics_link,telegram_link")
       .eq("campaign_id", campaignId);
     if (dbErr) throw dbErr;
 
@@ -175,9 +175,10 @@ export default async function handler(req, res) {
 
     const articleExcerpt = html ? extractArticleText(html).slice(0, 6000) : "";
 
-    const candidatesList = candidates.map(b =>
-      `- id:${b.id} | ${b.date} | asset:${b.asset || "—"} | "${b.title}"`
-    ).join("\n");
+    const candidatesList = candidates.map((b, i) => {
+      const line = `#${i+1} | ${b.date} | ${b.author||"—"} | asset:${b.asset || "—"} | "${b.title}"`;
+      return b.summary ? `${line}\n   summary: ${b.summary}` : line;
+    }).join("\n");
 
     const userPrompt = `Match this media citation to the CryptoQuant bounty(ies) it references. Only return a bounty if the article genuinely references or draws on that specific bounty's analysis. If nothing clearly matches, return an empty array.
 
@@ -193,10 +194,10 @@ ARTICLE EXCERPT
 ${articleExcerpt || "(article could not be fetched — match based on headline/topic/asset alone if possible)"}
 """
 
-CANDIDATE BOUNTIES (same CQ author, sorted by date proximity)
+CANDIDATE BOUNTIES (${candidates.length} total, sorted by date proximity to citation)
 ${candidatesList}
 
-For each match, use this confidence scale:
+Return matches by the candidate NUMBER (e.g. 1, 2, 3 — NOT by any other identifier). Use this confidence scale:
 - high: article clearly references the specific bounty's findings or title
 - medium: plausible connection via asset/topic/author and date proximity, wording overlaps
 - low: weak signal — avoid unless it's the only defensible option
@@ -224,11 +225,11 @@ Prefer precision over recall. An empty matches array is fine.`;
                     type: "object",
                     additionalProperties: false,
                     properties: {
-                      bountyId: { type: "string" },
+                      candidateNumber: { type: "integer" },
                       confidence: { type: "string", enum: ["high", "medium", "low"] },
                       reason: { type: "string" },
                     },
-                    required: ["bountyId", "confidence", "reason"],
+                    required: ["candidateNumber", "confidence", "reason"],
                   },
                 },
               },
@@ -258,13 +259,12 @@ Prefer precision over recall. An empty matches array is fine.`;
       return res.status(500).json({ error: "LLM returned non-JSON", raw: textBlock.text });
     }
 
-    const bountyById = Object.fromEntries(bounties.map(b => [b.id, b]));
     const validated = (parsed.matches || [])
-      .filter(m => bountyById[m.bountyId])
+      .filter(m => Number.isInteger(m.candidateNumber) && m.candidateNumber >= 1 && m.candidateNumber <= candidates.length)
       .map(m => {
-        const b = bountyById[m.bountyId];
+        const b = candidates[m.candidateNumber - 1];
         return {
-          bountyId: m.bountyId,
+          bountyId: b.id,
           title: b.title,
           date: b.date,
           author: b.author,
@@ -274,7 +274,9 @@ Prefer precision over recall. An empty matches array is fine.`;
           reason: m.reason,
         };
       });
-    const hallucinated = (parsed.matches || []).filter(m => !bountyById[m.bountyId]).length;
+    const hallucinated = (parsed.matches || []).filter(m =>
+      !Number.isInteger(m.candidateNumber) || m.candidateNumber < 1 || m.candidateNumber > candidates.length
+    ).length;
 
     return res.status(200).json({
       articleLink, campaignId,
