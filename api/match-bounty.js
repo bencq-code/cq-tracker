@@ -144,21 +144,50 @@ export default async function handler(req, res) {
       .eq("campaign_id", campaignId);
     if (dbErr) throw dbErr;
 
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    let html = "", fetchError = null;
-    try {
-      const r = await fetch(articleLink, {
-        headers: { "User-Agent": UA, "Accept": "text/html,application/xhtml+xml,*/*" },
-        redirect: "follow",
-        signal: controller.signal,
-      });
-      if (!r.ok) fetchError = `HTTP ${r.status}`;
-      else html = await r.text();
-    } catch (e) {
-      fetchError = e.name === "AbortError" ? "timeout" : e.message;
-    } finally {
-      clearTimeout(timer);
+    let html = "", fetchError = null, fetchSource = "direct";
+    const tryDirect = async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      try {
+        const r = await fetch(articleLink, {
+          headers: { "User-Agent": UA, "Accept": "text/html,application/xhtml+xml,*/*" },
+          redirect: "follow",
+          signal: controller.signal,
+        });
+        if (!r.ok) return { html: "", err: `HTTP ${r.status}` };
+        const text = await r.text();
+        return { html: text, err: null };
+      } catch (e) {
+        return { html: "", err: e.name === "AbortError" ? "timeout" : e.message };
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+    const tryScrapingBee = async () => {
+      const sbKey = process.env.SCRAPINGBEE_API_KEY;
+      if (!sbKey) return { html: "", err: "blocked, no SCRAPINGBEE_API_KEY set" };
+      const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(articleLink)}&render_js=false&premium_proxy=true`;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 25000);
+      try {
+        const r = await fetch(sbUrl, { signal: controller.signal });
+        if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
+        const text = await r.text();
+        return { html: text, err: null };
+      } catch (e) {
+        return { html: "", err: e.name === "AbortError" ? "ScrapingBee timeout" : e.message };
+      } finally {
+        clearTimeout(timer);
+      }
+    };
+    const direct = await tryDirect();
+    const directIsBlocked = direct.err || !direct.html || direct.html.length < 1500 || /<title>\s*Just a moment/i.test(direct.html);
+    if (!directIsBlocked) {
+      html = direct.html;
+    } else {
+      const sb = await tryScrapingBee();
+      if (sb.html) { html = sb.html; fetchSource = "scrapingbee"; }
+      else fetchError = `direct: ${direct.err||"small/blocked"} · sb: ${sb.err}`;
     }
 
     if (html) {
@@ -363,6 +392,7 @@ Prefer precision over recall. An empty matches array is fine.`;
       assetFiltered,
       articleFetched: !!html,
       articleExcerptLength: articleExcerpt.length,
+      fetchSource,
       fetchError,
       hallucinatedIds: hallucinated,
       candidatePool: candidates.map((b, i) => ({ n: i+1, bountyId: b.id, title: b.title, author: b.author, date: b.date, asset: b.asset, hasSummary: !!b.summary })),
