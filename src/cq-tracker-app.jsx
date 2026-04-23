@@ -1624,6 +1624,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     {matchState.result.bountiesChecked!=null && ` · ${matchState.result.bountiesChecked} bounties`}
                     {matchState.result.candidatesConsidered!=null && ` → ${matchState.result.candidatesConsidered} candidates`}
                     {matchState.result.authorFiltered && ` (author-filtered)`}
+                    {matchState.result.assetFiltered && ` (asset:${entry.asset||"—"})`}
                     {matchState.result.articleFetched===false && ` · article fetch failed`}
                     {matchState.result.articleExcerptLength!=null && ` · ${matchState.result.articleExcerptLength} char excerpt`}
                     {matchState.result.fetchError && ` (${matchState.result.fetchError})`}

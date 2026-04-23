@@ -57,6 +57,53 @@ const extractArticleText = (html) => {
   return strip(html);
 };
 
+const ASSET_SYNONYMS = {
+  btc:  ["btc", "bitcoin"],
+  eth:  ["eth", "ethereum", "ether"],
+  xrp:  ["xrp", "ripple"],
+  sol:  ["sol", "solana"],
+  bnb:  ["bnb"],
+  ada:  ["ada", "cardano"],
+  doge: ["doge", "dogecoin"],
+  matic:["matic", "polygon"],
+  avax: ["avax", "avalanche"],
+  atom: ["atom", "cosmos"],
+  dot:  ["dot", "polkadot"],
+  usdt: ["usdt", "tether"],
+  usdc: ["usdc"],
+  aave: ["aave"],
+  ltc:  ["ltc", "litecoin"],
+  link: ["chainlink"],
+  uni:  ["uniswap"],
+  arb:  ["arb", "arbitrum"],
+  op:   ["optimism"],
+  trx:  ["trx", "tron"],
+  ton:  ["toncoin"],
+  shib: ["shib", "shiba"],
+};
+const GENERIC_ASSET_BUCKETS = new Set(["altcoin","altcoins","stablecoin","stablecoins","defi","meme","memecoin","memecoins","layer2","l2","nft","nfts"]);
+const normalizeAsset = (s) => {
+  const l = (s||"").toLowerCase().trim();
+  if (!l) return "";
+  if (GENERIC_ASSET_BUCKETS.has(l)) return "";
+  for (const [key, syns] of Object.entries(ASSET_SYNONYMS)) {
+    if (syns.includes(l) || key === l) return key;
+  }
+  return l;
+};
+const extractTitleAssets = (title) => {
+  const lower = (title||"").toLowerCase();
+  const found = new Set();
+  for (const [key, syns] of Object.entries(ASSET_SYNONYMS)) {
+    const tokens = [key, ...syns];
+    for (const tok of tokens) {
+      const re = new RegExp(`\\b${tok.replace(/[-/\\^$*+?.()|[\]{}]/g,"\\$&")}\\b`, "i");
+      if (re.test(lower)) { found.add(key); break; }
+    }
+  }
+  return found;
+};
+
 const authorKey = s => (s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
 const authorToks = s => (s||"").toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length >= 3);
 const authorSim = (a, b) => {
@@ -132,9 +179,19 @@ export default async function handler(req, res) {
 
     let candidates = bounties;
     let authorFiltered = false;
+    let assetFiltered = false;
     if (citationAuthor) {
       const matched = bounties.filter(b => authorSim(b.author, citationAuthor) >= 0.6);
       if (matched.length) { candidates = matched; authorFiltered = true; }
+    }
+    const citAssetKey = normalizeAsset(citationAsset);
+    if (citAssetKey) {
+      const assetMatched = candidates.filter(b => {
+        const titleAssets = extractTitleAssets(b.title);
+        if (titleAssets.size === 0) return true;
+        return titleAssets.has(citAssetKey);
+      });
+      if (assetMatched.length) { candidates = assetMatched; assetFiltered = true; }
     }
     if (citationDate) {
       const cd = new Date(citationDate).getTime();
@@ -184,7 +241,9 @@ export default async function handler(req, res) {
     const articleExcerpt = html ? extractArticleText(html).slice(0, 20000) : "";
 
     const candidatesList = candidates.map((b, i) => {
-      const line = `#${i+1} | ${b.date} | ${b.author||"—"} | asset:${b.asset || "—"} | "${b.title}"`;
+      const titleAssets = [...extractTitleAssets(b.title)];
+      const assetStr = titleAssets.length ? titleAssets.join(",") : "—";
+      const line = `#${i+1} | ${b.date} | ${b.author||"—"} | titleAsset:${assetStr} | "${b.title}"`;
       return b.summary ? `${line}\n   summary: ${b.summary}` : line;
     }).join("\n");
 
@@ -205,10 +264,16 @@ ${articleExcerpt || "(article could not be fetched — match based on headline/t
 CANDIDATE BOUNTIES (${candidates.length} total, sorted by date proximity to citation)
 ${candidatesList}
 
-Return matches by the candidate NUMBER (e.g. 1, 2, 3 — NOT by any other identifier). Use this confidence scale:
-- high: article clearly references the specific bounty's findings or title
-- medium: plausible connection via asset/topic/author and date proximity, wording overlaps
-- low: weak signal — avoid unless it's the only defensible option
+Return matches by the candidate NUMBER (e.g. 1, 2, 3 — NOT by any other identifier).
+
+STRICT RULES:
+- NEVER match across assets. If the citation is about ${citationAsset||"X"}, do not return a bounty about a different asset (e.g. BTC vs ETH vs XRP). A candidate's asset must either equal the citation's asset or be blank.
+- Shared concepts like "short squeeze", "accumulation", or "exchange outflows" are NOT sufficient on their own — they must apply to the same asset.
+
+Use this confidence scale:
+- high: article clearly references the specific bounty's findings or title, same asset
+- medium: plausible same-asset connection via topic/author/date-proximity and some wording overlap
+- low: weak signal — avoid unless it's the only defensible same-asset option
 
 Prefer precision over recall. An empty matches array is fine.`;
 
@@ -295,6 +360,7 @@ Prefer precision over recall. An empty matches array is fine.`;
       bountiesChecked: bounties.length,
       candidatesConsidered: candidates.length,
       authorFiltered,
+      assetFiltered,
       articleFetched: !!html,
       articleExcerptLength: articleExcerpt.length,
       fetchError,
