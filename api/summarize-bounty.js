@@ -164,7 +164,9 @@ export default async function handler(req, res) {
     if (!apiKey) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
     const anthropic = new Anthropic({ apiKey });
-    const prompt = `Summarize this CryptoQuant analysis in 3-4 sentences. Capture: the main finding, the asset(s), specific numbers (% changes, $ amounts, thresholds), and the bullish/bearish/neutral implication. Prefer concrete phrasings like "BTC exchange inflows rose 22%..." over vague ones like "analysis of Bitcoin trends".
+    const prompt = `Summarize this CryptoQuant analysis in EXACTLY 2-3 sentences, maximum 50 words total. Be dense and concrete: pack in the asset, specific numbers (% changes, $ amounts, thresholds), and the bullish/bearish/neutral read. No preamble, no bullet points, no line breaks — one short paragraph.
+
+Good example: "BTC exchange inflows on Binance rose 22% to $2.1B in one week while long-term holder reserves hit a new high. Short-term holder cost basis sits at $68K. Bullish signal — accumulation outpacing distribution pressure."
 
 TITLE: ${(entry?.title) || bounty.title || "(untitled)"}
 AUTHOR: ${(entry?.creator) || bounty.author || "unknown"}
@@ -175,13 +177,13 @@ CONTENT:
 ${source}
 """
 
-Return only the summary text, no preamble.`;
+Return only the summary text.`;
 
     let llmResponse;
     try {
       llmResponse = await anthropic.messages.create({
         model: "claude-haiku-4-5",
-        max_tokens: 512,
+        max_tokens: 180,
         messages: [{ role: "user", content: prompt }],
       });
     } catch (e) {
