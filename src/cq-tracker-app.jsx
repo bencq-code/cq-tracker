@@ -1385,8 +1385,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       })()}
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
-        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Impressions","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
+        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+          {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1406,7 +1406,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const editable=canEdit(c);
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 130px 110px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
+                    style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                     onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                     <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
@@ -1421,20 +1421,6 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Telegram↗</a>}
                       </div>
-                    </div>
-                    <div style={{display:"flex",flexDirection:"column",gap:3,minWidth:0}}>
-                      {(c.twitterImpressions||c.telegramImpressions)?(
-                        <>
-                          {c.twitterImpressions&&<div style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>𝕏</span>
-                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,color:"var(--accent)"}}>{Number(String(c.twitterImpressions).replace(/,/g,"")).toLocaleString()}</span>
-                          </div>}
-                          {c.telegramImpressions&&<div style={{display:"flex",alignItems:"center",gap:5}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>TG</span>
-                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,color:"#4a7fa8"}}>{Number(String(c.telegramImpressions).replace(/,/g,"")).toLocaleString()}</span>
-                          </div>}
-                        </>
-                      ):<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
                       <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,flexShrink:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)"}}>{initials(c.author)}</div>
