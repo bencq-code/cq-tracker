@@ -32,10 +32,7 @@ const urlMatch = (html, bounties) => {
 };
 
 const extractArticleText = (html) => {
-  const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-  const mainMatch    = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
-  const target = articleMatch?.[1] || mainMatch?.[1] || html;
-  return target
+  const strip = (str) => str
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
@@ -47,6 +44,17 @@ const extractArticleText = (html) => {
     .replace(/&[#\w]+;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+  const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/gi)];
+  if (articleMatches.length > 0) {
+    const text = strip(articleMatches.map(m => m[1]).join(" "));
+    if (text.length >= 500) return text;
+  }
+  const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  if (mainMatch) {
+    const text = strip(mainMatch[1]);
+    if (text.length >= 500) return text;
+  }
+  return strip(html);
 };
 
 const authorKey = s => (s||"").toLowerCase().replace(/[^a-z0-9]/g,"");
@@ -173,7 +181,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "ANTHROPIC_API_KEY not set in Vercel env vars" });
     }
 
-    const articleExcerpt = html ? extractArticleText(html).slice(0, 6000) : "";
+    const articleExcerpt = html ? extractArticleText(html).slice(0, 20000) : "";
 
     const candidatesList = candidates.map((b, i) => {
       const line = `#${i+1} | ${b.date} | ${b.author||"—"} | asset:${b.asset || "—"} | "${b.title}"`;
