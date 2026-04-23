@@ -82,9 +82,9 @@ const extractArticleText = (html) => {
 const fetchViaScrapingBee = async (url) => {
   const sbKey = process.env.SCRAPINGBEE_API_KEY;
   if (!sbKey) return { html: "", err: "SCRAPINGBEE_API_KEY not set" };
-  const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(url)}&render_js=false&premium_proxy=true`;
+  const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(url)}&render_js=true&premium_proxy=true&wait=2000`;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000);
+  const timer = setTimeout(() => controller.abort(), 40000);
   try {
     const r = await fetch(sbUrl, { signal: controller.signal });
     if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
