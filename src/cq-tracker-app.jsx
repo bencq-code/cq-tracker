@@ -871,10 +871,12 @@ const Pagination = ({page, total, onChange}) => {
 const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary}) => {
   const ac = getAuthorColor(entry.author);
   const [gen, setGen] = useState({loading:false, error:null});
-  const genSummary = async () => {
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const genSummary = async (rawContent) => {
     if (!onGenerateSummary) return;
     setGen({loading:true, error:null});
-    try { await onGenerateSummary(entry.id); setGen({loading:false, error:null}); }
+    try { await onGenerateSummary(entry.id, rawContent); setGen({loading:false, error:null}); setPasteOpen(false); setPasteText(""); }
     catch (e) { setGen({loading:false, error:e.message}); }
   };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
@@ -926,21 +928,42 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
               </div>
             </div>
           )}
-          {(entry.summary || (isEditable && onGenerateSummary && entry.cqLink)) && (
+          {(entry.summary || (isEditable && onGenerateSummary)) && (
             <div style={{marginBottom:16,padding:"12px 14px",borderRadius:10,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:entry.summary?8:0}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,marginBottom:entry.summary?8:0,flexWrap:"wrap"}}>
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
-                {isEditable && onGenerateSummary && entry.cqLink && (
-                  <button onClick={genSummary} disabled={gen.loading}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
-                    {gen.loading?"GENERATING…":(entry.summary?"REGENERATE":"📝 GENERATE")}
-                  </button>
-                )}
+                <div style={{display:"flex",gap:6}}>
+                  {isEditable && onGenerateSummary && entry.cqLink && (
+                    <button onClick={()=>genSummary(null)} disabled={gen.loading}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
+                      {gen.loading?"GENERATING…":(entry.summary?"REGEN FROM RSS":"📡 FROM RSS")}
+                    </button>
+                  )}
+                  {isEditable && onGenerateSummary && (
+                    <button onClick={()=>{setPasteOpen(v=>!v);setPasteText("")}}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid var(--border)",background:pasteOpen?"var(--surface2)":"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:500}}>
+                      📋 PASTE CONTENT
+                    </button>
+                  )}
+                </div>
               </div>
               {entry.summary ? (
                 <div style={{fontSize:12,lineHeight:1.55,color:"var(--text)"}}>{entry.summary}</div>
-              ) : (
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — click Generate to create one.</div>
+              ) : !pasteOpen && (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — use "From RSS" if this bounty is recent, or "Paste Content" to paste the body from cryptoquant.com manually.</div>
+              )}
+              {pasteOpen && (
+                <div style={{marginTop:10}}>
+                  <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder="Paste the bounty's full body text from cryptoquant.com here…" rows={6}
+                    style={{width:"100%",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",resize:"vertical",boxSizing:"border-box"}}/>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6,gap:8}}>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{pasteText.trim().length} chars (min 80)</span>
+                    <button onClick={()=>genSummary(pasteText.trim())} disabled={gen.loading||pasteText.trim().length<80}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
+                      {gen.loading?"SUMMARIZING…":"SUMMARIZE FROM PASTED"}
+                    </button>
+                  </div>
+                </div>
               )}
               {gen.error && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
             </div>
@@ -1010,10 +1033,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     await Promise.all(Array.from({length:CONCURRENCY}, worker));
     setSumBatch(s => ({...s, running:false}));
   };
-  const generateSummaryOne = async (bountyId) => {
+  const generateSummaryOne = async (bountyId, rawContent) => {
     const r = await fetch("/api/summarize-bounty", {
       method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ bountyId, force: true }),
+      body: JSON.stringify({ bountyId, force: true, ...(rawContent ? { rawContent } : {}) }),
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -1608,13 +1631,29 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
                   </div>
                   {matchState.result.matches.length === 0 ? (
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
-                      No match — {
-                        matchState.result.bountiesChecked === 0 ? "this campaign has no bounties" :
-                        matchState.result.candidatesConsidered === 0 ? "no candidate bounties after filtering" :
-                        "model couldn't find a confident match"
-                      }
-                    </div>
+                    <>
+                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",marginBottom:8}}>
+                        No match — {
+                          matchState.result.bountiesChecked === 0 ? "this campaign has no bounties" :
+                          matchState.result.candidatesConsidered === 0 ? "no candidate bounties after filtering" :
+                          "model couldn't find a confident match"
+                        }
+                      </div>
+                      {matchState.result.candidatePool?.length > 0 && (
+                        <details style={{marginTop:8}}>
+                          <summary style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.08em"}}>Considered candidates ({matchState.result.candidatePool.length})</summary>
+                          <div style={{maxHeight:280,overflowY:"auto",marginTop:6,padding:"6px 8px",background:"var(--surface)",borderRadius:6,border:"1px solid var(--border)"}}>
+                            {matchState.result.candidatePool.map(c => (
+                              <div key={c.bountyId} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:3,lineHeight:1.4}}>
+                                <span style={{display:"inline-block",width:22,color:"var(--dim)"}}>#{c.n}</span>
+                                <span style={{color:"var(--text)"}}>{c.title}</span>
+                                <span style={{color:"var(--dim)"}}> — {c.author||"—"} · {c.date}{c.asset?` · ${c.asset}`:""}{c.hasSummary?" · 📝":""}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      )}
+                    </>
                   ) : (
                     <div style={{display:"flex",flexDirection:"column",gap:6}}>
                       {matchState.result.matches.map(m => (

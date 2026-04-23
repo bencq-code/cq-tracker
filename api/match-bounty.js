@@ -291,6 +291,7 @@ Prefer precision over recall. An empty matches array is fine.`;
       articleExcerptLength: articleExcerpt.length,
       fetchError,
       hallucinatedIds: hallucinated,
+      candidatePool: candidates.map((b, i) => ({ n: i+1, bountyId: b.id, title: b.title, author: b.author, date: b.date, asset: b.asset, hasSummary: !!b.summary })),
       usage: {
         input_tokens: llmResponse.usage.input_tokens,
         output_tokens: llmResponse.usage.output_tokens,
