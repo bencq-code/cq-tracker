@@ -53,6 +53,50 @@ const extractSlug = (url) => {
   }
 };
 
+const extractArticleText = (html) => {
+  const strip = (s) => s
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, " ")
+    .replace(/<form[^>]*>[\s\S]*?<\/form>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[#\w]+;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/gi)];
+  if (articleMatches.length) {
+    const t = strip(articleMatches.map(m => m[1]).join(" "));
+    if (t.length >= 300) return t;
+  }
+  const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+  if (mainMatch) {
+    const t = strip(mainMatch[1]);
+    if (t.length >= 300) return t;
+  }
+  return strip(html);
+};
+
+const fetchViaScrapingBee = async (url) => {
+  const sbKey = process.env.SCRAPINGBEE_API_KEY;
+  if (!sbKey) return { html: "", err: "SCRAPINGBEE_API_KEY not set" };
+  const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(url)}&render_js=false&premium_proxy=true`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+  try {
+    const r = await fetch(sbUrl, { signal: controller.signal });
+    if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
+    const html = await r.text();
+    return { html, err: null };
+  } catch (e) {
+    return { html: "", err: e.name === "AbortError" ? "ScrapingBee timeout" : e.message };
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -88,23 +132,31 @@ export default async function handler(req, res) {
       source = rawContent.replace(/\s+/g, " ").trim().slice(0, 12000);
       sourceType = "manual";
     } else {
-      const items = await fetchRss();
-      const bountySlug = extractSlug(bounty.cq_link);
-      entry = items.find(item =>
-        (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
-        (item.link && item.link.includes(bounty.cq_link))
-      );
-      if (!entry) {
-        return res.status(200).json({
-          bountyId, skipped: true,
-          reason: `Bounty not in RSS feed (feed has ${items.length} items). Paste content manually in the modal.`,
-          bountySlug,
-        });
-      }
-      source = (entry.description || entry.title || "").replace(/\s+/g, " ").trim().slice(0, 6000);
-      sourceType = "rss";
-      if (source.length < 80) {
-        return res.status(200).json({ bountyId, skipped: true, reason: `RSS content too short (${source.length} chars)` });
+      try {
+        const items = await fetchRss();
+        const bountySlug = extractSlug(bounty.cq_link);
+        entry = items.find(item =>
+          (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
+          (item.link && item.link.includes(bounty.cq_link))
+        );
+        if (entry) {
+          source = (entry.description || entry.title || "").replace(/\s+/g, " ").trim().slice(0, 6000);
+          sourceType = "rss";
+        }
+      } catch {}
+
+      if (!source || source.length < 80) {
+        const sb = await fetchViaScrapingBee(bounty.cq_link);
+        if (sb.html) {
+          source = extractArticleText(sb.html).slice(0, 12000);
+          sourceType = "scrapingbee";
+        }
+        if (!source || source.length < 80) {
+          return res.status(200).json({
+            bountyId, skipped: true,
+            reason: source ? `Content too short (${source.length} chars)` : (sb.err || "no content available — paste manually in the modal"),
+          });
+        }
       }
     }
 

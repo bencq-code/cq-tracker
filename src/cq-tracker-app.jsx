@@ -868,8 +868,17 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 //  BOUNTY DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
+const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary}) => {
   const ac = getAuthorColor(entry.author);
+  const [gen, setGen] = useState({loading:false, error:null});
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const genSummary = async (rawContent) => {
+    if (!onGenerateSummary) return;
+    setGen({loading:true, error:null});
+    try { await onGenerateSummary(entry.id, rawContent); setGen({loading:false, error:null}); setPasteOpen(false); setPasteText(""); }
+    catch (e) { setGen({loading:false, error:e.message}); }
+  };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
       <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
@@ -919,6 +928,46 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
               </div>
             </div>
           )}
+          {(entry.summary || (isEditable && onGenerateSummary)) && (
+            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:10,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,marginBottom:entry.summary?8:0,flexWrap:"wrap"}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
+                <div style={{display:"flex",gap:6}}>
+                  {isEditable && onGenerateSummary && entry.cqLink && (
+                    <button onClick={()=>genSummary(null)} disabled={gen.loading}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
+                      {gen.loading?"GENERATING…":(entry.summary?"🔄 REGENERATE":"📝 GENERATE")}
+                    </button>
+                  )}
+                  {isEditable && onGenerateSummary && (
+                    <button onClick={()=>{setPasteOpen(v=>!v);setPasteText("")}}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid var(--border)",background:pasteOpen?"var(--surface2)":"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:500}}>
+                      📋 PASTE
+                    </button>
+                  )}
+                </div>
+              </div>
+              {entry.summary ? (
+                <div style={{fontSize:12,lineHeight:1.55,color:"var(--text)"}}>{entry.summary}</div>
+              ) : !pasteOpen && (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — click Generate (uses RSS or ScrapingBee) or Paste if you have the body text handy.</div>
+              )}
+              {pasteOpen && (
+                <div style={{marginTop:10}}>
+                  <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder="Paste the bounty's full body text here…" rows={6}
+                    style={{width:"100%",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",resize:"vertical",boxSizing:"border-box"}}/>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6,gap:8}}>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{pasteText.trim().length} chars (min 80)</span>
+                    <button onClick={()=>genSummary(pasteText.trim())} disabled={gen.loading||pasteText.trim().length<80}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
+                      {gen.loading?"SUMMARIZING…":"SUMMARIZE PASTED"}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {gen.error && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
+            </div>
+          )}
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
@@ -933,7 +982,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable}) => {
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate}) => {
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
@@ -945,8 +994,55 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   const [confirmId,setConfId]    = useState(null);
   const [view,setView]           = useState(null);
   const [showFilters,setShowFilters] = useState(false);
+  const [sumBatch,setSumBatch] = useState({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
 
   const resetFilters = () => { setSearch(""); setFA("all"); setDateFrom(""); setDateTo(""); setPage(1); };
+  const runSummarize = async (scope) => {
+    const unsumm = scope.filter(b => !b.summary && b.cqLink);
+    if (!unsumm.length) {
+      setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:"No un-summarized bounties with a cqLink."});
+      return;
+    }
+    setSumBatch({running:true,total:unsumm.length,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
+    const queue = [...unsumm];
+    const worker = async () => {
+      while (queue.length) {
+        const b = queue.shift();
+        if (!b) break;
+        try {
+          const r = await fetch("/api/summarize-bounty", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ bountyId: b.id }),
+          });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+          if (data.skipped) {
+            setSumBatch(s => ({...s, processed: s.processed+1, skipped: s.skipped+1, lastMsg: data.reason}));
+          } else if (data.summary) {
+            if (onBountySummaryUpdate) await onBountySummaryUpdate(b.id, data.summary, true);
+            setSumBatch(s => ({...s, processed: s.processed+1, saved: s.saved+1}));
+          } else {
+            setSumBatch(s => ({...s, processed: s.processed+1, skipped: s.skipped+1}));
+          }
+        } catch (e) {
+          setSumBatch(s => ({...s, processed: s.processed+1, errors: s.errors+1, lastMsg: e.message}));
+        }
+      }
+    };
+    await Promise.all(Array.from({length:3}, worker));
+    setSumBatch(s => ({...s, running:false}));
+  };
+  const generateSummaryOne = async (bountyId, rawContent) => {
+    const r = await fetch("/api/summarize-bounty", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ bountyId, force: true, ...(rawContent ? { rawContent } : {}) }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    if (data.skipped) throw new Error(data.reason || "skipped");
+    if (data.summary && onBountySummaryUpdate) await onBountySummaryUpdate(bountyId, data.summary, false);
+    return data;
+  };
 
   const activeCampaigns = contentMode==="cq_research" ? campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research") : campaigns;
   const activeCitations = contentMode==="cq_research" ? citations.filter(c=>(c.author||"").toLowerCase()==="cq research") : [];
@@ -1225,8 +1321,38 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
               {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
+              {onBountySummaryUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
+                const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
+                return <button onClick={()=>{if(sumBatch.running)return;if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}}
+                  disabled={sumBatch.running||unsumCount===0}
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:sumBatch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
+                  {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
+                </button>;
+              })()}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
+            {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
+              <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                {sumBatch.running?(
+                  <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:200}}>
+                    <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${sumBatch.total?(sumBatch.processed/sumBatch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
+                    </div>
+                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{sumBatch.processed}/{sumBatch.total}</span>
+                  </div>
+                ):(
+                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                    {sumBatch.total>0?`Summarize done · `:""}
+                    <b style={{color:"#0f766e"}}>{sumBatch.saved} saved</b> · {sumBatch.skipped} skipped · {sumBatch.errors} errors
+                    {sumBatch.lastMsg && ` · ${sumBatch.lastMsg}`}
+                  </span>
+                )}
+                {!sumBatch.running && sumBatch.processed>0 && (
+                  <button onClick={()=>setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                )}
+              </div>
+            )}
             {showFilters&&(
               <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
@@ -1364,7 +1490,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
-      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)}/>}
+      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
@@ -4878,6 +5004,10 @@ export default function App() {
     setCitations(prev=>prev.map(c=>c.id===citationId?{...c,citedBountyId:bountyId||""}:c));
     if(!silent) showToast(bountyId?"Bounty linked ✓":"Link cleared");
   };
+  const handleBountySummaryUpdate=async(bountyId,summary,silent=false)=>{
+    setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,summary:summary||""}:b));
+    if(!silent) showToast("Summary saved ✓");
+  };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
   const activeClient = programs.find(c=>c.id===activeCid)||null;
@@ -5100,7 +5230,7 @@ export default function App() {
 
         {/* CONTENT */}
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="analytics"&&(user.role==="client"||user.role==="admin")&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName}/>}
