@@ -1102,11 +1102,20 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,topBounties,maxBountyCount,cits};
   },[contentMode,activeCampaigns,activeCitations]);
 
-  // CQ Research citations pagination
+  // CQ Research citations pagination + tier filter
   const [cqCitPage,setCqCitPage] = useState(1);
+  const [cqTierFilter,setCqTierFilter] = useState("all");
+  const [cqOutletFilter,setCqOutletFilter] = useState("all");
   const [viewCitation,setViewCitation] = useState(null);
   const cqCitRef = useRef(null);
-  const pagedCqCits = cqResearchData ? cqResearchData.cits.slice((cqCitPage-1)*PAGE_SIZE, cqCitPage*PAGE_SIZE) : [];
+  const cqCitsFiltered = useMemo(()=>{
+    if (!cqResearchData) return [];
+    return cqResearchData.cits.filter(c =>
+      (cqTierFilter==="all" || (c.mediaTier||"").trim() === cqTierFilter) &&
+      (cqOutletFilter==="all" || (c.media||"").trim() === cqOutletFilter)
+    );
+  },[cqResearchData,cqTierFilter,cqOutletFilter]);
+  const pagedCqCits = cqCitsFiltered.slice((cqCitPage-1)*PAGE_SIZE, cqCitPage*PAGE_SIZE);
 
   return (
     <>
@@ -1483,9 +1492,36 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         <div ref={cqCitRef} style={{marginTop:20}}>
           <div className="cq-table-scroll"><div style={{minWidth:500}}>
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqResearchData.cits.length}</span>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)",gap:14,flexWrap:"wrap"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqCitsFiltered.length}{cqCitsFiltered.length!==cqResearchData.cits.length?` of ${cqResearchData.cits.length}`:""}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                <div style={{display:"flex",gap:4,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2}}>
+                  <button onClick={()=>{setCqTierFilter("all");setCqCitPage(1);}}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:cqTierFilter==="all"?"var(--surface)":"transparent",color:cqTierFilter==="all"?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:cqTierFilter==="all"?600:400}}>ALL TIERS</button>
+                  {cqResearchData.tierEntries.map(([tier,count])=>{
+                    const tc=getTierColor(tier);
+                    const active=cqTierFilter===tier;
+                    return <button key={tier} onClick={()=>{setCqTierFilter(active?"all":tier);setCqCitPage(1);}}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:active?tc.bg:"transparent",color:active?tc.color:"var(--dim)",cursor:"pointer",fontWeight:active?600:400,display:"flex",alignItems:"center",gap:4}}>
+                      Tier {tier} <span style={{opacity:0.7,fontWeight:400}}>{count}</span>
+                    </button>;
+                  })}
+                </div>
+                {cqResearchData.uniqueOutlets.length>1 && (
+                  <select value={cqOutletFilter} onChange={e=>{setCqOutletFilter(e.target.value);setCqCitPage(1);}}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 8px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:cqOutletFilter==="all"?"var(--dim)":"var(--accent)",cursor:"pointer",fontWeight:cqOutletFilter==="all"?400:500}}>
+                    <option value="all">All outlets</option>
+                    {cqResearchData.uniqueOutlets.sort().map(o=><option key={o} value={o}>{o}</option>)}
+                  </select>
+                )}
+                {(cqTierFilter!=="all"||cqOutletFilter!=="all") && (
+                  <button onClick={()=>{setCqTierFilter("all");setCqOutletFilter("all");setCqCitPage(1);}}
+                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>clear</button>
+                )}
+              </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
               {["Date","Media","Headline / Topic","Reporter","Bounty","Link"].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
@@ -1520,7 +1556,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 </div>
               );
             })}
-            <Pagination page={cqCitPage} total={cqResearchData.cits.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
+            {cqCitsFiltered.length===0 && (
+              <div style={{padding:"40px 20px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No citations match the current filters</div>
+            )}
+            <Pagination page={cqCitPage} total={cqCitsFiltered.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
           </div>
           </div></div>
         </div>
