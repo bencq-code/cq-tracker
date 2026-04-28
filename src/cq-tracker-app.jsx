@@ -982,7 +982,8 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onCitedBountyUpdate}) => {
+  const bountyById = useMemo(()=>Object.fromEntries((campaigns||[]).map(b=>[b.id,b])),[campaigns]);
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
@@ -1446,11 +1447,15 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
               <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqResearchData.cits.length}</span>
             </div>
+            <div style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
+              {["Date","Media","Headline / Topic","Reporter","Bounty","Link"].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+            </div>
             {pagedCqCits.map((c,i)=>{
               const tc=getTierColor(c.mediaTier);
+              const cb = c.citedBountyId && bountyById[c.citedBountyId];
               return (
                 <div key={c.id} onClick={()=>setViewCitation(c)}
-                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
+                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
                   onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                   onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
                   <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
@@ -1465,6 +1470,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   </div>
                   <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
                   <div onClick={e=>e.stopPropagation()}>
+                    {cb && cb.cqLink
+                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
+                      : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
+                  </div>
+                  <div onClick={e=>e.stopPropagation()}>
                     {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10,opacity:0.45}}>—</span>}
                   </div>
                 </div>
@@ -1475,7 +1485,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           </div></div>
         </div>
       )}
-      {viewCitation&&<CitationDetailModal entry={viewCitation} canEdit={false} onEdit={()=>{}} onClose={()=>setViewCitation(null)}/>}
+      {viewCitation&&<CitationDetailModal entry={citations.find(c=>c.id===viewCitation.id)||viewCitation} canEdit={currentUser.role==="admin"} onEdit={()=>{}} onClose={()=>setViewCitation(null)} bounties={campaigns} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
@@ -5216,7 +5226,7 @@ export default function App() {
 
         {/* CONTENT */}
         {tab==="weekly"&&(effectiveCid||user.role==="client")&&<WeeklySummaryTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} color={effectiveClient?.color||"var(--accent)"}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="analytics"&&(user.role==="client"||user.role==="admin")&&<AnalyticsTab campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName}/>}
