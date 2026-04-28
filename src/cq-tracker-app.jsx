@@ -1090,7 +1090,16 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
     const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
 
-    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,cits};
+    const bountyCiteCount={};
+    cits.forEach(c=>{const id=c.citedBountyId;if(id)bountyCiteCount[id]=(bountyCiteCount[id]||0)+1;});
+    const topBounties=activeCampaigns
+      .map(b=>({bounty:b,count:bountyCiteCount[b.id]||0}))
+      .filter(x=>x.count>0)
+      .sort((a,b)=>b.count-a.count)
+      .slice(0,8);
+    const maxBountyCount=topBounties[0]?.count||1;
+
+    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,topBounties,maxBountyCount,cits};
   },[contentMode,activeCampaigns,activeCitations]);
 
   // CQ Research citations pagination
@@ -1128,6 +1137,37 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       {/* CQ Research analytics */}
       {contentMode==="cq_research"&&cqResearchData&&(<>
         {/* Leaderboards */}
+        {cqResearchData.topBounties.length>0&&(
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:16,animation:"fadeUp .5s ease .06s both"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Performing Bounties</div>
+              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topBounties.length} cited</span>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {cqResearchData.topBounties.map((tb,i)=>{
+                const b=tb.bounty;
+                return (
+                  <div key={b.id} onClick={()=>setView(b)}
+                    style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(15,118,110,0.06)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,gap:10}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span title={b.title||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</span>
+                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>· {fmtDate(b.date)}</span>
+                      </div>
+                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"#0f766e",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
+                    </div>
+                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginLeft:22}}>
+                      <div style={{width:`${(tb.count/cqResearchData.maxBountyCount)*100}%`,height:"100%",background:"#0f766e",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
           <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
             {/* Top Headlines */}
