@@ -27,6 +27,7 @@ const parseRss = (xml) => {
       link:        getTag("link"),
       guid:        getTag("guid"),
       creator:     getTag("dc:creator"),
+      pubDate:     getTag("pubDate"),
     });
   }
   return items;
@@ -119,7 +120,9 @@ export default async function handler(req, res) {
   const bountyId      = input.bountyId;
   const rawContent    = (input.rawContent || "").toString().trim();
   const campaignStart = (input.campaignStart || "").toString().trim();
+  const noCache       = !!input.noCache;
   if (!bountyId) return res.status(400).json({ error: "Missing bountyId" });
+  if (noCache) rssCache.clear();
 
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
