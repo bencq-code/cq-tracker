@@ -45,21 +45,25 @@ const fetchRssChunk = async ({ start, end, limit = 100 } = {}) => {
 };
 
 const fetchAllItemsFrom = async (start) => {
-  if (!start) start = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0, 10);
+  if (!start) start = new Date(Date.now() - 365*24*60*60*1000).toISOString().slice(0, 10);
   const cacheKey = `from_${start}`;
   const cached = rssCache.get(cacheKey);
-  if (cached && (Date.now() - cached.at) < RSS_TTL_MS) return cached.items;
+  if (cached && cached.items.length > 0 && (Date.now() - cached.at) < RSS_TTL_MS) return cached.items;
 
   const allItems = [];
   const seen = new Set();
   let endParam = null;
   const MAX_CHUNKS = 40;
+  const startD = new Date(start);
+  let chunksFetched = 0;
+  let lastError = null;
 
   for (let i = 0; i < MAX_CHUNKS; i++) {
     let chunk;
     try {
       chunk = await fetchRssChunk({ start, end: endParam, limit: 100 });
-    } catch { break; }
+      chunksFetched++;
+    } catch (e) { lastError = e.message; break; }
     if (!chunk.length) break;
 
     let added = 0;
@@ -77,13 +81,13 @@ const fetchAllItemsFrom = async (start) => {
       }
     }
     if (added === 0 || chunk.length < 100 || !earliest) break;
-    earliest.setUTCSeconds(earliest.getUTCSeconds() - 1);
+    earliest.setUTCDate(earliest.getUTCDate() - 1);
+    if (!isNaN(startD.getTime()) && earliest < startD) break;
     endParam = earliest.toISOString().slice(0, 10);
-    const startD = new Date(start);
-    if (!isNaN(startD.getTime()) && earliest <= startD) break;
   }
 
-  rssCache.set(cacheKey, { at: Date.now(), items: allItems });
+  if (allItems.length > 0) rssCache.set(cacheKey, { at: Date.now(), items: allItems });
+  rssCache.set(`${cacheKey}__meta`, { at: Date.now(), chunksFetched, lastError });
   return allItems;
 };
 
@@ -137,10 +141,14 @@ export default async function handler(req, res) {
     } else {
       let rssError = null;
       let itemsConsidered = 0;
+      let chunksFetched = 0;
+      let bountySlug = null;
       try {
         const items = await fetchAllItemsFrom(campaignStart);
         itemsConsidered = items.length;
-        const bountySlug = extractSlug(bounty.cq_link);
+        const metaKey = `from_${campaignStart || new Date(Date.now()-365*24*60*60*1000).toISOString().slice(0,10)}__meta`;
+        chunksFetched = rssCache.get(metaKey)?.chunksFetched || 0;
+        bountySlug = extractSlug(bounty.cq_link);
         entry = items.find(item =>
           (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
           (item.link && item.link.includes(bounty.cq_link))
@@ -157,11 +165,17 @@ export default async function handler(req, res) {
         return res.status(200).json({
           bountyId, skipped: true,
           rssItemsConsidered: itemsConsidered,
+          rssChunksFetched: chunksFetched,
+          bountySlug,
+          cqLink: bounty.cq_link,
+          campaignStart: campaignStart || null,
           reason: source
             ? `RSS content too short (${source.length} chars)`
             : rssError
-              ? `RSS fetch failed: ${rssError}. Paste content manually.`
-              : `Bounty not found in RSS feed (${itemsConsidered} items checked from ${campaignStart || "default range"}). Paste content manually.`,
+              ? `RSS fetch failed: ${rssError}. Paste manually.`
+              : itemsConsidered === 0
+                ? `RSS returned 0 items (chunks fetched: ${chunksFetched}). Vercel may be blocked from cryptoquant.com — check fetch in browser. Paste manually for now.`
+                : `Bounty slug "${bountySlug}" not in ${itemsConsidered} RSS items (start=${campaignStart||"default"}, chunks=${chunksFetched}). Paste manually.`,
         });
       }
     }
