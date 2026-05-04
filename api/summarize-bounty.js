@@ -102,6 +102,12 @@ const extractSlug = (url) => {
   }
 };
 
+const extractHexId = (s) => {
+  if (!s) return null;
+  const m = String(s).match(/[a-f0-9]{20,}/i);
+  return m ? m[0].toLowerCase() : null;
+};
+
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -149,10 +155,14 @@ export default async function handler(req, res) {
         const metaKey = `from_${campaignStart || new Date(Date.now()-365*24*60*60*1000).toISOString().slice(0,10)}__meta`;
         chunksFetched = rssCache.get(metaKey)?.chunksFetched || 0;
         bountySlug = extractSlug(bounty.cq_link);
-        entry = items.find(item =>
-          (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
-          (item.link && item.link.includes(bounty.cq_link))
-        );
+        const bountyHex = extractHexId(bountySlug) || extractHexId(bounty.cq_link);
+        entry = items.find(item => {
+          const itemHex = extractHexId(item.guid) || extractHexId(item.link);
+          if (bountyHex && itemHex && bountyHex === itemHex) return true;
+          if (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) return true;
+          if (item.link && bounty.cq_link && item.link.includes(bounty.cq_link)) return true;
+          return false;
+        });
         if (entry) {
           source = (entry.description || entry.title || "").replace(/\s+/g, " ").trim().slice(0, 6000);
           sourceType = "rss";
