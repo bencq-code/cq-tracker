@@ -30,7 +30,7 @@ const extractIdentifiers = (url) => {
 const urlMatch = (html, bounties) => {
   const hits = [];
   for (const b of bounties) {
-    const urls = [b.cq_link, b.cq_twitter_link, b.analytics_link, b.telegram_link, b.author_twitter_link].filter(Boolean);
+    const urls = [b.cq_link, b.cq_twitter_link].filter(Boolean);
     for (const url of urls) {
       const ids = extractIdentifiers(url);
       const found = ids.find(id => html.includes(id));
@@ -185,8 +185,8 @@ export default async function handler(req, res) {
           matches: urlHits.map(h => ({
             bountyId: h.bounty.id, title: h.bounty.title, date: h.bounty.date,
             author: h.bounty.author, asset: h.bounty.asset,
-            matchedUrl: h.matchedUrl, confidence: "high",
-            reason: "Article contains a direct link to the bounty.",
+            matchedUrl: h.matchedUrl, identifier: h.identifier, confidence: "high",
+            reason: `Article contains "${h.identifier}" matching bounty URL.`,
           })),
           bountiesChecked: bounties.length,
         });
