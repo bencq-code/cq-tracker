@@ -10,10 +10,19 @@ const extractIdentifiers = (url) => {
   try {
     const u = new URL(url);
     const ids = [];
-    const tweetMatch = u.pathname.match(/\/status\/(\d+)/);
-    if (tweetMatch && tweetMatch[1].length >= 15) ids.push(tweetMatch[1]);
-    const path = u.pathname.replace(/\/+$/, "");
-    if (path && path.length >= 8 && path !== "/") ids.push(path);
+    const isTwitter = /(^|\.)(twitter|x)\.com$/i.test(u.hostname);
+    if (isTwitter) {
+      const tweetMatch = u.pathname.match(/\/status\/(\d{15,})/);
+      if (tweetMatch) ids.push(tweetMatch[1]);
+      return ids;
+    }
+    const hexMatch = u.pathname.match(/[a-f0-9]{20,}/i);
+    if (hexMatch) ids.push(hexMatch[0]);
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts.length >= 2) {
+      const path = u.pathname.replace(/\/+$/, "");
+      if (path && path.length >= 14 && path !== "/") ids.push(path);
+    }
     return ids;
   } catch { return []; }
 };
@@ -21,7 +30,7 @@ const extractIdentifiers = (url) => {
 const urlMatch = (html, bounties) => {
   const hits = [];
   for (const b of bounties) {
-    const urls = [b.cq_link, b.author_twitter_link, b.cq_twitter_link, b.analytics_link, b.telegram_link].filter(Boolean);
+    const urls = [b.cq_link, b.cq_twitter_link, b.analytics_link, b.telegram_link, b.author_twitter_link].filter(Boolean);
     for (const url of urls) {
       const ids = extractIdentifiers(url);
       const found = ids.find(id => html.includes(id));
