@@ -32,29 +32,59 @@ const parseRss = (xml) => {
   return items;
 };
 
-const fetchRssChunk = async ({ start, limit = 100 } = {}) => {
-  const cacheKey = `${start || "latest"}_${limit}`;
-  const cached = rssCache.get(cacheKey);
-  if (cached && (Date.now() - cached.at) < RSS_TTL_MS) return cached.items;
+const fetchRssChunk = async ({ start, end, limit = 100 } = {}) => {
   const params = new URLSearchParams();
   if (start) params.set("start", start);
+  if (end) params.set("end", end);
   params.set("limit", String(limit));
   const url = `${RSS_BASE}?${params.toString()}`;
   const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/rss+xml,application/xml,text/xml" } });
   if (!r.ok) throw new Error(`RSS fetch failed: HTTP ${r.status}`);
   const xml = await r.text();
-  const items = parseRss(xml);
-  rssCache.set(cacheKey, { at: Date.now(), items });
-  return items;
+  return parseRss(xml);
 };
 
-const fetchRssWindowFor = async (bountyDate) => {
-  if (!bountyDate) return await fetchRssChunk({ limit: 100 });
-  const d = new Date(bountyDate);
-  if (isNaN(d.getTime())) return await fetchRssChunk({ limit: 100 });
-  d.setDate(d.getDate() - 7);
-  const start = d.toISOString().slice(0, 10);
-  return await fetchRssChunk({ start, limit: 100 });
+const fetchAllItemsFrom = async (start) => {
+  if (!start) start = new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0, 10);
+  const cacheKey = `from_${start}`;
+  const cached = rssCache.get(cacheKey);
+  if (cached && (Date.now() - cached.at) < RSS_TTL_MS) return cached.items;
+
+  const allItems = [];
+  const seen = new Set();
+  let endParam = null;
+  const MAX_CHUNKS = 40;
+
+  for (let i = 0; i < MAX_CHUNKS; i++) {
+    let chunk;
+    try {
+      chunk = await fetchRssChunk({ start, end: endParam, limit: 100 });
+    } catch { break; }
+    if (!chunk.length) break;
+
+    let added = 0;
+    let earliest = null;
+    for (const item of chunk) {
+      const key = item.guid || item.link;
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        allItems.push(item);
+        added++;
+      }
+      if (item.pubDate) {
+        const d = new Date(item.pubDate);
+        if (!isNaN(d.getTime()) && (earliest === null || d < earliest)) earliest = d;
+      }
+    }
+    if (added === 0 || chunk.length < 100 || !earliest) break;
+    earliest.setUTCSeconds(earliest.getUTCSeconds() - 1);
+    endParam = earliest.toISOString().slice(0, 10);
+    const startD = new Date(start);
+    if (!isNaN(startD.getTime()) && earliest <= startD) break;
+  }
+
+  rssCache.set(cacheKey, { at: Date.now(), items: allItems });
+  return allItems;
 };
 
 const extractSlug = (url) => {
@@ -76,8 +106,9 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const input = req.method === "POST" ? (req.body || {}) : (req.query || {});
-  const bountyId   = input.bountyId;
-  const rawContent = (input.rawContent || "").toString().trim();
+  const bountyId      = input.bountyId;
+  const rawContent    = (input.rawContent || "").toString().trim();
+  const campaignStart = (input.campaignStart || "").toString().trim();
   if (!bountyId) return res.status(400).json({ error: "Missing bountyId" });
 
   try {
@@ -105,9 +136,10 @@ export default async function handler(req, res) {
       sourceType = "manual";
     } else {
       let rssError = null;
+      let itemsConsidered = 0;
       try {
-        const bountyDate = bounty.date || bounty.created_at;
-        const items = await fetchRssWindowFor(bountyDate);
+        const items = await fetchAllItemsFrom(campaignStart);
+        itemsConsidered = items.length;
         const bountySlug = extractSlug(bounty.cq_link);
         entry = items.find(item =>
           (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
@@ -124,11 +156,12 @@ export default async function handler(req, res) {
       if (!source || source.length < 80) {
         return res.status(200).json({
           bountyId, skipped: true,
+          rssItemsConsidered: itemsConsidered,
           reason: source
             ? `RSS content too short (${source.length} chars)`
             : rssError
-              ? `RSS fetch failed: ${rssError}. Paste content manually in the modal.`
-              : "Bounty not found in RSS feed for that date window. Paste content manually in the modal.",
+              ? `RSS fetch failed: ${rssError}. Paste content manually.`
+              : `Bounty not found in RSS feed (${itemsConsidered} items checked from ${campaignStart || "default range"}). Paste content manually.`,
         });
       }
     }

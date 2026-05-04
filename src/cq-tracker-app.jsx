@@ -1004,6 +1004,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:"No un-summarized bounties with a cqLink."});
       return;
     }
+    const validDates = (campaigns||[]).map(b=>b.date).filter(Boolean).sort();
+    const campaignStart = validDates[0] || "";
     setSumBatch({running:true,total:unsumm.length,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
     const queue = [...unsumm];
     const worker = async () => {
@@ -1013,7 +1015,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         try {
           const r = await fetch("/api/summarize-bounty", {
             method:"POST", headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ bountyId: b.id }),
+            body: JSON.stringify({ bountyId: b.id, ...(campaignStart ? { campaignStart } : {}) }),
           });
           const data = await r.json();
           if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
@@ -1034,9 +1036,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     setSumBatch(s => ({...s, running:false}));
   };
   const generateSummaryOne = async (bountyId, rawContent) => {
+    const validDates = (campaigns||[]).map(b=>b.date).filter(Boolean).sort();
+    const campaignStart = validDates[0] || "";
     const r = await fetch("/api/summarize-bounty", {
       method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ bountyId, force: true, ...(rawContent ? { rawContent } : {}) }),
+      body: JSON.stringify({ bountyId, force: true, ...(rawContent ? { rawContent } : {}), ...(campaignStart ? { campaignStart } : {}) }),
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
