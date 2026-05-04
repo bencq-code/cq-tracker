@@ -1005,7 +1005,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       return;
     }
     const validDates = (campaigns||[]).map(b=>b.date).filter(Boolean).sort();
-    const campaignStart = validDates[0] || "";
+    const earliest = validDates[0] || "";
+    const campaignStart = (()=>{ if(!earliest) return ""; const d=new Date(earliest); if(isNaN(d.getTime())) return earliest; d.setDate(d.getDate()-30); return d.toISOString().slice(0,10); })();
     setSumBatch({running:true,total:unsumm.length,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
     const queue = [...unsumm];
     const worker = async () => {
@@ -1037,7 +1038,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   };
   const generateSummaryOne = async (bountyId, rawContent) => {
     const validDates = (campaigns||[]).map(b=>b.date).filter(Boolean).sort();
-    const campaignStart = validDates[0] || "";
+    const earliest = validDates[0] || "";
+    const campaignStart = (()=>{ if(!earliest) return ""; const d=new Date(earliest); if(isNaN(d.getTime())) return earliest; d.setDate(d.getDate()-30); return d.toISOString().slice(0,10); })();
     const r = await fetch("/api/summarize-bounty", {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({ bountyId, force: true, ...(rawContent ? { rawContent } : {}), ...(campaignStart ? { campaignStart } : {}) }),

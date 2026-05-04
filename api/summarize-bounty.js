@@ -82,9 +82,8 @@ const fetchAllItemsFrom = async (start) => {
       }
     }
     if (added === 0 || chunk.length < 100 || !earliest) break;
-    earliest.setUTCDate(earliest.getUTCDate() - 1);
-    if (!isNaN(startD.getTime()) && earliest < startD) break;
     endParam = earliest.toISOString().slice(0, 10);
+    if (!isNaN(startD.getTime()) && earliest < startD) break;
   }
 
   if (allItems.length > 0) rssCache.set(cacheKey, { at: Date.now(), items: allItems });
