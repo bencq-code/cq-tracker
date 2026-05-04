@@ -1874,6 +1874,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
           const top = data.matches?.[0];
           const autoSave = top && (
             data.method === "url" ||
+            data.method === "title-match" ||
             data.method === "author-singleton" ||
             (data.method === "llm" && top.confidence === "high")
           );

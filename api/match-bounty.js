@@ -184,6 +184,31 @@ export default async function handler(req, res) {
       }
     }
 
+    const normalizeTitle = (s) => (s||"").toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+    const citTitleNorm = normalizeTitle(citationHeadline);
+    if (citTitleNorm.length >= 25) {
+      const titleHits = bounties.filter(b => {
+        const bNorm = normalizeTitle(b.title);
+        if (bNorm.length < 20) return false;
+        if (citTitleNorm === bNorm) return true;
+        if (citTitleNorm.length >= 40 && bNorm.length >= 40 && (citTitleNorm.includes(bNorm) || bNorm.includes(citTitleNorm))) return true;
+        return false;
+      });
+      if (titleHits.length === 1) {
+        const b = titleHits[0];
+        return res.status(200).json({
+          articleLink, campaignId, method: "title-match",
+          matches: [{
+            bountyId: b.id, title: b.title, date: b.date,
+            author: b.author, asset: b.asset, cqLink: b.cq_link,
+            confidence: "high",
+            reason: "Citation headline matches bounty title verbatim.",
+          }],
+          bountiesChecked: bounties.length,
+        });
+      }
+    }
+
     let candidates = bounties;
     let authorFiltered = false;
     let assetFiltered = false;
