@@ -3,10 +3,10 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://tzoysqzcpivdhkspnhdy.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_kjSTm_bgCQR-Y7pvmp_oGg_YQAqsbCv";
-const RSS_URL      = "https://cryptoquant.com/rss/insights/quicktake";
+const RSS_BASE     = "https://cryptoquant.com/rss/insights/quicktake";
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 
-let rssCache = { at: 0, items: null };
+const rssCache = new Map();
 const RSS_TTL_MS = 5 * 60 * 1000;
 
 const parseRss = (xml) => {
@@ -32,14 +32,29 @@ const parseRss = (xml) => {
   return items;
 };
 
-const fetchRss = async () => {
-  if (rssCache.items && (Date.now() - rssCache.at) < RSS_TTL_MS) return rssCache.items;
-  const r = await fetch(RSS_URL, { headers: { "User-Agent": UA, "Accept": "application/rss+xml,application/xml,text/xml" } });
+const fetchRssChunk = async ({ start, limit = 100 } = {}) => {
+  const cacheKey = `${start || "latest"}_${limit}`;
+  const cached = rssCache.get(cacheKey);
+  if (cached && (Date.now() - cached.at) < RSS_TTL_MS) return cached.items;
+  const params = new URLSearchParams();
+  if (start) params.set("start", start);
+  params.set("limit", String(limit));
+  const url = `${RSS_BASE}?${params.toString()}`;
+  const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/rss+xml,application/xml,text/xml" } });
   if (!r.ok) throw new Error(`RSS fetch failed: HTTP ${r.status}`);
   const xml = await r.text();
   const items = parseRss(xml);
-  rssCache = { at: Date.now(), items };
+  rssCache.set(cacheKey, { at: Date.now(), items });
   return items;
+};
+
+const fetchRssWindowFor = async (bountyDate) => {
+  if (!bountyDate) return await fetchRssChunk({ limit: 100 });
+  const d = new Date(bountyDate);
+  if (isNaN(d.getTime())) return await fetchRssChunk({ limit: 100 });
+  d.setDate(d.getDate() - 7);
+  const start = d.toISOString().slice(0, 10);
+  return await fetchRssChunk({ start, limit: 100 });
 };
 
 const extractSlug = (url) => {
@@ -53,49 +68,6 @@ const extractSlug = (url) => {
   }
 };
 
-const extractArticleText = (html) => {
-  const strip = (s) => s
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
-    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, " ")
-    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, " ")
-    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, " ")
-    .replace(/<form[^>]*>[\s\S]*?<\/form>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&[#\w]+;/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  const articleMatches = [...html.matchAll(/<article[^>]*>([\s\S]*?)<\/article>/gi)];
-  if (articleMatches.length) {
-    const t = strip(articleMatches.map(m => m[1]).join(" "));
-    if (t.length >= 300) return t;
-  }
-  const mainMatch = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
-  if (mainMatch) {
-    const t = strip(mainMatch[1]);
-    if (t.length >= 300) return t;
-  }
-  return strip(html);
-};
-
-const fetchViaScrapingBee = async (url) => {
-  const sbKey = process.env.SCRAPINGBEE_API_KEY;
-  if (!sbKey) return { html: "", err: "SCRAPINGBEE_API_KEY not set" };
-  const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(url)}&render_js=true&premium_proxy=true&wait=2000`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 40000);
-  try {
-    const r = await fetch(sbUrl, { signal: controller.signal });
-    if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
-    const html = await r.text();
-    return { html, err: null };
-  } catch (e) {
-    return { html: "", err: e.name === "AbortError" ? "ScrapingBee timeout" : e.message };
-  } finally {
-    clearTimeout(timer);
-  }
-};
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -132,8 +104,10 @@ export default async function handler(req, res) {
       source = rawContent.replace(/\s+/g, " ").trim().slice(0, 12000);
       sourceType = "manual";
     } else {
+      let rssError = null;
       try {
-        const items = await fetchRss();
+        const bountyDate = bounty.date || bounty.created_at;
+        const items = await fetchRssWindowFor(bountyDate);
         const bountySlug = extractSlug(bounty.cq_link);
         entry = items.find(item =>
           (bountySlug && (item.guid === bountySlug || extractSlug(item.link) === bountySlug)) ||
@@ -143,20 +117,19 @@ export default async function handler(req, res) {
           source = (entry.description || entry.title || "").replace(/\s+/g, " ").trim().slice(0, 6000);
           sourceType = "rss";
         }
-      } catch {}
+      } catch (e) {
+        rssError = e.message;
+      }
 
       if (!source || source.length < 80) {
-        const sb = await fetchViaScrapingBee(bounty.cq_link);
-        if (sb.html) {
-          source = extractArticleText(sb.html).slice(0, 12000);
-          sourceType = "scrapingbee";
-        }
-        if (!source || source.length < 80) {
-          return res.status(200).json({
-            bountyId, skipped: true,
-            reason: source ? `Content too short (${source.length} chars)` : (sb.err || "no content available — paste manually in the modal"),
-          });
-        }
+        return res.status(200).json({
+          bountyId, skipped: true,
+          reason: source
+            ? `RSS content too short (${source.length} chars)`
+            : rssError
+              ? `RSS fetch failed: ${rssError}. Paste content manually in the modal.`
+              : "Bounty not found in RSS feed for that date window. Paste content manually in the modal.",
+        });
       }
     }
 
