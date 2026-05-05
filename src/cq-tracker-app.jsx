@@ -868,8 +868,14 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 //  BOUNTY DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary}) => {
+const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary, citations}) => {
   const ac = getAuthorColor(entry.author);
+  const linkedCitations = useMemo(()=>{
+    if (!Array.isArray(citations)) return [];
+    return citations
+      .filter(c => c.citedBountyId === entry.id)
+      .sort((a,b) => (b.date||"").localeCompare(a.date||""));
+  },[citations, entry.id]);
   const [gen, setGen] = useState({loading:false, error:null});
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
@@ -966,6 +972,38 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                 </div>
               )}
               {gen.error && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
+            </div>
+          )}
+          {Array.isArray(citations) && (
+            <div style={{marginBottom:8}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited By</div>
+                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{linkedCitations.length}</span>
+              </div>
+              {linkedCitations.length === 0 ? (
+                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"6px 0"}}>No citations linked yet.</div>
+              ) : (
+                <div style={{display:"flex",flexDirection:"column",gap:0,border:"1px solid var(--border)",borderRadius:8,overflow:"hidden"}}>
+                  {linkedCitations.map((c,i) => {
+                    const tc = getTierColor(c.mediaTier);
+                    return (
+                      <div key={c.id} style={{display:"grid",gridTemplateColumns:"96px 1fr auto",gap:10,alignItems:"center",padding:"9px 12px",borderBottom:i<linkedCitations.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
+                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",whiteSpace:"nowrap"}}>{c.date||"—"}</div>
+                        <div style={{minWidth:0}}>
+                          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                            <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</span>
+                            {c.mediaTier && <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,flexShrink:0}}>Tier {c.mediaTier}</span>}
+                          </div>
+                          <div title={c.headline||c.topic||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
+                        </div>
+                        <div style={{display:"flex",gap:4}}>
+                          {c.articleLink && <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1571,7 +1609,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={citations.find(c=>c.id===viewCitation.id)||viewCitation} canEdit={currentUser.role==="admin"} onEdit={()=>{}} onClose={()=>setViewCitation(null)} bounties={campaigns} onCitedBountyUpdate={onCitedBountyUpdate}/>}
-      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null}/>}
+      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
@@ -1705,6 +1743,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     {matchState.result.assetFiltered && ` (asset:${entry.asset||"—"})`}
                     {matchState.result.articleFetched===false && ` · article fetch failed`}
                     {matchState.result.articleExcerptLength!=null && ` · ${matchState.result.articleExcerptLength} char excerpt`}
+                    {matchState.result.fetchSource==="scrapingbee" && ` · via ScrapingBee`}
                     {matchState.result.fetchError && ` (${matchState.result.fetchError})`}
                     {matchState.result.usage && ` · ${matchState.result.usage.input_tokens}+${matchState.result.usage.output_tokens} tok`}
                     {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
