@@ -1672,6 +1672,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
   const [matchState, setMatchState] = useState({loading:false, result:null, error:null});
   const [savingId, setSavingId] = useState(null);
+  const [bountySearch, setBountySearch] = useState("");
   const currentCitedBounty = entry.citedBountyId && bounties ? bounties.find(b => b.id === entry.citedBountyId) : null;
   const saveMatch = async (bountyId) => {
     if (!onCitedBountyUpdate) return;
@@ -1679,6 +1680,17 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
     try { await onCitedBountyUpdate(entry.id, bountyId); }
     finally { setSavingId(null); }
   };
+  const bountySearchResults = useMemo(()=>{
+    if (!Array.isArray(bounties) || bounties.length === 0) return [];
+    const q = bountySearch.trim().toLowerCase();
+    if (!q) return [];
+    return bounties
+      .filter(b => {
+        const hay = `${b.title||""} ${b.author||""} ${b.asset||""}`.toLowerCase();
+        return hay.includes(q);
+      })
+      .slice(0, 12);
+  },[bounties, bountySearch]);
   const runMatch = async () => {
     setMatchState({loading:true, result:null, error:null});
     try {
@@ -1852,6 +1864,43 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                         </div>
                       ))}
                     </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {isEditable && onCitedBountyUpdate && Array.isArray(bounties) && bounties.length > 0 && (
+            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:10,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Manual Link</div>
+              <input value={bountySearch} onChange={e=>setBountySearch(e.target.value)}
+                placeholder="Search bounties by title, author, or asset…"
+                style={{width:"100%",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",boxSizing:"border-box"}}/>
+              {bountySearch.trim() && (
+                <div style={{marginTop:8,maxHeight:280,overflowY:"auto",border:"1px solid var(--border)",borderRadius:6,background:"var(--surface)"}}>
+                  {bountySearchResults.length === 0 ? (
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"10px 12px"}}>No bounties match "{bountySearch}"</div>
+                  ) : (
+                    bountySearchResults.map((b,i) => {
+                      const isCurrent = entry.citedBountyId === b.id;
+                      return (
+                        <div key={b.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderBottom:i<bountySearchResults.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div title={b.title||""} style={{fontSize:11,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</div>
+                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>
+                              {b.author||"—"} · {fmtDate(b.date)}{b.asset?` · ${b.asset}`:""}
+                            </div>
+                          </div>
+                          {isCurrent ? (
+                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600,whiteSpace:"nowrap"}}>✓ saved</span>
+                          ) : (
+                            <button onClick={()=>saveMatch(b.id)} disabled={savingId!==null}
+                              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500,whiteSpace:"nowrap"}}>
+                              {savingId===b.id?"SAVING…":"LINK"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               )}
