@@ -868,8 +868,13 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 //  BOUNTY DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary, citations}) => {
+const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary, citations, onCitedBountyUpdate}) => {
   const ac = getAuthorColor(entry.author);
+  const normalizeArticleUrl = (url) => {
+    if (!url) return "";
+    try { const u = new URL(url.trim()); return `${u.hostname.replace(/^www\./i,"").toLowerCase()}${u.pathname.replace(/\/+$/,"")}`; }
+    catch { return url.trim().toLowerCase(); }
+  };
   const linkedCitations = useMemo(()=>{
     if (!Array.isArray(citations)) return [];
     return citations
@@ -879,6 +884,31 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
   const [gen, setGen] = useState({loading:false, error:null});
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkResult, setLinkResult] = useState(null);
+  const linkByUrl = async () => {
+    if (!onCitedBountyUpdate || !Array.isArray(citations)) return;
+    const trimmed = linkUrl.trim();
+    if (!trimmed) return;
+    const target = normalizeArticleUrl(trimmed);
+    if (!target) { setLinkResult({ok:false, msg:"Invalid URL"}); return; }
+    const matches = citations.filter(c => c.articleLink && normalizeArticleUrl(c.articleLink) === target);
+    if (!matches.length) { setLinkResult({ok:false, msg:"No citation found with that article URL. Add the citation first via the Media Citations tab."}); return; }
+    const c = matches[0];
+    if (c.citedBountyId === entry.id) { setLinkResult({ok:false, msg:"Already linked to this bounty."}); return; }
+    if (c.citedBountyId && !window.confirm("This citation is already linked to a different bounty. Replace?")) return;
+    setLinkBusy(true);
+    try {
+      await onCitedBountyUpdate(c.id, entry.id, true);
+      setLinkResult({ok:true, msg:`Linked: ${c.media||"citation"}${c.headline?` — "${c.headline.slice(0,60)}${c.headline.length>60?"…":""}"`:""}`});
+      setLinkUrl("");
+    } catch (e) {
+      setLinkResult({ok:false, msg: e.message});
+    } finally {
+      setLinkBusy(false);
+    }
+  };
   const genSummary = async (rawContent) => {
     if (!onGenerateSummary) return;
     setGen({loading:true, error:null});
@@ -980,6 +1010,25 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited By</div>
                 <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{linkedCitations.length}</span>
               </div>
+              {isEditable && onCitedBountyUpdate && (
+                <div style={{marginBottom:10,padding:"10px 12px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+                  <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                    <input value={linkUrl} onChange={e=>{setLinkUrl(e.target.value);setLinkResult(null);}}
+                      placeholder="Paste article URL to link this bounty…"
+                      onKeyDown={e=>{if(e.key==="Enter"&&!linkBusy)linkByUrl();}}
+                      style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 8px",borderRadius:5,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)"}}/>
+                    <button onClick={linkByUrl} disabled={linkBusy||!linkUrl.trim()}
+                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:linkBusy||!linkUrl.trim()?"not-allowed":"pointer",fontWeight:500,opacity:!linkUrl.trim()?0.5:1,whiteSpace:"nowrap"}}>
+                      {linkBusy?"LINKING…":"🔗 LINK"}
+                    </button>
+                  </div>
+                  {linkResult && (
+                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,marginTop:6,color:linkResult.ok?"#0f766e":"#b91c1c"}}>
+                      {linkResult.ok?"✓ ":""}{linkResult.msg}
+                    </div>
+                  )}
+                </div>
+              )}
               {linkedCitations.length === 0 ? (
                 <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"6px 0"}}>No citations linked yet.</div>
               ) : (
@@ -1609,7 +1658,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={citations.find(c=>c.id===viewCitation.id)||viewCitation} canEdit={currentUser.role==="admin"} onEdit={()=>{}} onClose={()=>setViewCitation(null)} bounties={campaigns} onCitedBountyUpdate={onCitedBountyUpdate}/>}
-      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations}/>}
+      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
