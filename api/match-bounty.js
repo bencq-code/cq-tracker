@@ -172,12 +172,12 @@ export default async function handler(req, res) {
         clearTimeout(timer);
       }
     };
-    const tryScrapingBee = async () => {
+    const tryScrapingBee = async (renderJs = false) => {
       const sbKey = process.env.SCRAPINGBEE_API_KEY;
       if (!sbKey) return { html: "", err: "SCRAPINGBEE_API_KEY not set" };
-      const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(articleLink)}&render_js=false&premium_proxy=true`;
+      const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(articleLink)}&render_js=${renderJs?"true":"false"}&premium_proxy=true${renderJs?"&wait=2000":""}`;
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 25000);
+      const timer = setTimeout(() => controller.abort(), renderJs ? 40000 : 25000);
       try {
         const r = await fetch(sbUrl, { signal: controller.signal });
         if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
@@ -193,10 +193,22 @@ export default async function handler(req, res) {
     const directBlocked = direct.err || !direct.html || direct.html.length < 1500 || /<title>\s*Just a moment/i.test(direct.html);
     if (!directBlocked) {
       html = direct.html;
+      const probeText = extractArticleText(direct.html);
+      if (probeText.length < 800) {
+        const sbJs = await tryScrapingBee(true);
+        if (sbJs.html && extractArticleText(sbJs.html).length > probeText.length * 1.5) {
+          html = sbJs.html; fetchSource = "scrapingbee+js";
+        }
+      }
     } else {
-      const sb = await tryScrapingBee();
-      if (sb.html) { html = sb.html; fetchSource = "scrapingbee"; }
-      else fetchError = `direct: ${direct.err||"blocked"} · sb: ${sb.err}`;
+      const sb = await tryScrapingBee(false);
+      if (sb.html && extractArticleText(sb.html).length >= 800) {
+        html = sb.html; fetchSource = "scrapingbee";
+      } else {
+        const sbJs = await tryScrapingBee(true);
+        if (sbJs.html) { html = sbJs.html; fetchSource = "scrapingbee+js"; }
+        else fetchError = `direct: ${direct.err||"blocked"} · sb: ${sb.err||"thin"} · sb+js: ${sbJs.err||"failed"}`;
+      }
     }
 
     if (html) {
@@ -301,7 +313,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "ANTHROPIC_API_KEY not set in Vercel env vars" });
     }
 
-    const articleExcerpt = html ? extractArticleText(html).slice(0, 20000) : "";
+    const articleExcerpt = html ? extractArticleText(html).slice(0, 50000) : "";
 
     const candidatesList = candidates.map((b, i) => {
       const titleAssets = [...extractTitleAssets(b.title)];

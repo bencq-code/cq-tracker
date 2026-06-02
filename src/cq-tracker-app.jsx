@@ -1805,6 +1805,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     {matchState.result.articleFetched===false && ` · article fetch failed`}
                     {matchState.result.articleExcerptLength!=null && ` · ${matchState.result.articleExcerptLength} char excerpt`}
                     {matchState.result.fetchSource==="scrapingbee" && ` · via ScrapingBee`}
+                    {matchState.result.fetchSource==="scrapingbee+js" && ` · via ScrapingBee+JS`}
                     {matchState.result.fetchError && ` (${matchState.result.fetchError})`}
                     {matchState.result.usage && ` · ${matchState.result.usage.input_tokens}+${matchState.result.usage.output_tokens} tok`}
                     {matchState.result.hallucinatedIds>0 && ` · ${matchState.result.hallucinatedIds} invalid IDs dropped`}
@@ -3149,10 +3150,14 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 
   useEffect(()=>{
     if(manuallyNavigated) return;
-    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort();
+    const allDates = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)]
+      .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d))
+      .sort();
     if(!allDates.length) return;
     const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
+    if(isNaN(lastDate.getTime())) return;
     const lastMonday = getMondayOf(lastDate);
+    if(isNaN(lastMonday.getTime())) return;
     setWeekStart(lastMonday > todayMonday ? todayMonday : lastMonday);
   },[campaigns.length, citations.length]);
 
@@ -3196,11 +3201,12 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
   const weekBounties  = campaigns.filter(c=>c.date&&(!effectiveFrom||c.date>=effectiveFrom)&&(!effectiveTo||c.date<=effectiveTo));
   const weekCitations = citations.filter(c=>c.date&&(!effectiveFrom||c.date>=effectiveFrom)&&(!effectiveTo||c.date<=effectiveTo));
 
-  // Previous week for WoW delta
-  const prevStart = new Date(weekStart); prevStart.setDate(prevStart.getDate()-7);
-  const prevEnd   = new Date(weekStart); prevEnd.setDate(prevEnd.getDate()-1);
-  const prevStartStr = prevStart.toISOString().slice(0,10);
-  const prevEndStr   = prevEnd.toISOString().slice(0,10);
+  // Previous week for WoW delta (guard against Invalid Date)
+  const safeIso = (d) => { try { return d && !isNaN(d.getTime()) ? d.toISOString().slice(0,10) : ""; } catch { return ""; } };
+  const prevStart = new Date(weekStart); if(!isNaN(prevStart.getTime())) prevStart.setDate(prevStart.getDate()-7);
+  const prevEnd   = new Date(weekStart); if(!isNaN(prevEnd.getTime()))   prevEnd.setDate(prevEnd.getDate()-1);
+  const prevStartStr = safeIso(prevStart);
+  const prevEndStr   = safeIso(prevEnd);
   const prevBounties  = campaigns.filter(c=>c.date&&c.date>=prevStartStr&&c.date<=prevEndStr);
   const prevCitations = citations.filter(c=>c.date&&c.date>=prevStartStr&&c.date<=prevEndStr);
 
