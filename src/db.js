@@ -75,9 +75,25 @@ const safeDate = (d) => {
   if(!d) return "";
   const s = String(d).trim();
   if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // YYYY/MM/DD or YYYY.MM.DD
+  const m = s.match(/^(\d{4})[.\/](\d{1,2})[.\/](\d{1,2})$/);
+  if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  // MM/DD/YYYY or MM-DD-YYYY
+  const m2 = s.match(/^(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})$/);
+  if(m2) return `${m2[3]}-${m2[1].padStart(2,"0")}-${m2[2].padStart(2,"0")}`;
+  // "Month DD, YYYY"
+  const m3 = s.match(/^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})$/);
+  if(m3) {
+    const months = {jan:"01",feb:"02",mar:"03",apr:"04",may:"05",jun:"06",jul:"07",aug:"08",sep:"09",oct:"10",nov:"11",dec:"12",january:"01",february:"02",march:"03",april:"04",june:"06",july:"07",august:"08",september:"09",october:"10",november:"11",december:"12"};
+    const mm = months[m3[1].toLowerCase()];
+    if(mm) return `${m3[3]}-${mm}-${m3[2].padStart(2,"0")}`;
+  }
   const t = new Date(s);
   if(isNaN(t.getTime())) return "";
-  return s;
+  const y = t.getFullYear();
+  const mo = String(t.getMonth()+1).padStart(2,"0");
+  const da = String(t.getDate()).padStart(2,"0");
+  return `${y}-${mo}-${da}`;
 };
 
 const fromCampaign = (r) => ({
