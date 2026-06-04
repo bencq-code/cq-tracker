@@ -2817,7 +2817,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
           {/* Mode selector */}
           <div style={{display:"flex",gap:4}}>
-            {[["weekly","Wk"],["custom","Custom"],["3","3M"],["6","6M"],["12","1Y"],["all","All"]].map(([val,label])=>(
+            {[["weekly","Week"],["custom","Custom"],["all","All"]].map(([val,label])=>(
               <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"rgba(26,58,92,0.07)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
                 {label}
