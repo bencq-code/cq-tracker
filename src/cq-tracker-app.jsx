@@ -2815,25 +2815,27 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Performance</h2>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          {/* Week navigator — arrows drive weekly mode */}
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goBack();}}}
+              title="Previous week"
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"rgba(26,58,92,0.07)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
+            {mode==="weekly" && !isLatestWeek && (
+              <button onClick={goLatest} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
+            )}
+            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goForward();}}} disabled={mode==="weekly"&&isLatestWeek}
+              title="Next week"
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"rgba(26,58,92,0.07)":"var(--surface)",cursor:(mode==="weekly"&&isLatestWeek)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:(mode==="weekly"&&isLatestWeek)?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
+          </div>
           {/* Mode selector */}
           <div style={{display:"flex",gap:4}}>
-            {[["weekly","Week"],["custom","Custom"],["all","All"]].map(([val,label])=>(
+            {[["custom","Custom"],["all","All"]].map(([val,label])=>(
               <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}
                 style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"rgba(26,58,92,0.07)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
                 {label}
               </button>
             ))}
           </div>
-          {/* Week navigator */}
-          {mode==="weekly" && (
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <button onClick={goBack} style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
-              {!isLatestWeek && (
-                <button onClick={goLatest} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
-              )}
-              <button onClick={goForward} disabled={isLatestWeek} style={{width:32,height:32,borderRadius:8,border:"1px solid var(--border)",background:"var(--surface)",cursor:isLatestWeek?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:isLatestWeek?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
-            </div>
-          )}
           {/* Custom date inputs */}
           {mode==="custom" && (
             <div style={{display:"flex",alignItems:"center",gap:6}}>
