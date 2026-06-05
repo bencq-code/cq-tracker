@@ -201,6 +201,7 @@ const css = `
   --row-tint-strong:rgba(66,100,143,0.055);
   --row-tint-weak:rgba(66,100,143,0.015);
   --accent-glow:rgba(66,100,143,0.14);
+  --grid:rgba(16,24,40,0.06);
   --shadow-sm:0 1px 3px rgba(16,24,40,0.05);
   --shadow-md:0 2px 8px rgba(16,24,40,0.07);
   --shadow-lg:0 8px 24px rgba(16,24,40,0.10);
@@ -242,6 +243,7 @@ const css = `
   --row-tint-strong:rgba(96,136,181,0.09);
   --row-tint-weak:rgba(96,136,181,0.03);
   --accent-glow:rgba(96,136,181,0.20);
+  --grid:rgba(255,255,255,0.06);
   --shadow-sm:0 1px 3px rgba(0,0,0,0.4);
   --shadow-md:0 4px 14px rgba(0,0,0,0.45);
   --shadow-lg:0 12px 32px rgba(0,0,0,0.55);
@@ -2599,6 +2601,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
   // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
   const [mode, setMode] = useState("all");
   const [granularity, setGranularity] = useState("daily");
+  const [chartMode, setChartMode] = useState("cumulative"); // "cumulative" | "activity"
   const [customFrom, setCustomFrom] = useState("");
   const [customTo,   setCustomTo]   = useState("");
   const [drill, setDrill] = useState(null);
@@ -2858,19 +2861,19 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
         </div>
       </div>
 
-      {/* Stat cards — 4 primary + impressions if available */}
-      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:`repeat(${totalImpressions>0?5:4},1fr)`,gap:14,marginBottom:28}}>
+      {/* Stat strip — one divided row */}
+      <div className="cq-statstrip" style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:28,overflow:"hidden",animation:"fadeUp .5s ease both"}}>
         {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
           <div key={i}
             onClick={s.drillKey?()=>{setDrill({type:s.drillKey});setDrillExpanded(false);}:undefined}
-            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.drillKey?"pointer":"default",transition:"all .15s"}}
-            onMouseEnter={e=>{if(s.drillKey){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
-            onMouseLeave={e=>{if(s.drillKey){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
-            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:8}}>
+            style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none",cursor:s.drillKey?"pointer":"default",transition:"background .15s"}}
+            onMouseEnter={e=>{if(s.drillKey)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 4%,transparent)";}}
+            onMouseLeave={e=>{if(s.drillKey)e.currentTarget.style.background="transparent";}}>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
               {s.label}{s.drillKey&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
             </div>
-            <div className="tabular" style={{fontSize:30,fontWeight:700,color:"var(--text)",lineHeight:1,marginBottom:6,letterSpacing:"-0.03em"}}>{s.value}</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
+            <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:27,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:10,letterSpacing:"-0.03em"}}>{s.value}</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -2885,31 +2888,37 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           {/* Combined chart */}
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{granularity === "daily" ? "Daily" : "Weekly"} Activity & Running Total</div>
-                {/* Daily / Weekly toggle */}
-                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
-                  {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
-                    <button key={val} onClick={()=>setGranularity(val)}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
-                      {lbl}
-                    </button>
+              <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{chartMode==="cumulative" ? "Running Total" : (granularity==="daily"?"Daily":"Weekly")+" Activity"}</div>
+                <div style={{display:"flex",gap:12}}>
+                  {(chartMode==="cumulative"
+                    ? [{color:"var(--accent)",label:"Bounties · running total",line:true},{color:"var(--dim)",label:"Citations · running total",line:true}]
+                    : [{color:"var(--accent)",label:`Bounties / ${granularity==="daily"?"day":"wk"}`},{color:"var(--dim)",label:`Citations / ${granularity==="daily"?"day":"wk"}`}]
+                  ).map((l,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
+                      {l.line ? <div style={{width:16,height:2,background:l.color,borderRadius:1}}/> : <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>}
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                    </div>
                   ))}
                 </div>
               </div>
-              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                {[{color:"rgba(26,58,92,0.3)",label:`Bounties (${granularity==="daily"?"daily":"weekly"})`},{color:"rgba(74,127,168,0.5)",label:`Citations (${granularity==="daily"?"daily":"weekly"})`},{color:"#1a3a5c",label:"Bounties (total)",line:true},{color:"#4a7fa8",label:"Citations (total)",line:true}].map((l,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
-                    {l.line
-                      ? <div style={{width:16,height:2,background:l.color,borderRadius:1}}/>
-                      : <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>}
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
-                  </div>
-                ))}
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+                  {[["cumulative","Cumulative"],["activity","Activity"]].map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setChartMode(val)}
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:chartMode===val?"var(--surface)":"transparent",color:chartMode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:chartMode===val?700:400,boxShadow:chartMode===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>{lbl}</button>
+                  ))}
+                </div>
+                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+                  {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setGranularity(val)}
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>{lbl}</button>
+                  ))}
+                </div>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={280}>
-              <ComposedChart data={chartData} margin={{top:4,right:48,left:0,bottom:0}}>
+            <ResponsiveContainer width="100%" height={260}>
+              <ComposedChart data={chartData} margin={{top:8,right:12,left:0,bottom:0}}>
                 <defs>
                   <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
@@ -2920,10 +2929,9 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     <stop offset="95%" stopColor="#4a7fa8" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
-                <YAxis yAxisId="monthly" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
-                <YAxis yAxisId="cumulative" orientation="right" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={36} allowDecimals={false}/>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
+                <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={30} allowDecimals={false}/>
                 <Tooltip content={({active,payload,label})=>{
                   if(!active||!payload?.length) return null;
                   const names={bounties:`Bounties / ${granularity==="daily"?"day":"wk"}`,citations:`Citations / ${granularity==="daily"?"day":"wk"}`,cumBounties:"Total Bounties",cumCitations:"Total Citations"};
@@ -2940,10 +2948,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     </div>
                   );
                 }}/>
-                <Bar yAxisId="monthly" dataKey="bounties"  fill="var(--accent)" fillOpacity={0.35} radius={[3,3,0,0]}/>
-                <Bar yAxisId="monthly" dataKey="citations" fill="#4a7fa8" fillOpacity={0.35} radius={[3,3,0,0]}/>
-                <Line yAxisId="cumulative" type="monotone" dataKey="cumBounties"  stroke="var(--accent)" strokeWidth={2} dot={false} activeDot={{r:4}} strokeDasharray="0"/>
-                <Line yAxisId="cumulative" type="monotone" dataKey="cumCitations" stroke="#4a7fa8" strokeWidth={2} dot={false} activeDot={{r:4}} strokeDasharray="0"/>
+                {chartMode==="cumulative" ? [
+                  <Area key="ab" type="monotone" dataKey="cumBounties" stroke="none" fill="url(#gB)"/>,
+                  <Line key="cc" type="monotone" dataKey="cumCitations" stroke="var(--dim)" strokeWidth={1.8} dot={false} activeDot={{r:4}}/>,
+                  <Line key="cb" type="monotone" dataKey="cumBounties" stroke="var(--accent)" strokeWidth={2.2} dot={false} activeDot={{r:4}}/>,
+                ] : [
+                  <Bar key="bc" dataKey="citations" fill="var(--dim)" fillOpacity={0.4} radius={[2,2,0,0]}/>,
+                  <Bar key="bb" dataKey="bounties" fill="var(--accent)" radius={[2,2,0,0]}/>,
+                ]}
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -3117,8 +3129,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                 <>
                   {/* Row 1: Media Tier Breakdown — full width with rich per-tier cards */}
                   {tierEntries.length>0 && (
-                    <div style={{marginTop:16}}>
-                      <Panel title="Media Tier Breakdown" badge={`${totalTierCits} citations`}>
+                    <div>
+                      <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:12,margin:"22px 2px 12px"}}>
+                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600}}>Media Tier Breakdown</div>
+                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600}}>{totalTierCits.toLocaleString()} citations</div>
+                      </div>
+                      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"18px 20px",boxShadow:"var(--shadow-sm)",overflow:"hidden"}}>
                         {/* one stacked share bar — proportion across tiers at a glance */}
                         <div style={{display:"flex",height:10,gap:3,marginBottom:18}}>
                           {tierEntries.map(([tier,data])=>{const tc=getTierColor(tier); return <div key={tier} title={`Tier ${tier} · ${Math.round(data.count/totalTierCits*100)}%`} style={{flex:data.count,minWidth:5,background:tc.color,borderRadius:3}}/>;})}
@@ -3185,7 +3201,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                             );
                           })}
                         </div>
-                      </Panel>
+                      </div>
                     </div>
                   )}
 
