@@ -3029,6 +3029,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
             const Leaderboards = () => {
               const [modal,setModal] = useState(null); // "topics"|"authors"|"outlets"
               const [tierModal,setTierModal] = useState(null); // tier key or null
+              const [tierOpen,setTierOpen] = useState(null); // expanded tier row
 
               const Panel = ({title,badge,onViewAll,children,fill}) => (
                 <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"20px 24px",boxShadow:"var(--shadow-sm)",minWidth:0,overflow:"hidden",height:fill?"100%":undefined,display:fill?"flex":undefined,flexDirection:fill?"column":undefined}}>
@@ -3057,6 +3058,19 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                     <div style={{width:`${pct}%`,height:"100%",background:color,opacity:0.75,borderRadius:99,transition:"width .5s ease"}}/>
+                  </div>
+                </div>
+              );
+
+              const MiniBar = ({label,value,pct,color,href}) => (
+                <div style={{marginBottom:8}}>
+                  <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8,marginBottom:4}}>
+                    {href ? <a href={href} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title={label} style={{flex:1,minWidth:0,fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</a>
+                      : <span title={label} style={{flex:1,minWidth:0,fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>}
+                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",fontWeight:600,flexShrink:0}}>{value}</span>
+                  </div>
+                  <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                    <div style={{width:`${pct}%`,height:"100%",background:color,opacity:.6,borderRadius:99}}/>
                   </div>
                 </div>
               );
@@ -3105,76 +3119,74 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   {tierEntries.length>0 && (
                     <div style={{marginTop:16}}>
                       <Panel title="Media Tier Breakdown" badge={`${totalTierCits} citations`}>
-                        <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(tierEntries.length,4)},1fr)`,gap:14}}>
-                            {tierEntries.map(([tier,data])=>{
-                              const tc=getTierColor(tier);
-                              const pct=(data.count/totalTierCits)*100;
-                              const topOutlets=Object.values(data.outlets).sort((a,b)=>b.count-a.count).slice(0,3);
-                              const sortedDates=[...data.dates].sort();
-                              const lastDate=sortedDates[sortedDates.length-1]||null;
-                              return (
-                                <div
-                                  key={tier}
-                                  onClick={()=>setTierModal(tier)}
-                                  onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 6px 18px ${tc.border}`;}}
-                                  onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";}}
-                                  title={`View all ${data.count} citation${data.count!==1?"s":""} in Tier ${tier}`}
-                                  style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:8,padding:"16px 18px",overflow:"hidden",cursor:"pointer",transition:"transform .15s ease, box-shadow .15s ease"}}
-                                >
-                                  {/* Top accent stripe */}
-                                  <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:tc.color}}/>
-
-                                  {/* Tier badge + count */}
-                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,marginTop:4}}>
-                                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,letterSpacing:"0.04em"}}>TIER {tier}</span>
-                                    <span className="tabular" style={{fontSize:22,fontWeight:700,color:tc.color,letterSpacing:"-0.02em",lineHeight:1}}>{data.count}</span>
+                        {/* one stacked share bar — proportion across tiers at a glance */}
+                        <div style={{display:"flex",height:10,gap:3,marginBottom:18}}>
+                          {tierEntries.map(([tier,data])=>{const tc=getTierColor(tier); return <div key={tier} title={`Tier ${tier} · ${Math.round(data.count/totalTierCits*100)}%`} style={{flex:data.count,minWidth:5,background:tc.color,borderRadius:3}}/>;})}
+                        </div>
+                        {/* expandable rows */}
+                        <div>
+                          {tierEntries.map(([tier,data],i)=>{
+                            const tc=getTierColor(tier);
+                            const pct=Math.round(data.count/totalTierCits*100);
+                            const nOut=Object.keys(data.outlets).length;
+                            const top=Object.values(data.outlets).sort((a,b)=>b.count-a.count)[0];
+                            const isOpen=tierOpen===tier;
+                            const byAuthor={};
+                            data.items.forEach(c=>{const a=c.author&&c.author.trim();if(a)byAuthor[a]=(byAuthor[a]||0)+1;});
+                            const topAuthors=Object.entries(byAuthor).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                            const topOutlets=Object.values(data.outlets).sort((a,b)=>b.count-a.count).slice(0,5);
+                            const maxA=topAuthors[0]?.[1]||1, maxO=topOutlets[0]?.count||1;
+                            const recent=[...data.items].sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,5);
+                            return (
+                              <div key={tier} style={{borderTop:i===0?"none":"1px solid var(--border)"}}>
+                                <div onClick={()=>setTierOpen(isOpen?null:tier)} role="button" aria-expanded={isOpen} title={`${data.count} citation${data.count!==1?"s":""} in Tier ${tier}`}
+                                  style={{display:"grid",gridTemplateColumns:"104px minmax(0,1fr) auto 22px",alignItems:"center",gap:16,padding:"13px 8px",cursor:"pointer",borderRadius:6,transition:"background .13s",background:isOpen?"color-mix(in srgb,var(--accent) 6%,transparent)":"transparent"}}
+                                  onMouseEnter={e=>{if(!isOpen)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)";}}
+                                  onMouseLeave={e=>{if(!isOpen)e.currentTarget.style.background="transparent";}}>
+                                  <span style={{justifySelf:"start",fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,letterSpacing:"0.04em"}}>TIER {tier}</span>
+                                  <div style={{minWidth:0,fontSize:12,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",color:"var(--muted)",fontWeight:600}}>{data.authors.size}</span> author{data.authors.size!==1?"s":""} · <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",color:"var(--muted)",fontWeight:600}}>{nOut}</span> outlet{nOut!==1?"s":""}{top&&<span> · top <span style={{color:"var(--text)"}}>{top.label}</span></span>}
                                   </div>
-
-                                  {/* Pct bar */}
-                                  <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginBottom:10}}>
-                                    <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s"}}/>
+                                  <div style={{display:"flex",alignItems:"baseline",gap:10,justifyContent:"flex-end"}}>
+                                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",width:34,textAlign:"right"}}>{pct}%</span>
+                                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:21,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",minWidth:48,textAlign:"right"}}>{data.count.toLocaleString()}</span>
                                   </div>
-
-                                  {/* Mini stats row */}
-                                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>
-                                    <span><span style={{color:tc.color,fontWeight:600}}>{Math.round(pct)}%</span> share</span>
-                                    <span style={{color:"var(--border2)"}}>·</span>
-                                    <span><span style={{color:"var(--text)",fontWeight:600}}>{data.authors.size}</span> author{data.authors.size!==1?"s":""}</span>
-                                    <span style={{color:"var(--border2)"}}>·</span>
-                                    <span><span style={{color:"var(--text)",fontWeight:600}}>{Object.keys(data.outlets).length}</span> outlet{Object.keys(data.outlets).length!==1?"s":""}</span>
-                                  </div>
-
-                                  {/* Top outlets */}
-                                  <div style={{borderTop:"1px solid var(--border)",paddingTop:10}}>
-                                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:7,fontWeight:600}}>Top Outlets</div>
-                                    {topOutlets.length ? topOutlets.map((o,i)=>{
-                                      const oPct=(o.count/data.count)*100;
-                                      return (
-                                        <div key={o.label} style={{marginBottom:i<topOutlets.length-1?6:0}}>
-                                          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:3}}>
-                                            <span title={o.label} style={{fontSize:11,color:"var(--text)",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>{o.label}</span>
-                                            <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:tc.color,fontWeight:600,flexShrink:0}}>{o.count}</span>
-                                          </div>
-                                          <div style={{height:2,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                                            <div style={{width:`${oPct}%`,height:"100%",background:tc.color,opacity:0.6,borderRadius:99}}/>
-                                          </div>
-                                        </div>
-                                      );
-                                    }) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</div>}
-                                  </div>
-
-                                  {/* Footer: last activity */}
-                                  {lastDate && (
-                                    <div style={{marginTop:10,paddingTop:8,borderTop:"1px solid var(--border)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.06em"}}>
-                                      Last seen {lastDate}
-                                    </div>
-                                  )}
+                                  <span style={{display:"flex",justifyContent:"center",color:"var(--dim)",fontSize:11,transform:isOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        </Panel>
-                      </div>
+                                {isOpen && (
+                                  <div style={{padding:"6px 8px 18px",animation:"fadeUp .25s ease both"}}>
+                                    <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:28,marginBottom:18}}>
+                                      <div style={{minWidth:0}}>
+                                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Top outlets in tier</div>
+                                        {topOutlets.map(o=><MiniBar key={o.label} label={o.label} value={o.count} pct={(o.count/maxO)*100} color={tc.color}/>)}
+                                      </div>
+                                      <div style={{minWidth:0}}>
+                                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Top authors in tier</div>
+                                        {topAuthors.map(([name,n])=><MiniBar key={name} label={name} value={n} pct={(n/maxA)*100} color={tc.color}/>)}
+                                      </div>
+                                    </div>
+                                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:10}}>Recent citations</div>
+                                    <div>
+                                      {recent.map((c,idx)=>(
+                                        <div key={idx} style={{display:"flex",alignItems:"center",gap:12,padding:"8px 0",borderTop:idx===0?"none":"1px solid var(--border)"}}>
+                                          <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",width:64,flexShrink:0}}>{c.date||"—"}</span>
+                                          <div style={{flex:1,minWidth:0}}>
+                                            <div title={c.headline||c.topic} style={{fontSize:12.5,color:"var(--text)",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
+                                            <div style={{fontSize:11,color:"var(--dim)"}}>{c.media}{c.author?` · ${c.author}`:""}</div>
+                                          </div>
+                                          {c.articleLink&&<a href={c.articleLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {data.items.length>5 && <div style={{marginTop:10,fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>+{data.items.length-5} more in Tier {tier}</div>}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </Panel>
+                    </div>
                   )}
 
                   {/* Rankings — Topics (left, vertical) · Authors + Outlets stacked (right) */}
