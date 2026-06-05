@@ -155,7 +155,7 @@ const normKey   = s => (s||"").trim().toLowerCase();
 const PageHeader = ({label, title, children}) => (
   <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24,gap:16,flexWrap:"wrap"}}>
     <div>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1.2}}>{title}</h2>
     </div>
     {children&&<div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>{children}</div>}
@@ -168,7 +168,7 @@ const hashPass = s => btoa(encodeURIComponent(s));
 //  CSS
 // ─────────────────────────────────────────────────────────
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @keyframes spin    { to{transform:rotate(360deg)} }
 @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 @keyframes rowIn   { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
@@ -178,58 +178,58 @@ const css = `
 @keyframes shimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
-  --bg:#f8f9fb;
+  --bg:#f4f6f8;
   --surface:#ffffff;
-  --surface2:#f4f6fa;
-  --surface3:#edf0f6;
-  --border:#e4e8ef;
-  --border2:#c8d0de;
-  --text:#0f1923;
-  --muted:#384252;
-  --dim:#6b7685;
-  --accent:#1a3a5c;
-  --accent-light:#edf2f8;
-  --purple:#5b21b6;
-  --green:#166534;
-  --red:#b91c1c;
-  --yellow:#92400e;
-  --orange:#c2410c;
-  --positive:#166534;
-  --negative:#b91c1c;
-  --tag:#1a3a5c;
-  --row-tint:rgba(26,58,92,0.03);
-  --row-tint-strong:rgba(26,58,92,0.05);
-  --row-tint-weak:rgba(26,58,92,0.015);
-  --accent-glow:rgba(26,58,92,0.1);
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md:0 2px 8px rgba(0,0,0,0.08);
-  --shadow-lg:0 8px 24px rgba(0,0,0,0.1);
-  --input-shadow:inset 0 1px 3px rgba(0,0,0,0.04);
-  /* Tier colors — cohesive cool palette */
-  --tier-1:#166534; --tier-1-bg:rgba(22,101,52,0.08);  --tier-1-border:rgba(22,101,52,0.22);
-  --tier-2:#1a3a5c; --tier-2-bg:rgba(26,58,92,0.08);   --tier-2-border:rgba(26,58,92,0.22);
-  --tier-3:#6b7685; --tier-3-bg:rgba(107,118,133,0.08);--tier-3-border:rgba(107,118,133,0.22);
-  --tier-4:#7a5a1e; --tier-4-bg:rgba(122,90,30,0.08);  --tier-4-border:rgba(122,90,30,0.22);
-  --tier-default:#6b849e; --tier-default-bg:rgba(107,132,158,0.06); --tier-default-border:rgba(107,132,158,0.18);
-  /* Categorical chart colors — stay cool/cohesive */
-  --chart-1:#1a3a5c; --chart-2:#4a7fa8; --chart-3:#0f4c4c; --chart-4:#4c1d50; --chart-5:#563e14; --chart-6:#6b2d14;
+  --surface2:#f0f2f6;
+  --surface3:#e8ecf1;
+  --border:#e4e7ec;
+  --border2:#d3d9e1;
+  --text:#0f151c;
+  --muted:#4d5a6b;
+  --dim:#8794a4;
+  --accent:#2f5fae;
+  --accent-light:#eef2f9;
+  --purple:#4f46e5;
+  --green:#15803d;
+  --red:#b42318;
+  --yellow:#a16207;
+  --orange:#b45309;
+  --positive:#15803d;
+  --negative:#b42318;
+  --tag:#2f5fae;
+  --row-tint:rgba(47,95,174,0.03);
+  --row-tint-strong:rgba(47,95,174,0.055);
+  --row-tint-weak:rgba(47,95,174,0.015);
+  --accent-glow:rgba(47,95,174,0.14);
+  --shadow-sm:0 1px 3px rgba(16,24,40,0.05);
+  --shadow-md:0 2px 8px rgba(16,24,40,0.07);
+  --shadow-lg:0 8px 24px rgba(16,24,40,0.10);
+  --input-shadow:inset 0 1px 3px rgba(16,24,40,0.04);
+  /* Tier colors — single-hue ramp off accent (Tier 1 strong → Tier 4 muted) */
+  --tier-1:#2f5fae; --tier-1-bg:rgba(47,95,174,0.09);   --tier-1-border:rgba(47,95,174,0.28);
+  --tier-2:#577299; --tier-2-bg:rgba(87,114,153,0.09);  --tier-2-border:rgba(87,114,153,0.26);
+  --tier-3:#6b7685; --tier-3-bg:rgba(107,118,133,0.08); --tier-3-border:rgba(107,118,133,0.22);
+  --tier-4:#8b94a1; --tier-4-bg:rgba(139,148,161,0.07); --tier-4-border:rgba(139,148,161,0.20);
+  --tier-default:#8b94a1; --tier-default-bg:rgba(139,148,161,0.06); --tier-default-border:rgba(139,148,161,0.18);
+  /* Categorical chart colors — tints of accent + one warm anchor */
+  --chart-1:#2f5fae; --chart-2:#5b8bd4; --chart-3:#3f7d78; --chart-4:#6b7685; --chart-5:#8b94a1; --chart-6:#b08440;
   /* Modal size tokens */
   --modal-sm:380px; --modal-md:480px; --modal-lg:680px;
   /* Radius scale */
-  --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px;
+  --r-sm:4px; --r-md:6px; --r-lg:8px; --r-xl:10px;
 }
 [data-theme="dark"] {
-  --bg:#0b1420;
-  --surface:#111d2d;
-  --surface2:#162637;
-  --surface3:#1c2f44;
-  --border:#1f3347;
-  --border2:#2b4662;
-  --text:#e8eef6;
-  --muted:#a8b4c4;
-  --dim:#6b7a8e;
-  --accent:#6ea8e0;
-  --accent-light:#18273b;
+  --bg:#0a0e14;
+  --surface:#10151d;
+  --surface2:#161c26;
+  --surface3:#1d2531;
+  --border:#1d2630;
+  --border2:#2b3744;
+  --text:#e7edf5;
+  --muted:#93a1b3;
+  --dim:#5a6776;
+  --accent:#5b8bf0;
+  --accent-light:#162133;
   --positive:#4ade80;
   --negative:#f87171;
   --green:#4ade80;
@@ -237,24 +237,26 @@ const css = `
   --yellow:#fbbf24;
   --orange:#fb923c;
   --purple:#a78bfa;
-  --tag:#6ea8e0;
-  --row-tint:rgba(110,168,224,0.06);
-  --row-tint-strong:rgba(110,168,224,0.1);
-  --row-tint-weak:rgba(110,168,224,0.03);
-  --accent-glow:rgba(110,168,224,0.18);
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md:0 2px 8px rgba(0,0,0,0.4);
-  --shadow-lg:0 8px 24px rgba(0,0,0,0.5);
-  --input-shadow:inset 0 1px 3px rgba(0,0,0,0.2);
-  /* Tier colors retuned for dark mode */
-  --tier-1:#4ade80; --tier-1-bg:rgba(74,222,128,0.10);  --tier-1-border:rgba(74,222,128,0.28);
-  --tier-2:#6ea8e0; --tier-2-bg:rgba(110,168,224,0.10); --tier-2-border:rgba(110,168,224,0.28);
-  --tier-3:#a8b4c4; --tier-3-bg:rgba(168,180,196,0.08); --tier-3-border:rgba(168,180,196,0.22);
-  --tier-4:#fbbf24; --tier-4-bg:rgba(251,191,36,0.10);  --tier-4-border:rgba(251,191,36,0.28);
-  --tier-default:#6b7a8e; --tier-default-bg:rgba(107,122,142,0.08); --tier-default-border:rgba(107,122,142,0.22);
+  --tag:#5b8bf0;
+  --row-tint:rgba(91,139,240,0.05);
+  --row-tint-strong:rgba(91,139,240,0.09);
+  --row-tint-weak:rgba(91,139,240,0.03);
+  --accent-glow:rgba(91,139,240,0.20);
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:0 4px 14px rgba(0,0,0,0.45);
+  --shadow-lg:0 12px 32px rgba(0,0,0,0.55);
+  --input-shadow:inset 0 1px 3px rgba(0,0,0,0.3);
+  /* Tier colors — single-hue ramp (dark) */
+  --tier-1:#5b8bf0; --tier-1-bg:rgba(91,139,240,0.12);  --tier-1-border:rgba(91,139,240,0.30);
+  --tier-2:#7488ad; --tier-2-bg:rgba(116,136,173,0.11); --tier-2-border:rgba(116,136,173,0.26);
+  --tier-3:#8a99ab; --tier-3-bg:rgba(138,153,171,0.08); --tier-3-border:rgba(138,153,171,0.22);
+  --tier-4:#5e6b7a; --tier-4-bg:rgba(94,107,122,0.10);  --tier-4-border:rgba(94,107,122,0.24);
+  --tier-default:#5e6b7a; --tier-default-bg:rgba(94,107,122,0.08); --tier-default-border:rgba(94,107,122,0.20);
+  /* Categorical chart colors (dark) */
+  --chart-1:#5b8bf0; --chart-2:#7aa6ee; --chart-3:#4f9b94; --chart-4:#8a99ab; --chart-5:#5e6b7a; --chart-6:#d2a05a;
   color-scheme:dark;
 }
-body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans','Inter',sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
+body { background:var(--bg); color:var(--text); font-family:'Hanken Grotesk',system-ui,sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
 .tabular { font-variant-numeric: tabular-nums; }
 ::-webkit-scrollbar{width:4px;height:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px} ::-webkit-scrollbar-thumb:hover{background:var(--dim)}
 input,select,textarea { color-scheme:light; }
@@ -262,7 +264,7 @@ input,select,textarea { color-scheme:light; }
 input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:0.5}
 [data-theme="dark"] input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:0.6}
 a { color:var(--accent); }
-button { font-family:'Plus Jakarta Sans','Inter',sans-serif; letter-spacing:-0.01em; }
+button { font-family:'Hanken Grotesk',system-ui,sans-serif; letter-spacing:-0.01em; }
 input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid var(--accent-glow) !important; outline-offset:0 !important; }
 tr:hover td { background:var(--row-tint-strong) !important; transition:background .12s; }
 .row-hover:hover { background:var(--row-tint-strong) !important; }
@@ -322,8 +324,8 @@ h1,h2,h3,h4 { letter-spacing:-0.02em; }
 // ─────────────────────────────────────────────────────────
 //  DESIGN PRIMITIVES
 // ─────────────────────────────────────────────────────────
-const iStyle = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"10px 13px",outline:"none",width:"100%",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.04)",transition:"border-color .15s,box-shadow .15s",lineHeight:"1.4"};
-const lStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"};
+const iStyle = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontFamily:"'JetBrains Mono',monospace",fontSize:12,padding:"10px 13px",outline:"none",width:"100%",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.04)",transition:"border-color .15s,box-shadow .15s",lineHeight:"1.4"};
+const lStyle = {fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"};
 const Field = ({label,children,full}) => (
   <div style={{display:"flex",flexDirection:"column",gap:6,...(full?{gridColumn:"1/-1"}:{})}}>
     <label style={lStyle}>{label}</label>{children}
@@ -356,7 +358,7 @@ const Icons = {
 
 // Shared UI
 const Toast = ({msg,type}) => (
-  <div style={{position:"fixed",bottom:28,right:28,zIndex:500,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"10px 20px",borderRadius:10,background:"var(--surface)",border:`1px solid ${type==="error"?"rgba(185,28,28,0.25)":"rgba(22,101,52,0.25)"}`,color:type==="error"?"var(--negative)":"var(--positive)",boxShadow:"0 2px 8px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.1)",letterSpacing:"0.04em",animation:"fadeUp .3s ease",display:"flex",alignItems:"center",gap:8}}>
+  <div style={{position:"fixed",bottom:28,right:28,zIndex:500,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"10px 20px",borderRadius:8,background:"var(--surface)",border:`1px solid ${type==="error"?"rgba(185,28,28,0.25)":"rgba(22,101,52,0.25)"}`,color:type==="error"?"var(--negative)":"var(--positive)",boxShadow:"0 2px 8px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.1)",letterSpacing:"0.04em",animation:"fadeUp .3s ease",display:"flex",alignItems:"center",gap:8}}>
     <span style={{fontSize:14}}>{type==="error"?"✕":"✓"}</span>{msg}
   </div>
 );
@@ -366,10 +368,10 @@ const ConfirmDelete = ({onConfirm,onCancel}) => (
     <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,padding:28,boxShadow:"0 24px 64px rgba(0,0,0,0.2)",width:"min(var(--modal-sm),100%)",animation:"modalIn .2s ease"}}>
       <div style={{width:36,height:36,borderRadius:9,background:"rgba(185,28,28,0.08)",border:"1px solid rgba(185,28,28,0.18)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:14,fontSize:16}}>⚠</div>
       <div style={{fontSize:16,fontWeight:600,color:"var(--text)",marginBottom:6,letterSpacing:"-0.01em"}}>Delete this entry?</div>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:24,lineHeight:1.6}}>This action is permanent and cannot be undone.</div>
+      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:24,lineHeight:1.6}}>This action is permanent and cannot be undone.</div>
       <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-        <button onClick={onCancel} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em"}}>CANCEL</button>
-        <button onClick={onConfirm} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"var(--red)",color:"#fff",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em"}}>DELETE</button>
+        <button onClick={onCancel} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em"}}>CANCEL</button>
+        <button onClick={onConfirm} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"var(--red)",color:"#fff",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em"}}>DELETE</button>
       </div>
     </div>
   </div>
@@ -384,10 +386,10 @@ const RowBtn = ({onClick,title,hb,hc,hbg,children}) => (
 );
 
 const StatCard = ({label,value,sub,c}) => (
-  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${c}`,borderRadius:"var(--r-lg)",padding:"16px 20px",position:"relative",boxShadow:"var(--shadow-sm)"}}>
-    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
+  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"16px 20px",position:"relative",boxShadow:"var(--shadow-sm)"}}>
+    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
     <div className="tabular" style={{fontSize:28,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{value}</div>
-    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sub}</div>
+    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sub}</div>
   </div>
 );
 
@@ -454,32 +456,32 @@ const LoginScreen = ({onLogin}) => {
   const isRegister = mode === "register";
 
   return (
-    <div className="cq-login-wrap" style={{minHeight:"100vh",display:"flex",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}>
+    <div className="cq-login-wrap" style={{minHeight:"100vh",display:"flex",fontFamily:"'Hanken Grotesk',system-ui,sans-serif"}}>
 
       {/* LEFT PANEL */}
-      <div className="cq-login-left" style={{width:"42%",background:"#0d1f33",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"48px 56px",position:"relative",overflow:"hidden",flexShrink:0}}>
-        <div style={{position:"absolute",inset:0,backgroundImage:"linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",backgroundSize:"40px 40px",pointerEvents:"none"}}/>
+      <div className="cq-login-left" style={{width:"42%",background:"#0b1119",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"48px 56px",position:"relative",overflow:"hidden",flexShrink:0}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:"var(--accent)",opacity:0.85}}/>
         <div style={{position:"relative",zIndex:1}}>
           <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGQAZADASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAcJBggDBAUCAf/EAEcQAAEEAQMBBQQGBQgJBQAAAAABAgMEBQYHESEIEjFBURM3YXEiMlJ1gbMJFEJykRUXI1dic6GiJDNDU4OSlbLSJbHBwuH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A0yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAc1SrZtypDVrzWJF8GRMVyr+CGQVNvdfW2d+pofU1hvrFip3J/g0DGQc9+nbx92ajfqz1LUD1jmgnjVkkbk6K1zV6oqeinAAAAAAAAAAAAAAAAd7GYfLZR3dxmLvXV544r13Sf9qKe5FttuLKxHxaB1U9q+Dm4ewqf9gGKgye1t5r+qxX2tDangYicq6TEztRE/Fpj9ypapTLDcrTVpU8WSxqx38FA4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPV0pp3OaqzkGE05i7WTyNheI4IGd53xVfJrU83LwieageUZdtxtprncO66tpDTtvIoxeJZ0RI4Iv3pXKjEX4c8r5Ipt1sd2PsLiYocxubMzMX1RHNxcD1bWhX0e9OFlXw6Jw3xT6SdTajG0aWMoQ4/G069OpAxGQwQRoyONqeTWp0RANO9vOxNzHHZ1/qxWuXq6nh2eHzmkTx9URn4+ZPGkOzxs7pljP1XROPvTNTrNkkW25y+vEnLUX5IhKgA62Nx2PxtdK+Oo1acKf7OvE2Nv8GoiHZAAqn7R/v61x992fzFI/JA7R/v61x992fzFI/AAAAAAABnWz+1Gs90s1+oaYxyurxORLV+fllasi/bdx1X0a3ly+nHKgYKSxtX2e9z9wmx2sdg3YzGP4VMhk+YInIvmxFRXPT4taqfE3P2S7M+gtu0r5K9Amo9QRojluXY0WKJ/rFF1RvwVe870VCcQNV9A9i3RuOjZPrLP5HO2eEV0FVEq10XzTze75o5vyJt0rs5tbphrP5G0Jg4ZGfVmlrJPKn/ABJO87/EzsAfMUccUbY4o2xsanDWtThE/A+gAB18hQo5GutfIU69uFfGOeJr2r+CpwdgARdrDs+bP6obIt3RGOpzP6+2xyLUci+vEao1V+aKQPuH2Jo1bLZ0DqxzXdVbSy7OUXr4JNGnTp6sX5m5IAqZ3I2w13t3ZSLVunLdCJ7lbFZ4SSvKv9mRvLVXz45548UMNLkMlRpZKjNQyNOvcqTt7k0FiNJI5G+jmuRUVPgpq7vn2QcDm4p8xtrJFg8kiK9cZK5y1Z180Y5eViXx4Tq3wThqdUDREHrau01ntJZ6xgtS4q1i8jXXiSCdnC8eTkXwc1eOjkVUXyVTyQAAAAAAAAAAAAAAAAAAAAAAAAABnex22Oc3W1xBp3Ef0EDU9reuuYqsqwovVy+rl8Gt819E5VA+9kdqdTbsapTD4GJIa0PD71+Vq+xqsVfFfVy9eGp1XhfBEVUsf2b2p0jtXp9Mbpyki2ZGp+uZCZEWxacnm53k3nwanRPnyq+ptjoXTu3Wka2mtNU0gqwp3pJHcLJYkVPpSSO/acvHyROEThERDJwAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwAAAAGwvZF2Cl3Myiao1LG+LSVGbuqzlWuyErevs2r5MTp3nJ+6nXlWhxdl/s55Tc6aPUeolnxekon9Ho3iW+qL1bFz4M8UWTr16JyvKtsF0vp/C6XwVbB6fxtfHY6q3uwwQN4a34+qqviqryqr1U7tGrWo04aVKvFWrQRtjhhiYjWRsanCNaidERE6cIcwAAAAAAAAAAAAAAAAGD7x7W6U3S027E6jpJ7ZjXfqd6NESeo9f2mL5p0Tlq9F4+SpXBvntNqXabVTsTmY1sUZlc7H5GNipFaYnp9l6cp3mqvKfFFRVtXMd3G0ZgNfaSuaZ1JTbZpWWcI5ET2kL/2ZI1VF7r08l/BeUVUAqJBn2+m12c2o1tLgMt/T1ZUWXH3mt4Zah54R3wcng5vkvqioq4CAAAAAAAAAAAAAAAAAAAAAAd/T2HyWoM7SwmIqyW8henbBXhYnV73LwifBPj4InUtG7P8Atdi9qNAV8BT7k+Qm4nydxE62J1Trx6Nb9Vqeic+Kqq6/fo+NqmxVJ908zV5lm79bCo9PqtRVbLMnxVeWJ8n+puIAAAAAAAAAAAFU/aP9/WuPvuz+YpH5IHaP9/WuPvuz+YpH4AA/WornI1qKqqvCInmBIvZ52vyG6+4tXAQe0hxsKfrGUttT/UQIvXj+25eGtTr1XnjhFLQ9OYbGaewNHB4apHUx9GBsFeFngxjU4T5r6qvVV5VSM+yptdFthtbVqWoGszuTRtzKvVv0myK36MKr6RovHHh3leqeJLYAAAAAAAAAAAAAAAAAAAAABgG/O2OJ3W0DZ09f7kFxnM2OuK3l1adE6L8Wr4OTzRfVEVKuNT4PJ6a1DfwGZquq5ChO6CxE79lzV46L5ovii+CoqKXDGoP6QfatLeNr7pYeunt6iMq5hrU6viVUSKb5tVe4q+jm+TQNJQAAAAAAAAAAAAAAAAAAPc0Dpq9rHWuH0vjW82snbZXYvkxFX6T1+DW8uX4Ip4ZtP+jo0emT3DzGsrEfMOFqJBXVf9/PynKfKNr0X99AN4NL4WhpzTmOwGLhbDSx9aOtAxE8GsaiJ+PTlV81PRAAAAAAAAAAAACqftH+/rXH33Z/MUj8kDtH+/rXH33Z/MUj8ATp2Jdvma43mrXr9dZcVp9iZCxynLXyovELF+bvpceaRqnmQWWKdgjRyac2SZnJ4e5d1FZdbc5WojvYsVY4m/Lo96f3gGwgAAAAAAAAAAAAAAAAAAAAAAAB0dQ4ihn8FfwmUgbYo36769iNf2mParVT+CneAFQ+4+lruidd5nSmQ62MZbfB3v8AeN8WPT4OarXfiY+bX/pG9HpQ1rgta1ouIsrWdUtORP8AbQ8K1V+KsciJ/dmqAAAAAAAAAAAAAAAAAAsb7BWnW4Xs/wBPIOj7s2auz3XKvirUd7Jv4cRcp+98SuQtl2MxiYbZnRuN7qNdDhKntERP21ia53+ZVAzMAAAAAAAAAAAABVP2j/f1rj77s/mKR+SB2j/f1rj77s/mKR+By1YJrVqKrXjWSaZ6RxsTxc5V4RP4lvui8JBprSGH09WRqQ4yjDUZ3fBUjYjefx45Ktuz/i25ne7RmOkb345MzWfI3jnljJEe5P4NUtfAAAAAAAAAAAAAAAAAAAAAAAAAAACCe3Xp5uc7PWTtozvTYa1Bfj4Tr9b2T/8AJK5fwK3S23eLFJm9ptW4lW95bWGtRsT+0sTu6v4LwpUkAAAAAAAAAAAAAAAAALitPwJWwOPrI3uJFViYjfThiJwU6lxWn7CW8Dj7SLyk1WKRF+bEUDvAAAAAAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwJe7GsCWO0ro+NW97iaw/j92tK7/4LOisXsaTJB2ltHvc7uos1hnP71aVvH488FnQAAAAAAAAAAAAAAAAAAAAAAAAAAAcN6BLNKes5EVJY3MVF8F5TgptLkr07atKey76sMbpF+SJyU2gAAAAAAAAAAAAAAAAC2bY3KNzOzWjckj+86bC1faL/AG0ia1/+ZFKmSxzsF6hTNdn6lQc9HS4a7YpO69e6rvat5/CXhP3QJ8AAAAAAAAAAAAAVT9o/39a4++7P5ikfkgdo/wB/WuPvuz+YpH4Gddn7Jph98NF33ORrGZqsyRyrxwx8iMcv8HKWvFNlSxLUtw2oHqyaGRskbk8nIvKL/FC37R2ag1JpLEahqq32OTow22ceCJIxHcfhyB6oAAAAAAAAAAAAAAAAAAAAAAAAAAxXeDJtwu1Grcqr+4tXDW5Gqnj3khd3U/FeEKkSyLt16hbg+z1k6jX9ybMWoKEfr1f7R3+SJyfiVugAAAAAAAAAAAAAAAADar9HNrBmN19mtGWZkbHmarbFVrl8Z4OVVqfFY3OVfhGaqnu7famvaM1vh9VY7rZxltlhreeEkRF+kxV9HN5avwVQLewedpfNY/UmnMdn8VMk1HI1o7MD/Vj2oqc+i9eFTyXk9EAAAAAAAAAAAKp+0f7+tcffdn8xSPyQO0f7+tcffdn8xSPwBYr2CdYJqPZCPCTy965p60+o5FXlywuX2kTvl9JzE/uyuonfsP6+Zoveetjr06RYzULEx8yuX6LZlXmF3/P9D5SKBZCAAAAAAAAAAB8TxMngkhk73ckarXd1ytXhU4XhU6p80PsAaF9qnRu7G1uVfnMHr7Wd3SFuXiKVczZc+k9V6RSr3/D7L/PwXr4wR/ObuT/WDqz/AKzY/wDMtgzOMx+ZxVrFZWnDdo24lingmYjmSMVOFRUUrq7VOwGQ2tyr85g2TXdIW5eIpV5c+k9V6RSr6fZf5+C9fEI0/nN3J/rB1Z/1mx/5j+c3cn+sHVn/AFmx/wCZiQAy5m5+5THo9u4WrOWryn/rFhf/ALm8nZO7QtTcihFpfVE0NXV1eP6LujWZFjU6vYngkiJ1cxP3k6co2u058fct46/BfoWZqtuvI2WGaJ6tfG9q8o5qp1RUXzAuRBrz2Tu0LU3IoRaX1RNDV1dXj+i7o1mRY1Or2J4JIidXMT95OnKN2GAAHR1Dl6GAwV/N5SdtejQrvsWJF/ZYxquVf4IBpL+kb1gl/WmC0TWm5ixVZ1y01q9PbTdGoqerWN5T4SGp5kO5Gqrut9eZrVmQRWz5O2+fud5Xezaq8MYir5NajWp8EQx4AAAAAAAAAAAAAAAAAAAN1v0e+6bJ6NjazMWeJoO/awqvX67F5dNCnxReXonor/Q3CKd9N5nJadz9HO4e0+pkKE7Z68zF6te1eU+aeSp4KnKKWkbB7n4rdbQFbUFFY4b0aJDkqaO61p0Tqnr3F8Wr5p8UXgJAAAAAAAAAAAFU/aP9/WuPvuz+YpH5IHaP9/WuPvuz+YpH4A+o3vjkbJG5zHtVFa5q8Kip5ofIAtB7LO6MW6O11XIWZmLnMdxUysaL19oifRl49Ht+l6c95P2SVyq/s7bpX9p9xK2diSSfFzolfKVWr/roFXqqJ4d9q/Sb8U454VS0LT+XxufwlPNYe5Fcx92Fs1eeNeWvY5OUX/8APFF6KB3gAAAAAAAAAAOpmcZj8zirWKytOG7RtxLFPBMxHMkYqcKiop2wBW/2qdgMhtblX5zBsmu6Qty8RSry59J6r0ilX0+y/wA/BevjA5cbmcZj8zirWKytOG7RtxLFPBMxHMkYqcKiopXV2qdgchtZlXZzBsmu6Qty8RSry59J6r0ilX0+y/z8F6+IQOAAOfH3LeOvwX6FmarbryNlhmierXxvavKOaqdUVF8ywvsndoWpuRQi0vqiaGrq6vH9F3RrMixqdXsTwSRE6uYn7ydOUbXac+PuW8dfgv0LM1W3XkbLDNE9Wvje1eUc1U6oqL5gXImoX6QjdJtTF1trsPa/0m33LWYVjvqRIvMUK/Fyoj1Tx4a3ycfe3XbBxybTZGXV0Pf1ljK6NqxsYqR5R6/RY/p0YqLwr06dOVbz9VNM9U53Kam1Ffz+atOtZG/M6axK79py+ieSJ4InkiIgHmgAAAAAAAAAAAAAAAAAAAABnuxm6Gc2o1vFqDEf09eREhv0nu4Zah55Vvwcni13kvqiqi4EALdNttb6d3C0lV1Npm6lmnOnDmr0kgkT60cjf2XJz4fJU5RUVckKqNjt2dTbTaoTLYST9YpTKjb+OleqRWmJ6/ZcnK8OROU+KKqLY/s5ulpPdPTjctpu4nt42tS5RlXieo9U+q5PNPHhydF4+aIGcAAAAAAAAqn7R/v61x992fzFI/JA7R/v61x992fzFI/AAAAbFdkDf2XbrKR6S1RZc/SVyVVZK7lVx0rvF6efs1X6zfJfpJ15R2uoAuUrTwWq0VmtNHPBKxHxyRuRzXtVOUcip0VFTrychXX2Xu0flNtZotN6odaymk3uRI0R3elx6qvV0fPiz1Z+LeF5R1gems7h9S4Stm8Dka+Rx1pnfhsQP7zXJ4L8lReUVF6oqKigeiAAAAAAAAAAB1MzjMfmcVaxWVpw3aNuJYp4JmI5kjFThUVFO2AK3+1TsBkNrcq/OYNk13SFuXiKVeXPpPVekUq+n2X+fgvXxgcuNzOMx+ZxVrFZWnDdo24lingmYjmSMVOFRUUrq7VOwGQ2tyr85g2TXdIW5eIpV5c+k9V6RSr6fZf5+C9fEIHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD1tI6lz2ks9XzumsraxeRrrzHPA/hePNqp4OavHVqoqL5op5IA3u2M7X2BzcUGH3KjiweSREYmTha5as6+SvanKxL4cr1b4ry1OibRY29SyVGG/jrle5Unb34p68iSRyN9WuTlFT4oU3mZ7abo6726tum0lqG1RievMtVVSSvIvq6N3Lefjxz8QLZQab7fdtqFzY6+vNJPY7ojrmIfyi+qrFIvKJ8nr8iedIb/7QaoYz9R1xjKsrunscg9aj0X0/pe6ir8lUCTwcFG5UvVm2aNqC1A76skMiPavyVOhzgVT9o/39a4++7P5ikfkgdo/39a4++7P5ikfgAAAAAAz7ZvdvWW1eYdc01eRaszkW1j7HL69jj7TeU4dx+0iov4dDAQBZZsp2ldv9xmwY+zabp3PvREWhekRGSO9IpejX/BF7rl+z05JsKZyXNrO0Tuht+yKpSza5bFxqiJQyiLPG1qJx3WO5R7E9Ea5E+AFngNXdA9tDQ+TZHBrDC5LT9lU+lNAn61X+fKcSJ8kYvzJs0ru1tnqhsf8AIeucFZkk+rA622KZf+G/h/8AgBmwPxjmvYj2ORzXJyiovKKh+gADht2q1OB09uxDXhb9aSV6Nan4r0A5gRprDfnaPSzXpktc4qaZnPMFGRbcnP2VSJHd1fnwQTuH22aETJK2gdKTWZPBtzLP7jE+KRRqquRfi9vyA27vW6lCnLcvWYataFqvlmmkRjGNTxVzl6InxU1U7Rvao0dDhcjpHRtGpqua3C6vYs2Y+9QYi9FREXrMvy4b4Lyvgan7m7r6+3HnR+rNRWbldru9HTZxFXj9OI28NVU+0vLviYQB+r1Xnjj4H4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHYoXrtCb21G5Yqy/bhkVjv4opklTczceo3u1NwNWV0444izFhv/s/4GJgDsZK9dyV+fIZG5Yu3LD1knsWJFkklevVXOc7lVVfVTrgAAAAAAAAAAAAAAHpYnPZ3EcfyTmslQ4XlP1a0+Lj/AJVQ96HdPc6BiRw7jawjYng1mbson+DzDwBllvczce41WW9wNWWGqnCpLmLDk/xeY7kMjkMjN7bIXrVyX7c8rpHfxVTqgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//9k=" alt="CryptoQuant" style={{width:52,height:52,objectFit:"contain",mixBlendMode:"screen",marginBottom:32}}/>
-          <div style={{fontSize:11,fontFamily:"'IBM Plex Mono',monospace",letterSpacing:"0.12em",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",marginBottom:12}}>CryptoQuant</div>
+          <div style={{fontSize:11,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",letterSpacing:"0.12em",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",marginBottom:12}}>CryptoQuant</div>
           <div style={{fontSize:28,fontWeight:600,color:"#ffffff",lineHeight:1.25,letterSpacing:"-0.02em",marginBottom:16}}>Campaign<br/>Intelligence</div>
           <div style={{fontSize:13,color:"rgba(255,255,255,0.45)",lineHeight:1.6,maxWidth:280}}>Analytics suite for managing bounty programs, media citations, and campaign performance.</div>
         </div>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:"0.06em"}}>AUTHORIZED PERSONNEL ONLY</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.25)",letterSpacing:"0.06em"}}>AUTHORIZED PERSONNEL ONLY</div>
         </div>
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="cq-login-right" style={{flex:1,background:"#f5f6f9",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
+      <div className="cq-login-right" style={{flex:1,background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",padding:"40px 32px"}}>
         <div style={{width:"min(var(--modal-sm),100%)",animation:"fadeUp .5s ease both"}}>
 
           <div style={{marginBottom:32}}>
             <div style={{fontSize:22,fontWeight:700,color:"var(--text)",letterSpacing:"-0.02em",marginBottom:6}}>{isRegister?"Create Account":"Sign In"}</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{isRegister?"Fill in your details to create an account.":"Enter your credentials to continue."}</div>
+            <div style={{fontSize:13,color:"var(--dim)"}}>{isRegister?"Fill in your details to create an account.":"Enter your credentials to continue."}</div>
           </div>
 
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:28,boxShadow:"0 1px 3px rgba(0,0,0,0.06),0 8px 24px rgba(0,0,0,0.06)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:28,boxShadow:"0 1px 3px rgba(0,0,0,0.06),0 8px 24px rgba(0,0,0,0.06)"}}>
             <div style={{display:"flex",flexDirection:"column",gap:14}}>
               <Field label="Username">
                 <div style={{position:"relative"}}>
@@ -504,8 +506,8 @@ const LoginScreen = ({onLogin}) => {
                       return (
                         <button key={role.id} onClick={()=>setRegRole(role.id)}
                           style={{flex:1,padding:"8px 6px",borderRadius:7,border:`1px solid ${active?role.color+"60":"var(--border)"}`,background:active?role.color+"0d":"transparent",cursor:"pointer",textAlign:"center",transition:"all .15s"}}>
-                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:active?role.color:"var(--muted)",marginBottom:2}}>{role.label}</div>
-                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{role.desc}</div>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:active?role.color:"var(--muted)",marginBottom:2}}>{role.label}</div>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{role.desc}</div>
                         </button>
                       );
                     })}
@@ -516,7 +518,7 @@ const LoginScreen = ({onLogin}) => {
               {isRegister && regRole === "client" && (
                 <Field label="Company / Client Name">
                   <input value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="e.g. Binance" style={iStyle}/>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:4}}>Must match the client tag used in campaign entries.</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:4}}>Must match the client tag used in campaign entries.</div>
                 </Field>
               )}
 
@@ -541,32 +543,32 @@ const LoginScreen = ({onLogin}) => {
                       onKeyDown={e=>e.key==="Enter"&&handleRegister()}
                       style={{...iStyle,paddingLeft:38,...(confirm&&confirm!==password?{borderColor:"rgba(220,38,38,0.5)"}:{})}}/>
                   </div>
-                  {confirm && confirm!==password && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--red)",marginTop:4}}>Passwords don't match</div>}
+                  {confirm && confirm!==password && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--red)",marginTop:4}}>Passwords don't match</div>}
                 </Field>
               )}
             </div>
 
-            {error   && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--red)",  marginTop:14,padding:"8px 12px",background:"rgba(220,38,38,0.06)",border:"1px solid rgba(220,38,38,0.2)",borderRadius:7}}>{error}</div>}
-            {success && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--green)",marginTop:14,padding:"8px 12px",background:"rgba(22,163,74,0.06)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:7}}>{success}</div>}
+            {error   && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--red)",  marginTop:14,padding:"8px 12px",background:"rgba(220,38,38,0.06)",border:"1px solid rgba(220,38,38,0.2)",borderRadius:7}}>{error}</div>}
+            {success && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--green)",marginTop:14,padding:"8px 12px",background:"rgba(22,163,74,0.06)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:7}}>{success}</div>}
 
             <button onClick={isRegister?handleRegister:handleLogin} disabled={loading}
-              style={{width:"100%",marginTop:20,fontFamily:"'IBM Plex Mono',monospace",fontSize:12,padding:"13px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer",letterSpacing:"0.06em",fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s",opacity:loading?0.7:1}}
-              onMouseEnter={e=>e.currentTarget.style.background="#1a3a5c"}
-              onMouseLeave={e=>e.currentTarget.style.background="#0d1f33"}>
+              style={{width:"100%",marginTop:20,fontFamily:"'JetBrains Mono',monospace",fontSize:12,padding:"13px",borderRadius:8,border:"none",background:"var(--accent)",color:"#fff",cursor:"pointer",letterSpacing:"0.06em",fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all .2s",opacity:loading?0.7:1}}
+              onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 82%,#000)"}
+              onMouseLeave={e=>e.currentTarget.style.background="var(--accent)"}>
               {loading?<><Icons.Spin/>{isRegister?"CREATING…":"SIGNING IN…"}</>:isRegister?"CREATE ACCOUNT →":"SIGN IN →"}
             </button>
           </div>
 
           <div style={{textAlign:"center",marginTop:20}}>
             {!isRegister ? (
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>
                 Need an account?{" "}
-                <button onClick={()=>switchMode("register")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Request access</button>
+                <button onClick={()=>switchMode("register")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Request access</button>
               </span>
             ) : (
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>
                 Already have an account?{" "}
-                <button onClick={()=>switchMode("signin")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Sign in</button>
+                <button onClick={()=>switchMode("signin")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--accent)",fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,textDecoration:"underline"}}>Sign in</button>
               </span>
             )}
           </div>
@@ -605,9 +607,9 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
   };
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
         <button onClick={onClose} style={{position:"absolute",top:18,right:18,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--purple)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} user</div>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.1em",color:"var(--purple)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} user</div>
         <div style={{fontSize:20,fontWeight:500,marginBottom:24}}>{isEdit?"Edit User":"Create User"}</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <Field label="Username" full><input value={form.username} onChange={e=>set("username",e.target.value)} placeholder="username" style={iStyle}/></Field>
@@ -629,12 +631,12 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
         {/* Campaign access — authors and clients */}
         {(form.role==="client"||form.role==="author") && (
           <div style={{marginTop:16}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:10}}>
               Bounty Access
               {form.role==="author" && <span style={{marginLeft:8,color:"var(--muted)",textTransform:"none",fontSize:9,letterSpacing:0}}>— which campaigns this author can post to</span>}
             </div>
             {!campaignsList.length ? (
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"12px",background:"var(--surface2)",borderRadius:8,border:"1px solid var(--border)"}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",padding:"12px",background:"var(--surface2)",borderRadius:8,border:"1px solid var(--border)"}}>
                 No campaigns created yet. Create campaigns first, then assign access here.
               </div>
             ) : (
@@ -643,7 +645,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
                   const allowed = (form.allowedCampaigns||[]).includes(cl.id);
                   return (
                     <button key={cl.id} onClick={()=>toggleCampaign(cl.id)}
-                      style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:10,border:`1px solid ${allowed?cl.color+"60":"var(--border)"}`,background:allowed?cl.color+"0e":"var(--surface2)",cursor:"pointer",transition:"all .15s",textAlign:"left"}}>
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"11px 14px",borderRadius:8,border:`1px solid ${allowed?cl.color+"60":"var(--border)"}`,background:allowed?cl.color+"0e":"var(--surface2)",cursor:"pointer",transition:"all .15s",textAlign:"left"}}>
                       <div style={{width:18,height:18,borderRadius:5,border:`2px solid ${allowed?cl.color:"var(--border2)"}`,background:allowed?cl.color:"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all .15s"}}>
                         {allowed && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
@@ -651,7 +653,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
                       <div style={{flex:1}}>
                         <div style={{fontSize:13,fontWeight:500,color:allowed?cl.color:"var(--text)"}}>{cl.name}</div>
                       </div>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:allowed?cl.color:"var(--dim)"}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:allowed?cl.color:"var(--dim)"}}>
                         {allowed?"ALLOWED":"NO ACCESS"}
                       </div>
                     </button>
@@ -660,7 +662,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
               </div>
             )}
             {(form.allowedCampaigns||[]).length===0 && campaignsList.length>0 && (
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--yellow)",marginTop:8,padding:"8px 12px",background:"rgba(26,58,92,0.04)",border:"1px solid rgba(217,119,6,0.2)",borderRadius:7}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--yellow)",marginTop:8,padding:"8px 12px",background:"rgba(26,58,92,0.04)",border:"1px solid rgba(217,119,6,0.2)",borderRadius:7}}>
                 {form.role==="author"?"⚠ No campaigns selected — author won't be able to post to any campaign.":"⚠ No campaigns selected — client won't see any data."}
               </div>
             )}
@@ -668,16 +670,16 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
         )}
 
         <div style={{marginTop:16,padding:"12px 14px",background:"var(--surface2)",borderRadius:8,border:"1px solid var(--border)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Role permissions</div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",lineHeight:1.8}}>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Role permissions</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",lineHeight:1.8}}>
             {form.role==="admin"  && "Full access · View, create, edit & delete all entries · Manage users"}
             {form.role==="author" && "Can post to assigned campaigns only · Edit only their own entries"}
             {form.role==="client" && "Read-only · Sees only campaigns granted by admin"}
           </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:20,paddingTop:20,borderTop:"1px solid var(--border)"}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE USER"}
           </button>
         </div>
@@ -694,10 +696,10 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
     <div style={{animation:"fadeUp .5s ease both"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--purple)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// user management</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--purple)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// user management</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Team & Access</h2>
         </div>
-        <button onClick={()=>{setEditUser(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500}}>
+        <button onClick={()=>{setEditUser(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> ADD USER
         </button>
       </div>
@@ -706,24 +708,24 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
           const rm = ROLE_META[role];
           const count = users.filter(u=>u.role===role).length;
           return (
-            <div key={role} style={{background:"var(--surface)",border:`1px solid var(--border)`,borderRadius:12,padding:"18px 20px",position:"relative",overflow:"hidden"}}>
+            <div key={role} style={{background:"var(--surface)",border:`1px solid var(--border)`,borderRadius:8,padding:"18px 20px",position:"relative",overflow:"hidden"}}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${rm.color},transparent)`,opacity:.8}}/>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase",letterSpacing:"0.06em"}}>{rm.label}</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase",letterSpacing:"0.06em"}}>{rm.label}</span>
               </div>
               <div style={{fontSize:28,fontWeight:500,color:rm.color}}>{count}</div>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>active {rm.label.toLowerCase()}s</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>active {rm.label.toLowerCase()}s</div>
             </div>
           );
         })}
       </div>
       <div className="cq-table-scroll"><div style={{minWidth:550}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 100px 1fr 120px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface)"}}>
-          {["User","Role","Bounty Access","Created",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+          {["User","Role","Bounty Access","Created",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {users.length===0 ? (
-          <div style={{textAlign:"center",padding:"48px 20px",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No users yet</div>
+          <div style={{textAlign:"center",padding:"48px 20px",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No users yet</div>
         ) : users.map((u,i)=>{
           const rm = ROLE_META[u.role]||ROLE_META.author;
           const isMe = u.id===currentUser.id;
@@ -734,33 +736,33 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
               <div style={{display:"flex",alignItems:"center",gap:10}}>
                 <div style={{width:30,height:30,borderRadius:"50%",background:"rgba(255,255,255,0.05)",border:"1px solid var(--border2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:500,color:"var(--muted)"}}>{initials(u.username)}</div>
                 <div>
-                  <div style={{fontSize:13,fontWeight:500}}>{u.username}{isMe&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,marginLeft:6,color:"var(--green)"}}>you</span>}</div>
-                  {u.displayName&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{u.displayName}</div>}
+                  <div style={{fontSize:13,fontWeight:500}}>{u.username}{isMe&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,marginLeft:6,color:"var(--green)"}}>you</span>}</div>
+                  {u.displayName&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{u.displayName}</div>}
                 </div>
               </div>
-              <div><span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase",letterSpacing:"0.06em"}}>{rm.label}</span></div>
+              <div><span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:rm.bg,border:`1px solid ${rm.border}`,color:rm.color,textTransform:"uppercase",letterSpacing:"0.06em"}}>{rm.label}</span></div>
               <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
                 {u.role==="client" ? (
                   (u.allowedCampaigns||[]).length===0
-                    ? <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No access</span>
+                    ? <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No access</span>
                     : (u.allowedCampaigns||[]).map(cid=>{
                         const cl = campaignsList.find(c=>c.id===cid);
                         if(!cl) return null;
-                        return <span key={cid} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:cl.color+"18",border:`1px solid ${cl.color}44`,color:cl.color}}>{cl.name}</span>;
+                        return <span key={cid} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:cl.color+"18",border:`1px solid ${cl.color}44`,color:cl.color}}>{cl.name}</span>;
                       })
                 ) : u.role==="author" ? (
                   (u.allowedCampaigns||[]).length===0
-                    ? <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No access</span>
+                    ? <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No access</span>
                     : (u.allowedCampaigns||[]).map(cid=>{
                         const cl = campaignsList.find(c=>c.id===cid);
                         if(!cl) return null;
-                        return <span key={cid} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:cl.color+"18",border:`1px solid ${cl.color}44`,color:cl.color}}>{cl.name}</span>;
+                        return <span key={cid} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 8px",borderRadius:4,background:cl.color+"18",border:`1px solid ${cl.color}44`,color:cl.color}}>{cl.name}</span>;
                       })
                 ) : (
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>All campaigns</span>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>All campaigns</span>
                 )}
               </div>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{u.createdAt?new Date(u.createdAt).toLocaleDateString():"—"}</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{u.createdAt?new Date(u.createdAt).toLocaleDateString():"—"}</div>
               <div style={{display:"flex",gap:4,justifyContent:"flex-end"}}>
                 <RowBtn onClick={()=>{setEditUser(u);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>
                 {!isMe&&<RowBtn onClick={()=>setConfirmId(u.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
@@ -794,7 +796,7 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",backdropFilter:"blur(4px)",zIndex:200,display:"flex",justifyContent:"flex-end"}}>
       <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100vw)",height:"100vh",overflowY:"auto",overflowX:"hidden",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
         <button onClick={onClose} style={{position:"absolute",top:16,right:16,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} bounty entry</div>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} bounty entry</div>
         <div style={{fontSize:18,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Bounty":"Add Bounty Entry"}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <Field label="Date"><input type="date" value={form.date} onChange={e=>set("date",e.target.value)} style={iStyle}/></Field>
@@ -806,7 +808,7 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
           <Field label="CryptoQuant Twitter Link" full><input type="url" value={form.cqTwitterLink||""} onChange={e=>set("cqTwitterLink",e.target.value)} placeholder="https://x.com/CryptoQuant_IO/…" style={iStyle}/></Field>
           <Field label="Telegram Link" full><input type="url" value={form.telegramLink||""} onChange={e=>set("telegramLink",e.target.value)} placeholder="https://t.me/cryptoquant_official/…" style={iStyle}/></Field>
           <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",gap:10}}>
                 <Field label="Category"><input value={form.category||""} onChange={e=>set("category",e.target.value)} placeholder="e.g. Spot, Macro" style={iStyle}/></Field>
@@ -820,8 +822,8 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
           </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE ENTRY"}
           </button>
         </div>
@@ -841,21 +843,21 @@ const Pagination = ({page, total, onChange}) => {
   const end   = Math.min(page*PAGE_SIZE, total);
   return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 20px",borderTop:"1px solid var(--border)",background:"var(--surface2)"}}>
-      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{start}–{end} of {total}</span>
+      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{start}–{end} of {total}</span>
       <div style={{display:"flex",gap:4}}>
-        <button onClick={()=>onChange(1)} disabled={page===1} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 10px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===1?"default":"pointer",opacity:page===1?.4:1}}>«</button>
-        <button onClick={()=>onChange(page-1)} disabled={page===1} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===1?"default":"pointer",opacity:page===1?.4:1}}>Prev</button>
+        <button onClick={()=>onChange(1)} disabled={page===1} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 10px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===1?"default":"pointer",opacity:page===1?.4:1}}>«</button>
+        <button onClick={()=>onChange(page-1)} disabled={page===1} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===1?"default":"pointer",opacity:page===1?.4:1}}>Prev</button>
         {Array.from({length:totalPages},(_,i)=>i+1).filter(p=>p===1||p===totalPages||Math.abs(p-page)<=1).reduce((acc,p,i,arr)=>{
           if(i>0&&arr[i-1]!==p-1) acc.push("…");
           acc.push(p);
           return acc;
         },[]).map((p,i)=>
           p==="…"
-            ? <span key={`e${i}`} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 8px",color:"var(--dim)"}}>…</span>
-            : <button key={p} onClick={()=>onChange(p)} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 11px",borderRadius:7,border:`1px solid ${page===p?"rgba(26,58,92,0.2)":"var(--border)"}`,background:page===p?"rgba(26,58,92,0.08)":"var(--surface)",color:page===p?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:page===p?700:400}}>{p}</button>
+            ? <span key={`e${i}`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 8px",color:"var(--dim)"}}>…</span>
+            : <button key={p} onClick={()=>onChange(p)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 11px",borderRadius:7,border:`1px solid ${page===p?"rgba(26,58,92,0.2)":"var(--border)"}`,background:page===p?"rgba(26,58,92,0.08)":"var(--surface)",color:page===p?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:page===p?700:400}}>{p}</button>
         )}
-        <button onClick={()=>onChange(page+1)} disabled={page===totalPages} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>Next</button>
-        <button onClick={()=>onChange(totalPages)} disabled={page===totalPages} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 10px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>»</button>
+        <button onClick={()=>onChange(page+1)} disabled={page===totalPages} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>Next</button>
+        <button onClick={()=>onChange(totalPages)} disabled={page===totalPages} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 10px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>»</button>
       </div>
     </div>
   );
@@ -917,23 +919,23 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
   };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
     </div>
   );
   const LinkBtn = ({label, url}) => !url ? null : (
     <a href={url} target="_blank" rel="noreferrer"
-      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
       {label} ↗
     </a>
   );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
         {/* Header */}
         <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// bounty entry</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// bounty entry</div>
           <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.title||"—"}</h2>
         </div>
         {/* Scrollable body */}
@@ -941,7 +943,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <InfoBlock label="Date" value={fmtDate(entry.date)}/>
             <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Author</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Author</div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.author)}</div>
                 <span style={{fontSize:13,fontWeight:500}}>{entry.author||"—"}</span>
@@ -954,7 +956,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
           </div>
           {(entry.cqLink||entry.analyticsLink||entry.authorTwitterLink||entry.cqTwitterLink||entry.telegramLink)&&(
             <div style={{marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 <LinkBtn label="Quicktake" url={entry.cqLink}/>
                 <LinkBtn label="Analytics" url={entry.analyticsLink}/>
@@ -965,19 +967,19 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
             </div>
           )}
           {(entry.summary || (isEditable && onGenerateSummary)) && (
-            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:10,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
+            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,marginBottom:entry.summary?8:0,flexWrap:"wrap"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
                 <div style={{display:"flex",gap:6}}>
                   {isEditable && onGenerateSummary && entry.cqLink && (
                     <button onClick={()=>genSummary(null)} disabled={gen.loading}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
                       {gen.loading?"GENERATING…":(entry.summary?"🔄 REGENERATE":"📝 GENERATE")}
                     </button>
                   )}
                   {isEditable && onGenerateSummary && (
                     <button onClick={()=>{setPasteOpen(v=>!v);setPasteText("")}}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid var(--border)",background:pasteOpen?"var(--surface2)":"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:500}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid var(--border)",background:pasteOpen?"var(--surface2)":"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:500}}>
                       📋 PASTE
                     </button>
                   )}
@@ -986,29 +988,29 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
               {entry.summary ? (
                 <div style={{fontSize:12,lineHeight:1.55,color:"var(--text)"}}>{entry.summary}</div>
               ) : !pasteOpen && (
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — click Generate (uses RSS or ScrapingBee) or Paste if you have the body text handy.</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic"}}>No summary yet — click Generate (uses RSS or ScrapingBee) or Paste if you have the body text handy.</div>
               )}
               {pasteOpen && (
                 <div style={{marginTop:10}}>
                   <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} placeholder="Paste the bounty's full body text here…" rows={6}
-                    style={{width:"100%",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",resize:"vertical",boxSizing:"border-box"}}/>
+                    style={{width:"100%",fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",resize:"vertical",boxSizing:"border-box"}}/>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6,gap:8}}>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{pasteText.trim().length} chars (min 80)</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{pasteText.trim().length} chars (min 80)</span>
                     <button onClick={()=>genSummary(pasteText.trim())} disabled={gen.loading||pasteText.trim().length<80}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
                       {gen.loading?"SUMMARIZING…":"SUMMARIZE PASTED"}
                     </button>
                   </div>
                 </div>
               )}
-              {gen.error && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
+              {gen.error && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:6}}>Error: {gen.error}</div>}
             </div>
           )}
           {Array.isArray(citations) && (
             <div style={{marginBottom:8}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited By</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{linkedCitations.length}</span>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited By</div>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{linkedCitations.length}</span>
               </div>
               {isEditable && onCitedBountyUpdate && (
                 <div style={{marginBottom:10,padding:"10px 12px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
@@ -1016,37 +1018,37 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                     <input value={linkUrl} onChange={e=>{setLinkUrl(e.target.value);setLinkResult(null);}}
                       placeholder="Paste article URL to link this bounty…"
                       onKeyDown={e=>{if(e.key==="Enter"&&!linkBusy)linkByUrl();}}
-                      style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 8px",borderRadius:5,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)"}}/>
+                      style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 8px",borderRadius:5,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)"}}/>
                     <button onClick={linkByUrl} disabled={linkBusy||!linkUrl.trim()}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:linkBusy||!linkUrl.trim()?"not-allowed":"pointer",fontWeight:500,opacity:!linkUrl.trim()?0.5:1,whiteSpace:"nowrap"}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:linkBusy||!linkUrl.trim()?"not-allowed":"pointer",fontWeight:500,opacity:!linkUrl.trim()?0.5:1,whiteSpace:"nowrap"}}>
                       {linkBusy?"LINKING…":"🔗 LINK"}
                     </button>
                   </div>
                   {linkResult && (
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,marginTop:6,color:linkResult.ok?"#0f766e":"#b91c1c"}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,marginTop:6,color:linkResult.ok?"#0f766e":"#b91c1c"}}>
                       {linkResult.ok?"✓ ":""}{linkResult.msg}
                     </div>
                   )}
                 </div>
               )}
               {linkedCitations.length === 0 ? (
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"6px 0"}}>No citations linked yet.</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"6px 0"}}>No citations linked yet.</div>
               ) : (
                 <div style={{display:"flex",flexDirection:"column",gap:0,border:"1px solid var(--border)",borderRadius:8,overflow:"hidden"}}>
                   {linkedCitations.map((c,i) => {
                     const tc = getTierColor(c.mediaTier);
                     return (
                       <div key={c.id} style={{display:"grid",gridTemplateColumns:"96px 1fr auto",gap:10,alignItems:"center",padding:"9px 12px",borderBottom:i<linkedCitations.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",whiteSpace:"nowrap"}}>{c.date||"—"}</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",whiteSpace:"nowrap"}}>{c.date||"—"}</div>
                         <div style={{minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
                             <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</span>
-                            {c.mediaTier && <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,flexShrink:0}}>Tier {c.mediaTier}</span>}
+                            {c.mediaTier && <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,flexShrink:0}}>Tier {c.mediaTier}</span>}
                           </div>
-                          <div title={c.headline||c.topic||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
+                          <div title={c.headline||c.topic||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
                         </div>
                         <div style={{display:"flex",gap:4}}>
-                          {c.articleLink && <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>}
+                          {c.articleLink && <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>}
                         </div>
                       </div>
                     );
@@ -1058,8 +1060,8 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
-          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
+          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
       </div>
     </div>
@@ -1216,7 +1218,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       <div style={{display:"flex",alignItems:"center",gap:2,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,width:"fit-content",animation:"fadeUp .5s ease both"}}>
         {[{id:"all",label:"All Content"},{id:"cq_research",label:"CQ Research"}].map(m=>(
           <button key={m.id} onClick={()=>{setContentMode(m.id);setPage(1);setCqCitPage(1);resetFilters();}}
-            style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 16px",borderRadius:6,border:"none",background:contentMode===m.id?"var(--surface)":"transparent",color:contentMode===m.id?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:contentMode===m.id?600:400,boxShadow:contentMode===m.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",letterSpacing:"0.02em"}}>
+            style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 16px",borderRadius:6,border:"none",background:contentMode===m.id?"var(--surface)":"transparent",color:contentMode===m.id?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:contentMode===m.id?600:400,boxShadow:contentMode===m.id?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",letterSpacing:"0.02em"}}>
             {m.label}
           </button>
         ))}
@@ -1240,10 +1242,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       {contentMode==="cq_research"&&cqResearchData&&(<>
         {/* Leaderboards */}
         {cqResearchData.topBounties.length>0&&(
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:16,animation:"fadeUp .5s ease .06s both"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:16,animation:"fadeUp .5s ease .06s both"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Performing Bounties</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topBounties.length} cited</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Performing Bounties</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topBounties.length} cited</span>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {cqResearchData.topBounties.map((tb,i)=>{
@@ -1255,11 +1257,11 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,gap:10}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                         <span title={b.title||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>· {fmtDate(b.date)}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>· {fmtDate(b.date)}</span>
                       </div>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"#0f766e",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"#0f766e",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginLeft:22}}>
                       <div style={{width:`${(tb.count/cqResearchData.maxBountyCount)*100}%`,height:"100%",background:"#0f766e",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -1273,22 +1275,22 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
           <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
             {/* Top Headlines */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topHeadlines.length}</span>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topHeadlines.length}</span>
               </div>
               {cqResearchData.topHeadlines.length===0
-                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
                 :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                   {cqResearchData.topHeadlines.map((h,i)=>(
                     <div key={h.label}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
                         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                           <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                         </div>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{width:`${(h.count/cqResearchData.maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -1299,22 +1301,22 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               }
             </div>
             {/* Top Outlets */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.uniqueOutlets.length}</span>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.uniqueOutlets.length}</span>
               </div>
               {cqResearchData.topOutlets.length===0
-                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
                 :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                   {cqResearchData.topOutlets.map((o,i)=>(
                     <div key={o.label}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
                         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                           <span title={o.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
                         </div>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{width:`${(o.count/cqResearchData.maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -1325,13 +1327,13 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               }
             </div>
             {/* Media Tier */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.cits.length} total</span>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.cits.length} total</span>
               </div>
               {cqResearchData.tierEntries.length===0
-                ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
+                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
                 :<div style={{display:"flex",flexDirection:"column",gap:10}}>
                   {cqResearchData.tierEntries.map(([tier,count])=>{
                     const tc=getTierColor(tier);
@@ -1339,8 +1341,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     return (
                       <div key={tier}>
                         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                         </div>
                         <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                           <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
@@ -1361,7 +1363,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
             {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
               <button key={val} onClick={()=>onChange(val)}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
                 {lbl}
               </button>
             ))}
@@ -1400,40 +1402,40 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 
           return (
             <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
+                  <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
                 <ResponsiveContainer width="100%" height={100}>
                   <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
                     <defs>
                       <linearGradient id="gbChart" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#1a3a5c" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="#1a3a5c" stopOpacity={0}/>
+                        <stop offset="5%"  stopColor="var(--accent)" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                    <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
-                    <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
+                    <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
+                    <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
                     <Tooltip content={({active,payload,label})=>active&&payload?.length?(
                       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} bounties</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} bounties</div>
                       </div>
                     ):null}/>
-                    <Area type="monotone" dataKey="count" stroke="#1a3a5c" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"#1a3a5c"}}/>
+                    <Area type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Authors</div>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Authors</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {topAuthors.map(([name,count],i)=>(
                     <div key={name}>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                         <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:600}}>{count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:600}}>{count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{width:`${(count/maxAuthor)*100}%`,height:"100%",background:"var(--accent)",opacity:1-i*0.15,borderRadius:99}}/>
@@ -1458,21 +1460,21 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search title or author…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
               </div>
               <button onClick={()=>setShowFilters(v=>!v)}
-                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
+                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
                 ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
               </button>
-              {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
-              {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
+              {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
+              {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
               {onBountySummaryUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
                 const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
                 return <button onClick={()=>{if(sumBatch.running)return;if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}}
                   disabled={sumBatch.running||unsumCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:sumBatch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:sumBatch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
                   {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
                 </button>;
               })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
@@ -1481,10 +1483,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
                       <div style={{height:"100%",width:`${sumBatch.total?(sumBatch.processed/sumBatch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
                     </div>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{sumBatch.processed}/{sumBatch.total}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{sumBatch.processed}/{sumBatch.total}</span>
                   </div>
                 ):(
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
                     {sumBatch.total>0?`Summarize done · `:""}
                     <b style={{color:"#0f766e"}}>{sumBatch.saved} saved</b> · {sumBatch.skipped} skipped · {sumBatch.errors} errors
                     {sumBatch.lastMsg && ` · ${sumBatch.lastMsg}`}
@@ -1492,56 +1494,56 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 )}
                 {!sumBatch.running && sumBatch.processed>0 && (
                   <button onClick={()=>setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
                 )}
               </div>
             )}
             {showFilters&&(
-              <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
+              <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,display:"flex",gap:12,flexWrap:"wrap",alignItems:"center"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
                   <select value={filterAuthor} onChange={e=>{setFA(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Authors</option>
                     {authors.map(a=><option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
                   <input type="date" value={filterDateFrom} onChange={e=>{setDateFrom(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
                   <input type="date" value={filterDateTo} onChange={e=>{setDateTo(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
               </div>
             )}
             {hasFilters&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                {search&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
-                {filterAuthor!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
-                {filterDateFrom&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
-                {filterDateTo&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
+                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
+                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
+                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
+                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
               </div>
             )}
           </div>
         );
       })()}
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
+          {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
               <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
               <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>{contentMode==="cq_research"?"No CQ Research entries":"No entries yet"}</div>
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
             </div>
           : filtered.length===0
             ? <div style={{textAlign:"center",padding:"48px 20px"}}>
                 <div style={{fontSize:24,marginBottom:8,opacity:.25}}>⬡</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
               </div>
             : paged.map((c,i)=>{
                 const ac=getAuthorColor(c.author);
@@ -1552,17 +1554,17 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                     onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                       <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                     </div>
                     <div style={{paddingRight:14,minWidth:0}}>
                       <div title={c.title||""} style={{fontSize:12,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.title}</div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
-                        {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Quicktake↗</a>}
-                        {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Analytics↗</a>}
-                        {c.authorTwitterLink&&<a href={c.authorTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Author X↗</a>}
-                        {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>CQ X↗</a>}
-                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Telegram↗</a>}
+                        {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Quicktake↗</a>}
+                        {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Analytics↗</a>}
+                        {c.authorTwitterLink&&<a href={c.authorTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Author X↗</a>}
+                        {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>CQ X↗</a>}
+                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Telegram↗</a>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
@@ -1584,40 +1586,40 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       {contentMode==="cq_research"&&cqResearchData&&cqResearchData.cits.length>0&&(
         <div ref={cqCitRef} style={{marginTop:20}}>
           <div className="cq-table-scroll"><div style={{minWidth:500}}>
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)",gap:14,flexWrap:"wrap"}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqCitsFiltered.length}{cqCitsFiltered.length!==cqResearchData.cits.length?` of ${cqResearchData.cits.length}`:""}</span>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqCitsFiltered.length}{cqCitsFiltered.length!==cqResearchData.cits.length?` of ${cqResearchData.cits.length}`:""}</span>
               </div>
               <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                 <div style={{display:"flex",gap:4,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2}}>
                   <button onClick={()=>{setCqTierFilter("all");setCqCitPage(1);}}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:cqTierFilter==="all"?"var(--surface)":"transparent",color:cqTierFilter==="all"?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:cqTierFilter==="all"?600:400}}>ALL TIERS</button>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:cqTierFilter==="all"?"var(--surface)":"transparent",color:cqTierFilter==="all"?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:cqTierFilter==="all"?600:400}}>ALL TIERS</button>
                   {cqResearchData.tierEntries.map(([tier,count])=>{
                     const tc=getTierColor(tier);
                     const active=cqTierFilter===tier;
                     return <button key={tier} onClick={()=>{setCqTierFilter(active?"all":tier);setCqCitPage(1);}}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:active?tc.bg:"transparent",color:active?tc.color:"var(--dim)",cursor:"pointer",fontWeight:active?600:400,display:"flex",alignItems:"center",gap:4}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:active?tc.bg:"transparent",color:active?tc.color:"var(--dim)",cursor:"pointer",fontWeight:active?600:400,display:"flex",alignItems:"center",gap:4}}>
                       Tier {tier} <span style={{opacity:0.7,fontWeight:400}}>{count}</span>
                     </button>;
                   })}
                 </div>
                 {cqResearchData.uniqueOutlets.length>1 && (
                   <select value={cqOutletFilter} onChange={e=>{setCqOutletFilter(e.target.value);setCqCitPage(1);}}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 8px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:cqOutletFilter==="all"?"var(--dim)":"var(--accent)",cursor:"pointer",fontWeight:cqOutletFilter==="all"?400:500}}>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 8px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:cqOutletFilter==="all"?"var(--dim)":"var(--accent)",cursor:"pointer",fontWeight:cqOutletFilter==="all"?400:500}}>
                     <option value="all">All outlets</option>
                     {cqResearchData.uniqueOutlets.sort().map(o=><option key={o} value={o}>{o}</option>)}
                   </select>
                 )}
                 {(cqTierFilter!=="all"||cqOutletFilter!=="all") && (
                   <button onClick={()=>{setCqTierFilter("all");setCqOutletFilter("all");setCqCitPage(1);}}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>clear</button>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>clear</button>
                 )}
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-              {["Date","Media","Headline / Topic","Reporter","Bounty","Link"].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
+              {["Date","Media","Headline / Topic","Reporter","Bounty","Link"].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
             </div>
             {pagedCqCits.map((c,i)=>{
               const tc=getTierColor(c.mediaTier);
@@ -1627,30 +1629,30 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
                   onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                   onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
                   <div style={{minWidth:0}}>
                     <div style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</div>
-                    {c.mediaTier&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,marginTop:2,display:"inline-block"}}>Tier {c.mediaTier}</span>}
+                    {c.mediaTier&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,marginTop:2,display:"inline-block"}}>Tier {c.mediaTier}</span>}
                   </div>
                   <div style={{minWidth:0}}>
                     {c.headline&&<div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
-                    {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
+                    {c.topic&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
                     {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </div>
                   <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
                   <div onClick={e=>e.stopPropagation()}>
                     {cb && cb.cqLink
-                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
-                      : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
+                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
+                      : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                   </div>
                   <div onClick={e=>e.stopPropagation()}>
-                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10,opacity:0.45}}>—</span>}
+                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10,opacity:0.45}}>—</span>}
                   </div>
                 </div>
               );
             })}
             {cqCitsFiltered.length===0 && (
-              <div style={{padding:"40px 20px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No citations match the current filters</div>
+              <div style={{padding:"40px 20px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No citations match the current filters</div>
             )}
             <Pagination page={cqCitPage} total={cqCitsFiltered.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
           </div>
@@ -1716,26 +1718,26 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
   };
   const InfoBlock = ({label, value, full=false}) => !value ? null : (
     <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",gridColumn:full?"1/-1":"auto"}}>
-      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
+      <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>{label}</div>
       <div style={{fontSize:13,fontWeight:500,wordBreak:"break-word"}}>{value}</div>
     </div>
   );
   return (
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",backdropFilter:"blur(6px)",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:16,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 20px 60px rgba(0,0,0,0.15)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",display:"flex",flexDirection:"column",position:"relative",animation:"modalIn .2s ease"}}>
         {/* Header */}
         <div style={{padding:"24px 28px 16px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <button onClick={onClose} style={{position:"absolute",top:14,right:14,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:28,height:28,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>// media citation</div>
           <h2 style={{fontSize:16,fontWeight:500,lineHeight:1.4,paddingRight:24}}>{entry.headline||entry.topic||"—"}</h2>
-          {entry.headline&&entry.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:4}}>{entry.topic}</div>}
+          {entry.headline&&entry.topic&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:4}}>{entry.topic}</div>}
         </div>
         {/* Scrollable body */}
         <div style={{overflowY:"auto",padding:"20px 28px",flex:1}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <InfoBlock label="Date" value={fmtDate(entry.date)}/>
             <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Outlet</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Media Outlet</div>
               <div style={{display:"flex",alignItems:"center",gap:7}}>
                 <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,background:mc.bg,color:mc.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(entry.media)}</div>
                 <span style={{fontSize:13,fontWeight:500}}>{entry.media||"—"}</span>
@@ -1752,51 +1754,51 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
           </div>
           {entry.articleLink&&(
             <div style={{marginBottom:16}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
               <a href={entry.articleLink} target="_blank" rel="noreferrer"
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
                 Open Article ↗
               </a>
             </div>
           )}
           {currentCitedBounty && (
-            <div style={{marginBottom:16,padding:"10px 12px",borderRadius:10,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.05)"}}>
+            <div style={{marginBottom:16,padding:"10px 12px",borderRadius:8,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.05)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited Bounty</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited Bounty</div>
                 {isEditable && onCitedBountyUpdate && (
                   <button onClick={()=>saveMatch("")} disabled={savingId!==null}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:savingId!==null?"wait":"pointer"}}>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:savingId!==null?"wait":"pointer"}}>
                     clear
                   </button>
                 )}
               </div>
               <div style={{fontSize:12,fontWeight:500,marginBottom:3}}>{currentCitedBounty.title||"(untitled)"}</div>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
                 {currentCitedBounty.author||"—"} · {fmtDate(currentCitedBounty.date)}{currentCitedBounty.asset?` · ${currentCitedBounty.asset}`:""}
               </div>
               {currentCitedBounty.cqLink && (
                 <a href={currentCitedBounty.cqLink} target="_blank" rel="noreferrer"
-                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"4px 10px",borderRadius:6,background:"rgba(15,118,110,0.1)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",display:"inline-flex"}}>
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"4px 10px",borderRadius:6,background:"rgba(15,118,110,0.1)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",display:"inline-flex"}}>
                   Open Bounty ↗
                 </a>
               )}
             </div>
           )}
           {isEditable && entry.articleLink && entry.campaignId && (
-            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:10,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:matchState.result||matchState.error?10:0}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Bounty Match</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Bounty Match</div>
                 <button onClick={runMatch} disabled={matchState.loading}
-                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
                   {matchState.loading?"MATCHING…":"🔗 FIND CITED BOUNTY"}
                 </button>
               </div>
               {matchState.error && (
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:8}}>Error: {matchState.error}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#b91c1c",marginTop:8}}>Error: {matchState.error}</div>
               )}
               {matchState.result && (
                 <div>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:8}}>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:8}}>
                     method: <b>{matchState.result.method}</b>
                     {matchState.result.bountiesChecked!=null && ` · ${matchState.result.bountiesChecked} bounties`}
                     {matchState.result.candidatesConsidered!=null && ` → ${matchState.result.candidatesConsidered} candidates`}
@@ -1812,7 +1814,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                   </div>
                   {matchState.result.matches.length === 0 ? (
                     <>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",marginBottom:8}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",marginBottom:8}}>
                         No match — {
                           matchState.result.bountiesChecked === 0 ? "this campaign has no bounties" :
                           matchState.result.candidatesConsidered === 0 ? "no candidate bounties after filtering" :
@@ -1821,10 +1823,10 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                       </div>
                       {matchState.result.candidatePool?.length > 0 && (
                         <details style={{marginTop:8}}>
-                          <summary style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.08em"}}>Considered candidates ({matchState.result.candidatePool.length})</summary>
+                          <summary style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--dim)",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.08em"}}>Considered candidates ({matchState.result.candidatePool.length})</summary>
                           <div style={{maxHeight:280,overflowY:"auto",marginTop:6,padding:"6px 8px",background:"var(--surface)",borderRadius:6,border:"1px solid var(--border)"}}>
                             {matchState.result.candidatePool.map(c => (
-                              <div key={c.bountyId} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:3,lineHeight:1.4}}>
+                              <div key={c.bountyId} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",marginBottom:3,lineHeight:1.4}}>
                                 <span style={{display:"inline-block",width:22,color:"var(--dim)"}}>#{c.n}</span>
                                 <span style={{color:"var(--text)"}}>{c.title}</span>
                                 <span style={{color:"var(--dim)"}}> — {c.author||"—"} · {c.date}{c.asset?` · ${c.asset}`:""}{c.hasSummary?" · 📝":""}</span>
@@ -1840,26 +1842,26 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                         <div key={m.bountyId} style={{padding:"10px 12px",background:"var(--surface)",borderRadius:6,border:"1px solid var(--border)"}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",gap:8,marginBottom:4}}>
                             <div style={{fontSize:12,fontWeight:500,lineHeight:1.35}}>{m.title||"(untitled)"}</div>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,flexShrink:0,
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,flexShrink:0,
                               background: m.confidence==="high"?"rgba(15,118,110,0.1)":m.confidence==="medium"?"rgba(234,179,8,0.12)":"rgba(100,116,139,0.1)",
                               color: m.confidence==="high"?"#0f766e":m.confidence==="medium"?"#a16207":"#475569",
                               border: m.confidence==="high"?"1px solid rgba(15,118,110,0.25)":m.confidence==="medium"?"1px solid rgba(234,179,8,0.3)":"1px solid rgba(100,116,139,0.25)"
                             }}>{m.confidence}</span>
                           </div>
-                          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
                             {m.author||"—"} · {fmtDate(m.date)}{m.asset?` · ${m.asset}`:""}
                           </div>
                           {m.reason && <div style={{fontSize:11,color:"var(--muted)",lineHeight:1.45,fontStyle:"italic"}}>{m.reason}</div>}
                           <div style={{display:"flex",gap:8,alignItems:"center",marginTop:6}}>
-                            {m.cqLink && <a href={m.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none"}}>View bounty ↗</a>}
+                            {m.cqLink && <a href={m.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none"}}>View bounty ↗</a>}
                             {isEditable && onCitedBountyUpdate && entry.citedBountyId !== m.bountyId && (
                               <button onClick={()=>saveMatch(m.bountyId)} disabled={savingId!==null}
-                                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500}}>
+                                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500}}>
                                 {savingId===m.bountyId?"SAVING…":"SAVE AS CITED"}
                               </button>
                             )}
                             {entry.citedBountyId === m.bountyId && (
-                              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600}}>✓ saved</span>
+                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600}}>✓ saved</span>
                             )}
                           </div>
                         </div>
@@ -1871,15 +1873,15 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
             </div>
           )}
           {isEditable && onCitedBountyUpdate && Array.isArray(bounties) && bounties.length > 0 && (
-            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:10,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Manual Link</div>
+            <div style={{marginBottom:16,padding:"14px 16px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--surface2)"}}>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Manual Link</div>
               <input value={bountySearch} onChange={e=>setBountySearch(e.target.value)}
                 placeholder="Search bounties by title, author, or asset…"
-                style={{width:"100%",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",boxSizing:"border-box"}}/>
+                style={{width:"100%",fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)",boxSizing:"border-box"}}/>
               {bountySearch.trim() && (
                 <div style={{marginTop:8,maxHeight:280,overflowY:"auto",border:"1px solid var(--border)",borderRadius:6,background:"var(--surface)"}}>
                   {bountySearchResults.length === 0 ? (
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"10px 12px"}}>No bounties match "{bountySearch}"</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",fontStyle:"italic",padding:"10px 12px"}}>No bounties match "{bountySearch}"</div>
                   ) : (
                     bountySearchResults.map((b,i) => {
                       const isCurrent = entry.citedBountyId === b.id;
@@ -1887,15 +1889,15 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                         <div key={b.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderBottom:i<bountySearchResults.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
                           <div style={{flex:1,minWidth:0}}>
                             <div title={b.title||""} style={{fontSize:11,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</div>
-                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>
                               {b.author||"—"} · {fmtDate(b.date)}{b.asset?` · ${b.asset}`:""}
                             </div>
                           </div>
                           {isCurrent ? (
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600,whiteSpace:"nowrap"}}>✓ saved</span>
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600,whiteSpace:"nowrap"}}>✓ saved</span>
                           ) : (
                             <button onClick={()=>saveMatch(b.id)} disabled={savingId!==null}
-                              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500,whiteSpace:"nowrap"}}>
+                              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500,whiteSpace:"nowrap"}}>
                               {savingId===b.id?"SAVING…":"LINK"}
                             </button>
                           )}
@@ -1910,8 +1912,8 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
-          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
+          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
       </div>
     </div>
@@ -1931,7 +1933,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.35)",backdropFilter:"blur(4px)",zIndex:200,display:"flex",justifyContent:"flex-end"}}>
       <div style={{background:"var(--surface)",borderLeft:"1px solid var(--border)",boxShadow:"-4px 0 32px rgba(13,21,32,0.12)",width:"min(480px,100vw)",height:"100vh",overflowY:"auto",overflowX:"hidden",padding:"32px 30px 48px",position:"relative",animation:"slideIn .22s cubic-bezier(0.22,1,0.36,1)",display:"flex",flexDirection:"column",gap:0}}>
         <button onClick={onClose} style={{position:"absolute",top:16,right:16,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} media citation</div>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.1em",color:"var(--accent)",textTransform:"uppercase",marginBottom:6}}>//{isEdit?"edit":"new"} media citation</div>
         <div style={{fontSize:18,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Citation":"Add Media Citation"}</div>
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           <Field label="Date"><input type="date" value={form.date} onChange={e=>set("date",e.target.value)} style={iStyle}/></Field>
@@ -1942,7 +1944,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
           <Field label="Headline" full><input value={form.headline||""} onChange={e=>set("headline",e.target.value)} placeholder="Full article headline" style={iStyle}/></Field>
           <Field label="Article Link" full><input type="url" value={form.articleLink||""} onChange={e=>set("articleLink",e.target.value)} placeholder="https://…" style={iStyle}/></Field>
           <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{display:"flex",gap:10}}>
                 <Field label="Media Tier"><input value={form.mediaTier||""} onChange={e=>set("mediaTier",e.target.value)} placeholder="e.g. Tier 1" style={iStyle}/></Field>
@@ -1957,8 +1959,8 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
           </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--orange)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>{saving?<><Icons.Spin/>SAVING…</>:"SAVE CITATION"}</button>
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--orange)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>{saving?<><Icons.Spin/>SAVING…</>:"SAVE CITATION"}</button>
         </div>
       </div>
     </div>
@@ -2066,7 +2068,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
             {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
               <button key={val} onClick={()=>onChange(val)}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:value===val?"var(--surface)":"transparent",color:value===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:value===val?700:400,boxShadow:value===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
                 {lbl}
               </button>
             ))}
@@ -2113,9 +2115,9 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
 
           return (
             <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr"+(tierEntries.length?"  260px":"")+" 260px",gap:14,marginBottom:20,animation:"fadeUp .5s ease .04s both"}}>
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
+                  <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
                 <ResponsiveContainer width="100%" height={100}>
@@ -2127,12 +2129,12 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
-                    <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
-                    <YAxis tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
+                    <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(gran==="daily"?10:6))-1)}/>
+                    <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,fill:"#9ca3af"}} axisLine={false} tickLine={false} allowDecimals={false}/>
                     <Tooltip content={({active,payload,label})=>active&&payload?.length?(
                       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:"#4a7fa8"}}>{payload[0].value} articles</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"#4a7fa8"}}>{payload[0].value} articles</div>
                       </div>
                     ):null}/>
                     <Area type="monotone" dataKey="count" stroke="#4a7fa8" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"#4a7fa8"}}/>
@@ -2140,8 +2142,8 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 </ResponsiveContainer>
               </div>
               {tierEntries.length > 0 && (
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Media Tier Breakdown</div>
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                  <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Media Tier Breakdown</div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     {tierEntries.map(([tier,count])=>{
                       const pct = Math.round((count/citations.length)*100);
@@ -2149,8 +2151,8 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                       return (
                         <div key={tier}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>{count} <span style={{color:"var(--dim)"}}>({pct}%)</span></span>
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>{count} <span style={{color:"var(--dim)"}}>({pct}%)</span></span>
                           </div>
                           <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                             <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .5s ease"}}/>
@@ -2161,14 +2163,14 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                   </div>
                 </div>
               )}
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Outlets</div>
+              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Outlets</div>
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {topOutlets.map(([name,count],i)=>(
                     <div key={name}>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                         <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:600}}>{count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:600}}>{count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:1-i*0.15,borderRadius:99}}/>
@@ -2193,21 +2195,21 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search media, reporter, topic…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
               </div>
               <button onClick={()=>setShowFilters(v=>!v)}
-                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
+                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
                 ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterMedia!=="all",filterTier!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
               </button>
-              {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
-              {currentUser.role==="admin"&&citations.length>0&&<button onClick={()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
+              {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
+              {currentUser.role==="admin"&&citations.length>0&&<button onClick={()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
               {onCitedBountyUpdate && currentUser.role==="admin" && (()=>{
                 const unlinkedCount = filtered.filter(c=>!c.citedBountyId && c.articleLink).length;
                 return <button onClick={()=>{if(batch.running)return;if(!window.confirm(`Run bounty match on ${unlinkedCount} unlinked citation${unlinkedCount!==1?"s":""}? Only high-confidence matches will be auto-saved.`))return;runAutoMatch(filtered);}}
                   disabled={batch.running||unlinkedCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:batch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:batch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
                   {batch.running?`MATCHING ${batch.processed}/${batch.total}…`:`🔗 AUTO-MATCH ${unlinkedCount} UNLINKED`}
                 </button>;
               })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
             </div>
             {(batch.running||batch.processed>0||batch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
@@ -2216,10 +2218,10 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
                       <div style={{height:"100%",width:`${batch.total?(batch.processed/batch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
                     </div>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{batch.processed}/{batch.total}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{batch.processed}/{batch.total}</span>
                   </div>
                 ):(
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
                     {batch.total>0?`Auto-match done · `:""}
                     <b style={{color:"#0f766e"}}>{batch.saved} saved</b> · {batch.skipped} skipped · {batch.errors} errors
                     {batch.lastMsg && ` · ${batch.lastMsg}`}
@@ -2227,21 +2229,21 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 )}
                 {!batch.running && batch.processed>0 && (
                   <button onClick={()=>setBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
-                    style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
                 )}
               </div>
             )}
             {showFilters&&(
-              <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
+              <div style={{marginTop:10,padding:"14px 16px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,display:"flex",gap:12,flexWrap:"wrap",alignItems:"flex-end"}}>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:140}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Author</span>
                   <select value={filterAuthor} onChange={e=>{setFA(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Authors</option>
                     {authors.map(a=><option key={a} value={a}>{a}</option>)}
                   </select>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:160}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Outlet</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Outlet</span>
                   <select value={filterMedia} onChange={e=>{setFM(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                     <option value="all">All Outlets</option>
                     {medias.map(m=><option key={m} value={m}>{m}</option>)}
@@ -2249,7 +2251,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 </div>
                 {tiers.length>0&&(
                   <div style={{display:"flex",flexDirection:"column",gap:4,minWidth:120}}>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</span>
+                    <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</span>
                     <select value={filterTier} onChange={e=>{setFT(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,cursor:"pointer"}}>
                       <option value="all">All Tiers</option>
                       {tiers.map(t=><option key={t} value={t}>Tier {t}</option>)}
@@ -2257,44 +2259,44 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                   </div>
                 )}
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>From</span>
                   <input type="date" value={filterDateFrom} onChange={e=>{setDateFrom(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>To</span>
                   <input type="date" value={filterDateTo} onChange={e=>{setDateTo(e.target.value);setPage(1)}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
                 </div>
               </div>
             )}
             {hasFilters&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                {search&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
-                {filterAuthor!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
-                {filterMedia!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterMedia}</span>}
-                {filterTier!=="all"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>Tier {filterTier}</span>}
-                {filterDateFrom&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
-                {filterDateTo&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
+                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
+                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
+                {filterMedia!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterMedia}</span>}
+                {filterTier!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>Tier {filterTier}</span>}
+                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
+                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
               </div>
             )}
           </div>
         );
       })()}
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Media","Reporter","Author","Topic","Bounty","Link",""].map(h=><div key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+              {["Date","Media","Reporter","Author","Topic","Bounty","Link",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
                   <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
                   <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No citations yet</div>
-                  {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST CITATION</button>}
+                  {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST CITATION</button>}
                 </div>
               : filtered.length===0
                 ? <div style={{textAlign:"center",padding:"48px 20px"}}>
                     <div style={{fontSize:24,marginBottom:8,opacity:.25}}>⬡</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--muted)",marginBottom:4}}>No matches</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
                   </div>
                 : paged.map((c,i)=>{
                     const mc=getPaletteColor(AUTHOR_PALETTE,"media",c.media||"?");
@@ -2304,32 +2306,32 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                       <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
                         onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
                         onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                           <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                         </div>
                         <div style={{display:"flex",alignItems:"center",gap:6,paddingRight:8,minWidth:0}}>
                           <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,flexShrink:0,background:mc.bg,color:mc.color,border:"1px solid var(--border2)"}}>{initials(c.media)}</div>
                           <span title={c.media||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{c.media||"—"}</span>
                         </div>
-                        <div title={c.reporter||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.reporter||"—"}</div>
-                        <div title={c.author||""} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:c.author?"var(--accent)":"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,cursor:c.author?"pointer":"default",textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author||"—"}</div>
+                        <div title={c.reporter||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.reporter||"—"}</div>
+                        <div title={c.author||""} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:c.author?"var(--accent)":"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,cursor:c.author?"pointer":"default",textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author||"—"}</div>
                         <div style={{paddingRight:8,minWidth:0}}>
                           <div title={c.topic||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{c.topic||"—"}</div>
-                          {c.headline&&<div title={c.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
+                          {c.headline&&<div title={c.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
                           <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                            {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
-                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(100,116,139,0.08)",border:"1px solid rgba(100,116,139,0.2)",color:"#475569"}}>{c.language}</span>}
+                            {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
+                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(100,116,139,0.08)",border:"1px solid rgba(100,116,139,0.2)",color:"#475569"}}>{c.language}</span>}
                           </div>
                         </div>
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {(()=>{const cb = c.citedBountyId && bountyById[c.citedBountyId]; return cb && cb.cqLink
-                            ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
-                            : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>;})()}
+                            ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
+                            : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>;})()}
                         </div>
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {c.articleLink
-                            ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
-                            : <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
+                            ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
+                            : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                         </div>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
                           {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
@@ -2393,22 +2395,22 @@ const CQResearchTab = ({campaigns, citations}) => {
     return {topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries};
   },[cits]);
 
-  const linkStyle = {fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"};
+  const linkStyle = {fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"};
   const onLink  = e=>e.currentTarget.style.textDecoration="underline";
   const offLink = e=>e.currentTarget.style.textDecoration="none";
 
   const Section = ({title, count, children}) => (
-    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,marginBottom:16,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"1px solid var(--border)"}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>{title}</div>
-        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{count}</span>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--dim)",fontWeight:600}}>{title}</div>
+        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{count}</span>
       </div>
       {children}
     </div>
   );
 
   const EmptyRow = ({msg}) => (
-    <div style={{padding:"32px 22px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{msg}</div>
+    <div style={{padding:"32px 22px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>{msg}</div>
   );
 
   return (
@@ -2429,22 +2431,22 @@ const CQResearchTab = ({campaigns, citations}) => {
         <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16}}>
 
           {/* Top Headlines */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
             </div>
             {topHeadlines.length===0
-              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+              ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {topHeadlines.map((h,i)=>(
                   <div key={h.label}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
                       <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                         <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                       </div>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                       <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -2456,22 +2458,22 @@ const CQResearchTab = ({campaigns, citations}) => {
           </div>
 
           {/* Top Outlets */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{uniqueOutlets.length}</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{uniqueOutlets.length}</span>
             </div>
             {topOutlets.length===0
-              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
+              ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {topOutlets.map((o,i)=>(
                   <div key={o.label}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
                       <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                         <span title={o.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
                       </div>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                       <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -2483,13 +2485,13 @@ const CQResearchTab = ({campaigns, citations}) => {
           </div>
 
           {/* Media Tier */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cits.length} total</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cits.length} total</span>
             </div>
             {tierEntries.length===0
-              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
+              ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
               :<div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {tierEntries.map(([tier,count])=>{
                   const tc=getTierColor(tier);
@@ -2497,8 +2499,8 @@ const CQResearchTab = ({campaigns, citations}) => {
                   return (
                     <div key={tier}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
@@ -2520,7 +2522,7 @@ const CQResearchTab = ({campaigns, citations}) => {
             <thead>
               <tr style={{borderBottom:"1px solid var(--border)"}}>
                 {["Date","Title","Analytics","Twitter","CQ Link"].map(h=>(
-                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                  <th key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -2529,7 +2531,7 @@ const CQResearchTab = ({campaigns, citations}) => {
                 <tr key={b.id||i} onClick={()=>setViewBounty(b)} style={{borderBottom:"1px solid var(--border)",transition:"background .1s",cursor:"pointer"}}
                   onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{b.date||"—"}</td>
+                  <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{b.date||"—"}</td>
                   <td style={{fontSize:13,fontWeight:500,color:"var(--text)",padding:"11px 22px",maxWidth:360,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"—"}</td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
                     {b.analyticsLink ? <a href={b.analyticsLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Analytics</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
@@ -2559,7 +2561,7 @@ const CQResearchTab = ({campaigns, citations}) => {
             <thead>
               <tr style={{borderBottom:"1px solid var(--border)"}}>
                 {["Date","Media","Headline / Topic","Reporter","Article"].map(h=>(
-                  <th key={h} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
+                  <th key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,textTransform:"uppercase",letterSpacing:"0.1em",color:"var(--dim)",fontWeight:600,padding:"10px 22px",textAlign:"left"}}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -2568,14 +2570,14 @@ const CQResearchTab = ({campaigns, citations}) => {
                 <tr key={c.id||i} onClick={()=>setViewCitation(c)} style={{borderBottom:"1px solid var(--border)",transition:"background .1s",cursor:"pointer"}}
                   onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.date||"—"}</td>
+                  <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.date||"—"}</td>
                   <td style={{fontSize:13,fontWeight:500,color:"var(--text)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.media||"—"}</td>
                   <td style={{fontSize:12,color:"var(--muted)",padding:"11px 22px",maxWidth:360}}>
                     {c.headline&&<div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
-                    {c.topic&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
+                    {c.topic&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
                     {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",opacity:0.45}}>—</span>}
                   </td>
-                  <td style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.reporter||"—"}</td>
+                  <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",padding:"11px 22px",whiteSpace:"nowrap"}}>{c.reporter||"—"}</td>
                   <td style={{padding:"11px 22px"}} onClick={e=>e.stopPropagation()}>
                     {c.articleLink ? <a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={linkStyle} onMouseEnter={onLink} onMouseLeave={offLink}>↗ Read</a> : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
                   </td>
@@ -2737,13 +2739,13 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
   const CustomTooltip = ({active,payload,label,nameMap={}}) => {
     if(!active||!payload?.length) return null;
     return (
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
         {payload.map(p=>(
           <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{nameMap[p.dataKey]||p.dataKey}:</span>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{nameMap[p.dataKey]||p.dataKey}:</span>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
           </div>
         ))}
       </div>
@@ -2758,14 +2760,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
     const visible = drillExpanded ? sorted : sorted.slice(0,10);
     return (
       <div style={{animation:"fadeUp .4s ease both"}}>
-        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
+        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
           ← Back to Performance
         </button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
-        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{title} <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
+        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{title} <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
           {sorted.length===0
-            ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
+            ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
             : <>
                 <div style={{maxHeight:"520px",overflowY:"auto"}}>
                   {visible.map((item,i)=>{
@@ -2774,28 +2776,28 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                       <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
                         onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
                         <div style={{minWidth:0}}>
                           {kind==="bounty"
                             ? <>
                                 <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
+                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
                               </>
                             : <>
                                 <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-                                {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
-                                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
+                                {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
                               </>
                           }
                         </div>
-                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
                       </div>
                     );
                   })}
                 </div>
                 {sorted.length>10 && (
                   <button onClick={()=>setDrillExpanded(v=>!v)}
-                    style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em"}}>
+                    style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em"}}>
                     {drillExpanded?`▲ SHOW LESS`:`▼ SHOW ALL ${sorted.length} ENTRIES`}
                   </button>
                 )}
@@ -2811,7 +2813,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Performance</h2>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
@@ -2821,7 +2823,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               title="Previous week"
               style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"rgba(26,58,92,0.07)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
             {mode==="weekly" && !isLatestWeek && (
-              <button onClick={goLatest} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
+              <button onClick={goLatest} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
             )}
             <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goForward();}}} disabled={mode==="weekly"&&isLatestWeek}
               title="Next week"
@@ -2831,7 +2833,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           <div style={{display:"flex",gap:4}}>
             {[["custom","Custom"],["all","All"]].map(([val,label])=>(
               <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"rgba(26,58,92,0.07)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"rgba(26,58,92,0.07)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
                 {label}
               </button>
             ))}
@@ -2840,7 +2842,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           {mode==="custom" && (
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
               <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
             </div>
           )}
@@ -2852,35 +2854,35 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
         {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
           <div key={i}
             onClick={s.drillKey?()=>{setDrill({type:s.drillKey});setDrillExpanded(false);}:undefined}
-            style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.drillKey?"pointer":"default",transition:"all .15s"}}
+            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.drillKey?"pointer":"default",transition:"all .15s"}}
             onMouseEnter={e=>{if(s.drillKey){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
             onMouseLeave={e=>{if(s.drillKey){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:8}}>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:500,marginBottom:8}}>
               {s.label}{s.drillKey&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
             </div>
             <div className="tabular" style={{fontSize:30,fontWeight:700,color:"var(--text)",lineHeight:1,marginBottom:6,letterSpacing:"-0.03em"}}>{s.value}</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
           </div>
         ))}
       </div>
 
       {chartData.length === 0 ? (
-        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12}}>
+        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
           <div style={{fontSize:28,marginBottom:10,opacity:.25}}>⬡</div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
         </div>
       ) : (
         <>
           {/* Combined chart */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}}>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{granularity === "daily" ? "Daily" : "Weekly"} Activity & Running Total</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em"}}>{granularity === "daily" ? "Daily" : "Weekly"} Activity & Running Total</div>
                 {/* Daily / Weekly toggle */}
                 <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
                   {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
                     <button key={val} onClick={()=>setGranularity(val)}
-                      style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>
                       {lbl}
                     </button>
                   ))}
@@ -2892,7 +2894,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     {l.line
                       ? <div style={{width:16,height:2,background:l.color,borderRadius:1}}/>
                       : <div style={{width:10,height:10,borderRadius:2,background:l.color}}/>}
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
                   </div>
                 ))}
               </div>
@@ -2901,8 +2903,8 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               <ComposedChart data={chartData} margin={{top:4,right:48,left:0,bottom:0}}>
                 <defs>
                   <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1a3a5c" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#1a3a5c" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#4a7fa8" stopOpacity={0.12}/>
@@ -2910,28 +2912,28 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.05)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
-                <YAxis yAxisId="monthly" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
-                <YAxis yAxisId="cumulative" orientation="right" tick={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={36} allowDecimals={false}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
+                <YAxis yAxisId="monthly" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
+                <YAxis yAxisId="cumulative" orientation="right" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"#6e7f92"}} axisLine={false} tickLine={false} width={36} allowDecimals={false}/>
                 <Tooltip content={({active,payload,label})=>{
                   if(!active||!payload?.length) return null;
                   const names={bounties:`Bounties / ${granularity==="daily"?"day":"wk"}`,citations:`Citations / ${granularity==="daily"?"day":"wk"}`,cumBounties:"Total Bounties",cumCitations:"Total Citations"};
                   return (
-                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
+                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
                       {payload.map(p=>(
                         <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
                           <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--muted)"}}>{names[p.dataKey]||p.dataKey}:</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{names[p.dataKey]||p.dataKey}:</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
                         </div>
                       ))}
                     </div>
                   );
                 }}/>
-                <Bar yAxisId="monthly" dataKey="bounties"  fill="#1a3a5c" fillOpacity={0.35} radius={[3,3,0,0]}/>
+                <Bar yAxisId="monthly" dataKey="bounties"  fill="var(--accent)" fillOpacity={0.35} radius={[3,3,0,0]}/>
                 <Bar yAxisId="monthly" dataKey="citations" fill="#4a7fa8" fillOpacity={0.35} radius={[3,3,0,0]}/>
-                <Line yAxisId="cumulative" type="monotone" dataKey="cumBounties"  stroke="#1a3a5c" strokeWidth={2} dot={false} activeDot={{r:4}} strokeDasharray="0"/>
+                <Line yAxisId="cumulative" type="monotone" dataKey="cumBounties"  stroke="var(--accent)" strokeWidth={2} dot={false} activeDot={{r:4}} strokeDasharray="0"/>
                 <Line yAxisId="cumulative" type="monotone" dataKey="cumCitations" stroke="#4a7fa8" strokeWidth={2} dot={false} activeDot={{r:4}} strokeDasharray="0"/>
               </ComposedChart>
             </ResponsiveContainer>
@@ -2991,7 +2993,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
                 <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 22px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--text)"}}>{title}</div>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--text)"}}>{title}</div>
                     <button onClick={onClose} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
                   </div>
                   <div style={{overflowY:"auto",padding:"16px 22px"}}>{children}</div>
@@ -3001,13 +3003,13 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
 
             const ModalRow = ({rank,label,value,pct,color,sub}) => (
               <div style={{display:"flex",alignItems:"center",gap:10,padding:"7px 0",borderBottom:"1px solid var(--border)"}}>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:20,flexShrink:0,textAlign:"right"}}>{rank}</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:20,flexShrink:0,textAlign:"right"}}>{rank}</span>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
                     <span title={label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</span>
-                    <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:color,flexShrink:0,marginLeft:10}}>{value}</span>
+                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:color,flexShrink:0,marginLeft:10}}>{value}</span>
                   </div>
-                  {sub&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:3}}>{sub}</div>}
+                  {sub&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:3}}>{sub}</div>}
                   <div style={{height:2,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                     <div style={{width:`${pct}%`,height:"100%",background:color,opacity:0.7,borderRadius:99}}/>
                   </div>
@@ -3022,27 +3024,27 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               const Panel = ({title,badge,onViewAll,children}) => (
                 <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"20px 24px",boxShadow:"var(--shadow-sm)",minWidth:0,overflow:"hidden"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>{title}</div>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>{title}</div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      {badge&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{badge}</span>}
-                      {onViewAll&&<button onClick={onViewAll} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",background:"none",border:"none",cursor:"pointer",padding:0,letterSpacing:"0.04em"}}>View all →</button>}
+                      {badge&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{badge}</span>}
+                      {onViewAll&&<button onClick={onViewAll} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",background:"none",border:"none",cursor:"pointer",padding:0,letterSpacing:"0.04em"}}>View all →</button>}
                     </div>
                   </div>
                   {children}
                 </div>
               );
 
-              const Row = ({rank,label,value,pct,color="#1a3a5c",sub}) => (
+              const Row = ({rank,label,value,pct,color="var(--accent)",sub}) => (
                 <div style={{marginBottom:10}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{rank}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{rank}</span>
                       <div style={{minWidth:0}}>
                         <div title={label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{label}</div>
-                        {sub&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
+                        {sub&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
                       </div>
                     </div>
-                    <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:12,fontWeight:600,color:color,flexShrink:0,marginLeft:8}}>{value}</span>
+                    <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:color,flexShrink:0,marginLeft:8}}>{value}</span>
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                     <div style={{width:`${pct}%`,height:"100%",background:color,opacity:0.75,borderRadius:99,transition:"width .5s ease"}}/>
@@ -3070,14 +3072,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                                   onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow=`0 6px 18px ${tc.border}`;}}
                                   onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="none";}}
                                   title={`View all ${data.count} citation${data.count!==1?"s":""} in Tier ${tier}`}
-                                  style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:10,padding:"16px 18px",overflow:"hidden",cursor:"pointer",transition:"transform .15s ease, box-shadow .15s ease"}}
+                                  style={{position:"relative",background:"var(--surface)",border:`1px solid ${tc.border}`,borderRadius:8,padding:"16px 18px",overflow:"hidden",cursor:"pointer",transition:"transform .15s ease, box-shadow .15s ease"}}
                                 >
                                   {/* Top accent stripe */}
                                   <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:tc.color}}/>
 
                                   {/* Tier badge + count */}
                                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,marginTop:4}}>
-                                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,letterSpacing:"0.04em"}}>TIER {tier}</span>
+                                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,padding:"3px 10px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,letterSpacing:"0.04em"}}>TIER {tier}</span>
                                     <span className="tabular" style={{fontSize:22,fontWeight:700,color:tc.color,letterSpacing:"-0.02em",lineHeight:1}}>{data.count}</span>
                                   </div>
 
@@ -3087,7 +3089,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                                   </div>
 
                                   {/* Mini stats row */}
-                                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>
                                     <span><span style={{color:tc.color,fontWeight:600}}>{Math.round(pct)}%</span> share</span>
                                     <span style={{color:"var(--border2)"}}>·</span>
                                     <span><span style={{color:"var(--text)",fontWeight:600}}>{data.authors.size}</span> author{data.authors.size!==1?"s":""}</span>
@@ -3097,26 +3099,26 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
 
                                   {/* Top outlets */}
                                   <div style={{borderTop:"1px solid var(--border)",paddingTop:10}}>
-                                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:7,fontWeight:600}}>Top Outlets</div>
+                                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:7,fontWeight:600}}>Top Outlets</div>
                                     {topOutlets.length ? topOutlets.map((o,i)=>{
                                       const oPct=(o.count/data.count)*100;
                                       return (
                                         <div key={o.label} style={{marginBottom:i<topOutlets.length-1?6:0}}>
                                           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:3}}>
                                             <span title={o.label} style={{fontSize:11,color:"var(--text)",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,minWidth:0}}>{o.label}</span>
-                                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:tc.color,fontWeight:600,flexShrink:0}}>{o.count}</span>
+                                            <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:tc.color,fontWeight:600,flexShrink:0}}>{o.count}</span>
                                           </div>
                                           <div style={{height:2,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                                             <div style={{width:`${oPct}%`,height:"100%",background:tc.color,opacity:0.6,borderRadius:99}}/>
                                           </div>
                                         </div>
                                       );
-                                    }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</div>}
+                                    }) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</div>}
                                   </div>
 
                                   {/* Footer: last activity */}
                                   {lastDate && (
-                                    <div style={{marginTop:10,paddingTop:8,borderTop:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                                    <div style={{marginTop:10,paddingTop:8,borderTop:"1px solid var(--border)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.06em"}}>
                                       Last seen {lastDate}
                                     </div>
                                   )}
@@ -3149,7 +3151,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                             </div>
                           </div>
                         );
-                      })() : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                      })() : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
                     </Panel>
                   </div>
 
@@ -3159,12 +3161,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                       {topAuthors.length ? topAuthors.map((r,i)=>{
                         const total=r.bounties+r.citations;
                         return <Row key={r.author} rank={i+1} label={r.author} value={total} pct={(total/maxAuthor)*100} color="var(--accent)" sub={`${r.bounties}B · ${r.citations}C`}/>;
-                      }) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                      }) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
                     </Panel>
                     <Panel title="Top Outlets" badge={`${allOutlets.length} total`} onViewAll={allOutlets.length>5?()=>setModal("outlets"):null}>
                       {topOutlets.length ? topOutlets.map((r,i)=>(
                         <Row key={r.media} rank={i+1} label={r.media} value={r.count} pct={(r.count/maxOutlet)*100} color="#4a7fa8"/>
-                      )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                      )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
                     </Panel>
                   </div>
 
@@ -3185,12 +3187,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                         <Panel title="Language Breakdown" badge={`${langEntries.length} languages`}>
                           {langEntries.length ? langEntries.map(([lang,count],i)=>(
                             <Row key={lang} rank={i+1} label={lang} value={count} pct={(count/maxLang)*100} color="#4a7fa8"/>
-                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No language data</div>}
+                          )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No language data</div>}
                         </Panel>
                         <Panel title="Direct Relationship">
                           {drEntries.length ? drEntries.map(([dr,count],i)=>(
                             <Row key={dr} rank={i+1} label={dr} value={count} pct={(count/maxDR)*100} color="var(--accent)"/>
-                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
+                          )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No data</div>}
                         </Panel>
                       </div>
                     );
@@ -3213,12 +3215,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                         <Panel title="Top Assets">
                           {assetEntries.length ? assetEntries.map(([asset,count],i)=>(
                             <Row key={asset} rank={i+1} label={asset} value={count} pct={(count/maxAsset)*100} color="var(--accent)"/>
-                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No asset data</div>}
+                          )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No asset data</div>}
                         </Panel>
                         <Panel title="Branding Mentions">
                           {brandEntries.length ? brandEntries.map(([brand,count],i)=>(
                             <Row key={brand} rank={i+1} label={brand} value={count} pct={(count/maxBrand)*100} color="#4a7fa8"/>
-                          )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No branding data</div>}
+                          )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No branding data</div>}
                         </Panel>
                       </div>
                     );
@@ -3250,16 +3252,16 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                       <AllModal title={`Tier ${tierModal} Citations (${data.count})`} onClose={()=>setTierModal(null)}>
                         {sortedItems.length ? sortedItems.map((c,i)=>(
                           <div key={c.id||i} style={{display:"flex",alignItems:"flex-start",gap:12,padding:"9px 0",borderBottom:"1px solid var(--border)"}}>
-                            <span className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:tc.color,fontWeight:600,width:68,flexShrink:0,paddingTop:2}}>{c.date||"—"}</span>
+                            <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:tc.color,fontWeight:600,width:68,flexShrink:0,paddingTop:2}}>{c.date||"—"}</span>
                             <div style={{flex:1,minWidth:0}}>
                               <div title={c.headline||c.topic||""} style={{fontSize:12,color:"var(--text)",fontWeight:500,marginBottom:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
-                              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                                 {c.media||"—"}{c.author?` · ${c.author}`:""}
                               </div>
                             </div>
-                            {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗ Read</a>:null}
+                            {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗ Read</a>:null}
                           </div>
-                        )) : <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>No citations</div>}
+                        )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No citations</div>}
                       </AllModal>
                     );
                   })()}
@@ -3379,7 +3381,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
     const col = d.up?"var(--positive)":"var(--negative)";
     const sign = d.val>=0?"+":"";
     return (
-      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:col,display:"inline-flex",alignItems:"center",gap:3}}>
+      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:col,display:"inline-flex",alignItems:"center",gap:3}}>
         {d.up?"↑":"↓"} {sign}{d.pct!==null?`${d.pct}%`:`${d.val}`} vs last week
       </span>
     );
@@ -3480,13 +3482,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       if(kind==="bounty"){
         return <>
           <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
         </>;
       }
       return <>
         <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-        {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
+        {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
       </>;
     };
     const rowLink=(item)=>{
@@ -3495,14 +3497,14 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
     };
     return (
       <div style={{animation:"fadeUp .4s ease both"}}>
-        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
+        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
           ← Back to Summary
         </button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
-        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{drillTitle} <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
+        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{drillTitle} <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
           {sorted.length===0
-            ?<div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
+            ?<div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
             :<>
               <div style={{maxHeight:"520px",overflowY:"auto"}}>
                 {visible.map((item,i)=>{
@@ -3511,11 +3513,11 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                   <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
                     <div style={{minWidth:0}}>{renderRow(item)}</div>
                     {link&&(
                       <a href={link} target="_blank" rel="noreferrer"
-                        style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
+                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
                     )}
                   </div>
                   );
@@ -3523,7 +3525,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
               </div>
               {sorted.length>10&&(
                 <button onClick={()=>setDrillExpanded(v=>!v)}
-                  style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
+                  style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
                   onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)"}}
                   onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)"}}>
                   {drillExpanded?`▲ SHOW LESS`:`▼ SHOW ALL ${sorted.length} ENTRIES`}
@@ -3543,7 +3545,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRange}</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{mode==="custom"?"Custom Range":"Weekly Summary"}</h2>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -3560,7 +3562,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                   if(!customTo) setCustomTo(toLocalDateStr(new Date()));
                 }
               }}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:mode===m?"var(--surface)":"transparent",color:mode===m?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===m?700:400,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:mode===m?"var(--surface)":"transparent",color:mode===m?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===m?700:400,boxShadow:mode===m?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
                 {label}
               </button>
             ))}
@@ -3576,7 +3578,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             </button>
             {!isLatestWeek&&(
               <button onClick={goLatest}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.color="var(--accent)";}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>
                 Latest
@@ -3595,7 +3597,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}}
                 style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
               <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}}
                 style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
             </div>
@@ -3612,15 +3614,15 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"#4a7fa8",      key:null},
         ].map((s,i)=>(
           <div key={i} onClick={s.key?()=>{setDrill({type:s.key});setDrillExpanded(false);}:undefined}
-            style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
+            style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
             onMouseEnter={e=>{if(s.key){e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.1)";e.currentTarget.style.transform="translateY(-1px)";}}}
             onMouseLeave={e=>{if(s.key){e.currentTarget.style.boxShadow="0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)";e.currentTarget.style.transform="none";}}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>
               {s.label}{s.key&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
             </div>
             <div className="tabular" style={{fontSize:30,fontWeight:700,letterSpacing:"-0.03em",color:s.curr===0?"var(--border2)":"var(--text)",lineHeight:1,marginBottom:6}}>{s.curr}</div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{s.sub}</div>
               {s.prev!==null&&<Delta curr={s.curr} prev={s.prev}/>}
             </div>
           </div>
@@ -3631,14 +3633,14 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       <div className="cq-chart-row" style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,marginBottom:14}}>
 
         {/* Daily bar chart */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexShrink:0}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Daily Activity</div>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Daily Activity</div>
             <div style={{display:"flex",gap:14}}>
               {[{color:"var(--accent)",label:"Bounties"},{color:"#4a7fa8",label:"Citations"}].map((l,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
                   <div style={{width:8,height:8,borderRadius:2,background:l.color,opacity:.8}}/>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
                 </div>
               ))}
             </div>
@@ -3651,7 +3653,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
               const isEmpty=total===0;
               return (
                 <div key={d.day} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",justifyContent:"flex-end",gap:0}}>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:isEmpty?"transparent":"var(--accent)",fontWeight:600,marginBottom:3,height:13,flexShrink:0}}>{total||""}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:isEmpty?"transparent":"var(--accent)",fontWeight:600,marginBottom:3,height:13,flexShrink:0}}>{total||""}</div>
                   <div style={{flex:1,width:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",alignItems:"stretch",gap:0,position:"relative"}}>
                     {isEmpty
                       ? <div style={{width:"100%",height:"100%",background:"var(--surface2)",borderRadius:4,border:"1px dashed var(--border)"}}/>
@@ -3663,27 +3665,27 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     }
                   </div>
                   <div style={{textAlign:"center",marginTop:7,flexShrink:0}}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,fontWeight:600,color:isEmpty?"var(--border2)":"var(--text)"}}>{d.label}</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)"}}>{d.date}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:600,color:isEmpty?"var(--border2)":"var(--text)"}}>{d.label}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,color:"var(--dim)"}}>{d.date}</div>
                   </div>
                 </div>
               );
             })}
           </div>
           {totalActivity===0&&(
-            <div style={{marginTop:8,textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",flexShrink:0}}>
+            <div style={{marginTop:8,textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",flexShrink:0}}>
               No activity recorded in this period
             </div>
           )}
         </div>
 
         {/* Recent entries feed */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Recent Activity</div>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)",display:"flex",flexDirection:"column"}}>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Recent Activity</div>
           {recentAll.length===0
             ? <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,padding:"20px 0"}}>
                 <div style={{fontSize:28,opacity:.15}}>◎</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textAlign:"center"}}>Nothing posted this week</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",textAlign:"center"}}>Nothing posted this week</div>
               </div>
             : <div style={{display:"flex",flexDirection:"column",gap:0,flex:1}}>
                 {recentAll.map((item,i)=>(
@@ -3693,13 +3695,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                       <div style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:1}}>
                         {item._type==="bounty"?item.title:(item.headline||item.media||"—")}
                       </div>
-                      <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>
                         {item._type==="bounty"?item.author:item.media} · {item.date}
                       </div>
                     </div>
                     {(item._type==="bounty"?item.cqLink:item.articleLink)&&(
                       <a href={item._type==="bounty"?item.cqLink:item.articleLink} target="_blank" rel="noreferrer"
-                        style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0,opacity:.6}}>↗</a>
+                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none",flexShrink:0,opacity:.6}}>↗</a>
                     )}
                   </div>
                 ))}
@@ -3707,12 +3709,12 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           }
           {(weekBounties.length+weekCitations.length)>6&&(
             <div style={{marginTop:8,display:"flex",gap:8}}>
-              {weekBounties.length>0&&<button onClick={()=>{setDrill({type:"bounties"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+              {weekBounties.length>0&&<button onClick={()=>{setDrill({type:"bounties"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(26,58,92,0.3)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
                 All bounties →
               </button>}
-              {weekCitations.length>0&&<button onClick={()=>{setDrill({type:"citations"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
+              {weekCitations.length>0&&<button onClick={()=>{setDrill({type:"citations"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.color="#4a7fa8";e.currentTarget.style.borderColor="rgba(74,127,168,0.3)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
                 All citations →
@@ -3727,13 +3729,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
 
         {/* Top headlines */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Headlines</div>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Headlines</div>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topHeadlines.length}</span>
           </div>
           {topHeadlines.length===0
-            ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No citations this week</div>
+            ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No citations this week</div>
             :<div style={{display:"flex",flexDirection:"column",gap:9}}>
               {topHeadlines.map((h,i)=>(
                 <div key={h.label} onClick={()=>{setDrill({type:"headline",value:h.label});setDrillExpanded(false);}}
@@ -3742,10 +3744,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                   onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                       <span title={h.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                     </div>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                     <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -3757,13 +3759,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         </div>
 
         {/* Media Tier */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</div>
-            <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{weekCitations.length} total</span>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Media Tier</div>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{weekCitations.length} total</span>
           </div>
           {tierEntries.length===0
-            ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data this week</div>
+            ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data this week</div>
             :<div style={{display:"flex",flexDirection:"column",gap:10}}>
               {tierEntries.map(([tier,count])=>{
                 const tc=getTierColor(tier);
@@ -3774,8 +3776,8 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     onMouseEnter={e=>e.currentTarget.style.background=tc.bg}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                       <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
@@ -3788,13 +3790,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
         </div>
 
           {/* Top authors */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Authors</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{authorsSet.size}</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Authors</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{authorsSet.size}</span>
             </div>
             {topAuthors.length===0
-              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No author activity</div>
+              ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No author activity</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {topAuthors.map((a,i)=>{
                   const total=a.bounties+a.citations;
@@ -3805,12 +3807,12 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                       onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                         <div style={{display:"flex",alignItems:"center",gap:8}}>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
                           <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{a.name}</span>
                         </div>
                         <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                          {a.bounties>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>{a.bounties}b</span>}
-                          {a.citations>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600}}>{a.citations}c</span>}
+                          {a.bounties>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>{a.bounties}b</span>}
+                          {a.citations>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600}}>{a.citations}c</span>}
                         </div>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
@@ -3827,13 +3829,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           </div>
 
           {/* Top outlets */}
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Media Outlets</div>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{outletsSet.size}</span>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Top Media Outlets</div>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{outletsSet.size}</span>
             </div>
             {topOutlets.length===0
-              ?<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage this week</div>
+              ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage this week</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {topOutlets.map(([outlet,count],i)=>{
                   const display=weekCitations.find(c=>(c.media||"").toLowerCase()===outlet)?.media || outlet;
@@ -3844,10 +3846,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
                         <span title={display} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{display}</span>
                       </div>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                       <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -3942,7 +3944,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const gp=weeks.length>1?(CW-(bW*weeks.length))/(weeks.length-1):0;
     const le=Math.max(1,Math.ceil(weeks.length/8));
     const fmtMD=iso=>{try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;}};
-    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="#1a3a5c" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
+    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="var(--accent)" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
     const guides=[0,0.25,0.5,0.75,1].map(p=>{const y=BA-(p*BA);return `<line x1="0" y1="${y}" x2="${CW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/><text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(p*maxWk)}</text>`;}).join("");
     const chartSvg=weeks.length?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${CH+20}" width="${CW}" height="${CH+20}" style="overflow:visible">${guides}${bars}</svg>`:`<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
 
@@ -3950,7 +3952,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const TH=s=>`<th style="font-family:monospace;font-size:7.5px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:5px 8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">${s}</th>`;
     const TD=(s,extra="")=>`<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:top;${extra}">${s}</td>`;
     const sHdr=(t,n)=>`<div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:2px solid #e5e7eb;margin-bottom:12px">${t}${n!=null?` (${n})`:""}</div>`;
-    const bRow=(rank,name,val,maxV,col="#1a3a5c")=>{const pct=(val/(maxV||1))*100;return `<tr><td style="font-family:monospace;color:#9ca3af;font-size:9px;width:18px;padding:5px 8px;border-bottom:1px solid #f3f4f6">${rank}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6"><div style="font-weight:500;margin-bottom:3px;font-size:10px">${name}</div><div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};opacity:0.75;border-radius:99px"></div></div></td><td style="font-family:monospace;font-weight:600;color:${col};text-align:right;padding:5px 8px;border-bottom:1px solid #f3f4f6;white-space:nowrap;font-size:10px">${val}</td></tr>`;};
+    const bRow=(rank,name,val,maxV,col="var(--accent)")=>{const pct=(val/(maxV||1))*100;return `<tr><td style="font-family:monospace;color:#9ca3af;font-size:9px;width:18px;padding:5px 8px;border-bottom:1px solid #f3f4f6">${rank}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6"><div style="font-weight:500;margin-bottom:3px;font-size:10px">${name}</div><div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};opacity:0.75;border-radius:99px"></div></div></td><td style="font-family:monospace;font-weight:600;color:${col};text-align:right;padding:5px 8px;border-bottom:1px solid #f3f4f6;white-space:nowrap;font-size:10px">${val}</td></tr>`;};
 
     const numCols=inclStats?(totalImpr>0&&inclImpr?6:5):0;
     const html=`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${campaignName} — Performance Report</title>
@@ -4084,7 +4086,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>Download Report</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{campaignName}</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{campaignName}</div>
           </div>
           <button onClick={onClose} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
         </div>
@@ -4092,7 +4094,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
         {/* Body */}
         <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"70vh"}}>
           {/* Date range */}
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Date Range</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Date Range</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
             <Field label="From">
               <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
@@ -4109,8 +4111,8 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
               {label:"Citations", value:c.length,  c:"#4a7fa8"},
               {label:"Authors",   value:[...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))].length, c:"var(--accent)"},
             ].map(s=>(
-              <div key={s.label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:7,padding:"9px 12px"}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{s.label}</div>
+              <div key={s.label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:7,padding:"9px 12px"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{s.label}</div>
                 <div className="tabular" style={{fontSize:20,fontWeight:700,color:"var(--text)",letterSpacing:"-0.02em"}}>{s.value}</div>
               </div>
             ))}
@@ -4124,30 +4126,30 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
                   style={{width:14,height:14,cursor:"pointer",accentColor:"var(--accent)",marginTop:2,flexShrink:0}}/>
                 <div>
                   <div style={{fontSize:12,color:"var(--text)",fontWeight:500}}>{label}</div>
-                  {sub&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
+                  {sub&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
                 </div>
               </label>
             );
             return (
               <div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Summary</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Summary</div>
                 <Check label="Stat cards" sub="Bounties, Citations, Authors, Outlets, Impressions" checked={inclStats} onChange={setInclStats}/>
                 <Check label="Weekly activity chart" checked={inclChart} onChange={setInclChart}/>
                 {inclStats&&<Check label="Impression breakdown" sub="Twitter + Telegram split (if data exists)" checked={inclImpr} onChange={setInclImpr}/>}
 
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Leaderboards</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Leaderboards</div>
                 <Check label="Top Authors" checked={inclAuthors} onChange={setInclAuthors}/>
                 <Check label="Top Media Outlets" checked={inclOutlets} onChange={setInclOutlets}/>
                 <Check label="Top Headlines" checked={inclTopics} onChange={setInclTopics}/>
 
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Citation Breakdowns</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Citation Breakdowns</div>
                 <Check label="Media Tier Breakdown" checked={inclTier} onChange={setInclTier}/>
                 <Check label="Language Breakdown" checked={inclLanguage} onChange={setInclLanguage}/>
                 <Check label="Direct Relationship" checked={inclDR} onChange={setInclDR}/>
                 <Check label="Top Assets" checked={inclAsset} onChange={setInclAsset}/>
                 <Check label="Branding Mentions" checked={inclBranding} onChange={setInclBranding}/>
 
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Full Data Tables (appended at end)</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Full Data Tables (appended at end)</div>
                 <Check label={`All bounties (${b.length})`} sub="Date, Title, Author, Category, Asset, Impressions, Links" checked={inclBounties} onChange={setInclBounties}/>
                 <Check label={`All media citations (${c.length})`} sub="Date, Outlet, Reporter, Topic, Tier, Language, Direct Rel, Asset, Branding, Link" checked={inclCitations} onChange={setInclCitations}/>
               </div>
@@ -4157,11 +4159,11 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
 
         {/* Footer */}
         <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",gap:10,justifyContent:"flex-end"}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
           <button onClick={generatePDF}
-            style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"#0d1f33",color:"#fff",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:7,letterSpacing:"0.04em"}}
-            onMouseEnter={e=>e.currentTarget.style.background="#1a3a5c"}
-            onMouseLeave={e=>e.currentTarget.style.background="#0d1f33"}>
+            style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"var(--accent)",color:"#fff",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:7,letterSpacing:"0.04em"}}
+            onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 82%,#000)"}
+            onMouseLeave={e=>e.currentTarget.style.background="var(--accent)"}>
             ↓ GENERATE PDF
           </button>
         </div>
@@ -4191,9 +4193,9 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   return (
     <Portal>
     <div onClick={e=>{if(e.target===e.currentTarget)onClose()}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(10px)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:20,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:12,boxShadow:"0 20px 60px rgba(0,0,0,0.2)",width:"min(var(--modal-md),100%)",maxHeight:"90vh",overflowY:"auto",padding:32,position:"relative",animation:"modalIn .25s ease"}}>
         <button onClick={onClose} style={{position:"absolute",top:18,right:18,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,width:30,height:30,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--muted)"}}><Icons.X/></button>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,letterSpacing:"0.1em",color:"var(--yellow)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} campaign</div>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.1em",color:"var(--yellow)",textTransform:"uppercase",marginBottom:6}}>// {isEdit?"edit":"new"} campaign</div>
         <div style={{fontSize:20,fontWeight:500,marginBottom:24}}>{isEdit?"Edit Campaign":"New Campaign"}</div>
         <div style={{display:"flex",flexDirection:"column",gap:16}}>
           <Field label="Campaign Name">
@@ -4201,29 +4203,29 @@ const CampaignForm = ({initial,onSave,onClose}) => {
           </Field>
           <Field label="Color">
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{position:"relative",width:40,height:40,borderRadius:10,overflow:"hidden",border:"2px solid var(--border)",cursor:"pointer",flexShrink:0}} title="Pick a color">
+              <div style={{position:"relative",width:40,height:40,borderRadius:8,overflow:"hidden",border:"2px solid var(--border)",cursor:"pointer",flexShrink:0}} title="Pick a color">
                 <div style={{width:"100%",height:"100%",background:color}}/>
                 <input type="color" value={color.startsWith("#")?color:"#1a3a5c"} onChange={e=>setColor(e.target.value)}
                   style={{position:"absolute",inset:0,opacity:0,width:"100%",height:"100%",cursor:"pointer",border:"none",padding:0}}/>
               </div>
               <div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--text)",fontWeight:500}}>{color.toUpperCase()}</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Click swatch to change</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--text)",fontWeight:500}}>{color.toUpperCase()}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Click swatch to change</div>
               </div>
             </div>
           </Field>
           <Field label="Status">
             <button onClick={()=>setStatus(status==="active"?"completed":"active")}
-              style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${status==="active"?"rgba(22,101,52,0.4)":"rgba(100,116,139,0.4)"}`,background:status==="active"?"rgba(22,101,52,0.08)":"rgba(100,116,139,0.08)",color:status==="active"?"#166534":"#475569",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all .15s",width:"100%"}}>
+              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${status==="active"?"rgba(22,101,52,0.4)":"rgba(100,116,139,0.4)"}`,background:status==="active"?"rgba(22,101,52,0.08)":"rgba(100,116,139,0.08)",color:status==="active"?"#166534":"#475569",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all .15s",width:"100%"}}>
               {status==="active"?"● Active":"✓ Completed"}
             </button>
           </Field>
           <div style={{paddingTop:16,borderTop:"1px solid var(--border)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Data Entry Mode</div>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Data Entry Mode</div>
             <div style={{display:"flex",gap:8,marginBottom:14}}>
               {[{id:"manual",label:"✏ Manual Entry"},{id:"sheets",label:"⟳ Google Sheets"}].map(m=>(
                 <button key={m.id} onClick={()=>setDataMode(m.id)}
-                  style={{flex:1,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px",borderRadius:8,
+                  style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px",borderRadius:8,
                     border:`1px solid ${dataMode===m.id?"rgba(26,58,92,0.3)":"var(--border)"}`,
                     background:dataMode===m.id?"rgba(26,58,92,0.08)":"transparent",
                     color:dataMode===m.id?"var(--accent)":"var(--muted)",
@@ -4233,7 +4235,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
               ))}
             </div>
             {dataMode==="manual"&&(
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
                 Data will be entered manually through the Bounties and Media Citations tabs.
               </div>
             )}
@@ -4245,33 +4247,33 @@ const CampaignForm = ({initial,onSave,onClose}) => {
                 <Field label="Media Citations Sheet CSV URL">
                   <input value={sheetMedia} onChange={e=>setSheetMedia(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv&gid=..." style={iStyle}/>
                 </Field>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
                   Sheet must be "Anyone with the link can view". Change /edit to /export?format=csv in the URL.
                 </div>
               </div>
             )}
             <div style={{paddingTop:14,borderTop:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>General Spreadsheet Link</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>General Spreadsheet Link</div>
               <Field label="Google Sheet URL" full>
                 <input value={sheetLink} onChange={e=>setSheetLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/..." style={iStyle}/>
               </Field>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6}}>A direct link to the full Google Sheet for this campaign (visible to all users).</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6}}>A direct link to the full Google Sheet for this campaign (visible to all users).</div>
             </div>
             {false&&(
               <span/>
             )}
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"var(--surface2)",borderRadius:10,border:"1px solid var(--border)"}}>
-            <div style={{width:36,height:36,borderRadius:10,background:color+"18",border:`1px solid ${color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:color}}>{name?initials(name):"??"}</div>
+          <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",background:"var(--surface2)",borderRadius:8,border:"1px solid var(--border)"}}>
+            <div style={{width:36,height:36,borderRadius:8,background:color+"18",border:`1px solid ${color}55`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:500,color:color}}>{name?initials(name):"??"}</div>
             <div>
               <div style={{fontSize:13,fontWeight:500,color:color}}>{name||"Campaign Name"}</div>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Preview</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>Preview</div>
             </div>
           </div>
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
-          <button onClick={onClose} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(217,119,6,0.35)",background:"rgba(26,58,92,0.07)",color:"var(--yellow)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(217,119,6,0.35)",background:"rgba(26,58,92,0.07)",color:"var(--yellow)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE CAMPAIGN"}
           </button>
         </div>
@@ -4391,12 +4393,12 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
     <div style={{display:"flex",alignItems:darkMode?"stretch":"center",flexDirection:darkMode?"column":"row",gap:darkMode?6:8}}>
       <button onClick={doSync} disabled={syncing}
         style={darkMode
-          ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
-          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
+          ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
+          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
         }>
         {syncing?<><Icons.Spin/>Syncing…</>:"⟳ Sync Sheet"}
       </button>
-      {result&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:darkMode?10:9,color:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.9)":"rgba(252,165,165,0.9)"):(result.startsWith("✓")?"#166534":"var(--red)"),textAlign:darkMode?"center":"left",padding:darkMode?"4px 8px":"0",background:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.08)":"rgba(252,165,165,0.08)"):"transparent",borderRadius:darkMode?6:0,border:darkMode?`1px solid ${result.startsWith("✓")?"rgba(134,239,172,0.2)":"rgba(252,165,165,0.2)"}`:"none"}}>{result}</span>}
+      {result&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:darkMode?10:9,color:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.9)":"rgba(252,165,165,0.9)"):(result.startsWith("✓")?"#166534":"var(--red)"),textAlign:darkMode?"center":"left",padding:darkMode?"4px 8px":"0",background:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.08)":"rgba(252,165,165,0.08)"):"transparent",borderRadius:darkMode?6:0,border:darkMode?`1px solid ${result.startsWith("✓")?"rgba(134,239,172,0.2)":"rgba(252,165,165,0.2)"}`:"none"}}>{result}</span>}
     </div>
   );
 };
@@ -4410,19 +4412,19 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
     <div style={{animation:"fadeUp .5s ease both"}}>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
         <div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// bounty management</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// bounty management</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Campaigns</h2>
         </div>
-        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
+        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> NEW CAMPAIGN
         </button>
       </div>
       {!programs.length ? (
-        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12}}>
+        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
           <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
           <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No campaigns yet</div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",marginBottom:20}}>Create your first campaign to start tracking data separately</div>
-          <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>CREATE FIRST CAMPAIGN</button>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",marginBottom:20}}>Create your first campaign to start tracking data separately</div>
+          <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>CREATE FIRST CAMPAIGN</button>
         </div>
       ) : (()=>{
         const activeCampaigns    = programs.filter(cl=>cl.status!=="completed");
@@ -4444,25 +4446,25 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 <div style={{width:8,height:8,borderRadius:"50%",background:cl.status==="completed"?"#94a3b8":cl.color,flexShrink:0}}/>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:13,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</div>
-                  <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
                 </div>
                 <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
                   <div style={{textAlign:"right"}}>
-                    <div className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{campCount}</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Bounties</div>
+                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{campCount}</div>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Bounties</div>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div className="tabular" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{citeCount}</div>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Citations</div>
+                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{citeCount}</div>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Citations</div>
                   </div>
                 </div>
               </div>
               {/* actions */}
               <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14}} onClick={e=>e.stopPropagation()}>
-                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:5,border:"1px solid rgba(26,58,92,0.18)",background:"rgba(26,58,92,0.05)",color:"var(--accent)",textDecoration:"none"}}>Sheet↗</a>}
+                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:5,border:"1px solid rgba(26,58,92,0.18)",background:"rgba(26,58,92,0.05)",color:"var(--accent)",textDecoration:"none"}}>Sheet↗</a>}
                 {(cl.sheetBounties||cl.sheetMedia)&&<DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/>}
                 <span onClick={e=>{e.stopPropagation();onSave({...cl,status:cl.status==="completed"?"active":"completed"},cl)}}
-                  style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,cursor:"pointer",
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,cursor:"pointer",
                   background:cl.status==="completed"?"rgba(100,116,139,0.08)":"rgba(22,101,52,0.07)",
                   border:cl.status==="completed"?"1px solid rgba(100,116,139,0.2)":"1px solid rgba(22,101,52,0.2)",
                   color:cl.status==="completed"?"#475569":"#166634"}}>
@@ -4485,24 +4487,24 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}>
                 <span style={{fontSize:11,display:"inline-block",transform:open?"rotate(90deg)":"none",transition:"transform .18s",color:"var(--dim)",width:14,textAlign:"center"}}>▶</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:accentBg,border:`1px solid ${accentBorder}`,color:accent}}>{items.length}</span>
+                <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--muted)"}}>{label}</span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:99,background:accentBg,border:`1px solid ${accentBorder}`,color:accent}}>{items.length}</span>
               </button>
               {open&&(
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
                   {/* Column headers */}
                   <div style={{display:"grid",gridTemplateColumns:"3px 1fr auto",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
                     <div/>
                     <div style={{padding:"7px 20px",display:"flex",gap:14,alignItems:"center"}}>
                       <div style={{width:8,flexShrink:0}}/>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",flex:1}}>Campaign</span>
+                      <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",flex:1}}>Campaign</span>
                       <div style={{display:"flex",gap:16}}>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Bounties</span>
-                        <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Citations</span>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Bounties</span>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Citations</span>
                       </div>
                     </div>
                     <div style={{paddingRight:14,display:"flex",alignItems:"center"}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>Actions</span>
+                      <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>Actions</span>
                     </div>
                   </div>
                   {items.map((cl,i)=><CampaignRow key={cl.id} cl={cl} i={i} total={items.length}/>)}
@@ -4533,7 +4535,7 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
   return (
     <div style={{animation:"fadeUp .4s ease both"}}>
       <div style={{marginBottom:20}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// my contributions</div>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// my contributions</div>
         <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>My Creations</h2>
       </div>
       <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:9,padding:4,width:"fit-content",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)"}}>
@@ -4541,9 +4543,9 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
           const ia = sub===t.id;
           return (
             <button key={t.id} onClick={()=>setSub(t.id)}
-              style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 16px",borderRadius:8,border:`1px solid ${ia?"rgba(26,58,92,0.1)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:ia?700:400,letterSpacing:"0.04em",transition:"all .15s"}}>
+              style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 16px",borderRadius:8,border:`1px solid ${ia?"rgba(26,58,92,0.1)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:ia?700:400,letterSpacing:"0.04em",transition:"all .15s"}}>
               {t.label}
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.07)":"transparent",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.07)":"transparent",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>
             </button>
           );
         })}
@@ -4682,8 +4684,8 @@ const AuthorsTab = ({campaigns, citations}) => {
       {/* Header */}
       <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:14}}>
         <div>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// contributors</div>
-          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Authors <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{authors.length}</span></h2>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// contributors</div>
+          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Authors <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{authors.length}</span></h2>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{position:"relative"}}>
@@ -4693,7 +4695,7 @@ const AuthorsTab = ({campaigns, citations}) => {
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
             {[["activity","Activity"],["recent","Recent"],["name","Name"]].map(([v,l])=>(
               <button key={v} onClick={()=>setSort(v)}
-                style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:sort===v?"var(--surface)":"transparent",color:sort===v?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:sort===v?700:400,boxShadow:sort===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:sort===v?"var(--surface)":"transparent",color:sort===v?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:sort===v?700:400,boxShadow:sort===v?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s"}}>
                 {l}
               </button>
             ))}
@@ -4710,10 +4712,10 @@ const AuthorsTab = ({campaigns, citations}) => {
             {label:"Citations",      val:totalCitations,            sub:"Media mentions",      c:"#4a7fa8"},
             {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"#4a7fa8"},
           ].map((s,i)=>(
-            <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03)"}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
+            <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03)"}}>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
               <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1,marginBottom:4}}>{s.val}</div>
-              <div title={s.sub} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sub}</div>
+              <div title={s.sub} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.sub}</div>
             </div>
           ))}
         </div>
@@ -4721,13 +4723,13 @@ const AuthorsTab = ({campaigns, citations}) => {
 
       {/* Table */}
       {filtered.length===0
-        ? <div style={{textAlign:"center",padding:"80px 20px",background:"var(--surface)",border:"1px dashed var(--border)",borderRadius:12}}>
+        ? <div style={{textAlign:"center",padding:"80px 20px",background:"var(--surface)",border:"1px dashed var(--border)",borderRadius:8}}>
             <div style={{fontSize:32,opacity:.15,marginBottom:8}}>◎</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>{search?"No authors match your search":"No authors in this campaign yet"}</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>{search?"No authors match your search":"No authors in this campaign yet"}</div>
           </div>
-        : <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
+        : <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
             {/* Header row */}
-            <div style={{display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"12px 18px",background:"var(--surface2)",borderBottom:"1px solid var(--border)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>
+            <div style={{display:"grid",gridTemplateColumns:"44px minmax(200px,1.6fr) 90px 90px 80px 110px 150px",alignItems:"center",gap:12,padding:"12px 18px",background:"var(--surface2)",borderBottom:"1px solid var(--border)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>
               <div style={{textAlign:"center"}}>#</div>
               <div>Author</div>
               <div style={{textAlign:"right"}}>Bounties</div>
@@ -4754,7 +4756,7 @@ const AuthorsTab = ({campaigns, citations}) => {
                   {/* Rank */}
                   <div style={{textAlign:"center",position:"relative"}}>
                     {isTopByActivity ? (
-                      <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:"50%",background:rankMedals[i]+"22",border:`1px solid ${rankMedals[i]}`,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:700,color:rankMedals[i]}}>{i+1}</div>
+                      <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:"50%",background:rankMedals[i]+"22",border:`1px solid ${rankMedals[i]}`,fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,color:rankMedals[i]}}>{i+1}</div>
                     ) : (
                       <span className="tabular" style={{fontSize:12,color:"var(--dim)",fontWeight:500}}>{i+1}</span>
                     )}
@@ -4766,7 +4768,7 @@ const AuthorsTab = ({campaigns, citations}) => {
                     <div style={{minWidth:0,flex:1}}>
                       <div title={a.name} style={{fontSize:14,fontWeight:600,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",letterSpacing:"-0.01em",marginBottom:2}}>{a.name}</div>
                       {status && (
-                        <span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:"'IBM Plex Mono',monospace",fontSize:8,padding:"1px 6px",borderRadius:99,background:status.bg,color:status.color,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                        <span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,padding:"1px 6px",borderRadius:99,background:status.bg,color:status.color,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>
                           <span style={{width:4,height:4,borderRadius:"50%",background:status.color}}/>{status.label}
                         </span>
                       )}
@@ -4783,7 +4785,7 @@ const AuthorsTab = ({campaigns, citations}) => {
                   <div className="tabular" style={{textAlign:"right",fontSize:14,fontWeight:600,color:"var(--text)"}}>{a.activeWeeks}</div>
 
                   {/* Last active */}
-                  <div style={{textAlign:"right",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>{last||"—"}</div>
+                  <div style={{textAlign:"right",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{last||"—"}</div>
 
                   {/* Sparkline */}
                   <div style={{width:"100%"}}>
@@ -4888,25 +4890,25 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
     <div style={{animation:"fadeUp .4s ease both"}}>
       {/* Back button */}
       <button onClick={onBack}
-        style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
+        style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
         ← Back
       </button>
 
       {/* Header card */}
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"22px 26px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"22px 26px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
         <div style={{display:"flex",alignItems:"center",gap:18,flexWrap:"wrap"}}>
           <div style={{width:64,height:64,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,fontWeight:600,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",flexShrink:0}}>{initials(displayName)}</div>
           <div style={{flex:1,minWidth:0}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-              <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Author profile</div>
+              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.1em"}}>Author profile</div>
               {program && (
-                <span style={{display:"inline-flex",alignItems:"center",gap:5,fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:99,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:99,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>
                   <span style={{width:6,height:6,borderRadius:"50%",background:program.color}}/>{program.name}
                 </span>
               )}
             </div>
             <h2 style={{fontSize:26,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)",marginBottom:6}}>{displayName}</h2>
-            {firstDate && <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)"}}>Active {fmtDate(firstDate)} → {fmtDate(lastDate)}</div>}
+            {firstDate && <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>Active {fmtDate(firstDate)} → {fmtDate(lastDate)}</div>}
           </div>
         </div>
       </div>
@@ -4920,24 +4922,24 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
           {label:"Weekly Avg", val:weeklyAvg, c:"#4a7fa8"},
           {label:"Longest Streak", val:`${longestStreak}w`, c:"var(--accent)"},
         ].map((s,i)=>(
-          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderLeft:`3px solid ${s.c}`,borderRadius:10,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
+          <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
+            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
             <div className="tabular" style={{fontSize:24,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{s.val}</div>
           </div>
         ))}
       </div>
 
       {/* Heatmap (90 days) */}
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 20px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",marginBottom:18,boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Last 90 Days</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Last 90 Days</div>
           <div style={{display:"flex",gap:14,alignItems:"center"}}>
             <div style={{display:"flex",alignItems:"center",gap:4}}>
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>less</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>less</span>
               {[0.15,0.35,0.6,0.85,1].map((o,i)=>(
                 <div key={i} style={{width:10,height:10,borderRadius:2,background:`rgba(26,58,92,${o})`}}/>
               ))}
-              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>more</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>more</span>
             </div>
           </div>
         </div>
@@ -4955,19 +4957,19 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       {/* Two-column: outlets + tier + programs */}
       <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
         {/* Top outlets */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Top Outlets Covering Them</div>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Top Outlets Covering Them</div>
           {topOutlets.length===0
-            ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage</div>
+            ? <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No media coverage</div>
             : <div style={{display:"flex",flexDirection:"column",gap:9}}>
               {topOutlets.map((o,i)=>(
                 <div key={o.label}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                       <span title={o.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
                     </div>
-                    <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                     <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
@@ -4979,10 +4981,10 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
         </div>
 
         {/* Media Tier */}
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Media Tier</div>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 3px rgba(0,0,0,0.05)"}}>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:14}}>Media Tier</div>
           {tierEntries.length===0
-            ? <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data</div>
+            ? <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No tier data</div>
             : <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {tierEntries.map(([tier,count])=>{
                 const tc=getTierColor(tier);
@@ -4990,8 +4992,8 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                 return (
                   <div key={tier}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                      <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                       <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
@@ -5005,9 +5007,9 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       </div>
 
       {/* Timeline */}
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)",gap:12,flexWrap:"wrap"}}>
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Full Timeline</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Full Timeline</div>
           <div style={{display:"flex",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
             {[
               {id:"bounties",  label:"Bounties",  count:bountyTimeline.length,   accent:"var(--accent)"},
@@ -5016,17 +5018,17 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
               const active = timelineTab===t.id;
               return (
                 <button key={t.id} onClick={()=>{setTimelineTab(t.id);setShowAll(false);}}
-                  style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:active?"var(--surface2)":"transparent",color:active?t.accent:"var(--dim)",cursor:"pointer",fontWeight:active?700:500,boxShadow:active?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",textTransform:"uppercase",letterSpacing:"0.06em"}}>
+                  style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,padding:"5px 12px",borderRadius:6,border:"none",background:active?"var(--surface2)":"transparent",color:active?t.accent:"var(--dim)",cursor:"pointer",fontWeight:active?700:500,boxShadow:active?"0 1px 3px rgba(0,0,0,0.08)":"none",transition:"all .15s",textTransform:"uppercase",letterSpacing:"0.06em"}}>
                   <span style={{width:6,height:6,borderRadius:"50%",background:t.accent,opacity:active?1:0.4}}/>
                   {t.label}
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:99,background:active?t.accent+"15":"var(--surface2)",color:active?t.accent:"var(--dim)",fontWeight:600}}>{t.count}</span>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:99,background:active?t.accent+"15":"var(--surface2)",color:active?t.accent:"var(--dim)",fontWeight:600}}>{t.count}</span>
                 </button>
               );
             })}
           </div>
         </div>
         {activeTimeline.length===0
-          ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'IBM Plex Mono',monospace",fontSize:12,color:"var(--dim)"}}>No {timelineTab} recorded</div>
+          ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No {timelineTab} recorded</div>
           : <>
             <div style={{maxHeight:"560px",overflowY:"auto"}}>
               {visibleTimeline.map((item,i)=>{
@@ -5035,27 +5037,27 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                   <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 14px 1fr auto",alignItems:"flex-start",gap:12,padding:"12px 20px",borderBottom:i<visibleTimeline.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--dim)",paddingTop:2}}>{item.date}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",paddingTop:2}}>{item.date}</div>
                     <div style={{width:8,height:8,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",marginTop:6}}/>
                     <div style={{minWidth:0}}>
                       {item._type==="bounty"
                         ? <>
                             <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Bounty</div>
+                            <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Bounty</div>
                           </>
                         : <>
                             <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-                            {item.headline&&<div title={item.headline} style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+                            {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
                             <div style={{display:"flex",alignItems:"center",gap:8}}>
-                              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"#4a7fa8",textTransform:"uppercase",letterSpacing:"0.06em"}}>Citation</span>
-                              <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"var(--dim)"}}>· {item.media}</span>
+                              <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"#4a7fa8",textTransform:"uppercase",letterSpacing:"0.06em"}}>Citation</span>
+                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>· {item.media}</span>
                             </div>
                           </>
                       }
                     </div>
                     {link && (
                       <a href={link} target="_blank" rel="noreferrer"
-                        style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
+                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
                     )}
                   </div>
                 );
@@ -5063,7 +5065,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
             </div>
             {activeTimeline.length>20 && (
               <button onClick={()=>setShowAll(v=>!v)}
-                style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'IBM Plex Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
+                style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em",transition:"all .15s"}}
                 onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)"}}>
                 {showAll?`▲ SHOW LESS`:`▼ SHOW ALL ${activeTimeline.length} ENTRIES`}
@@ -5437,7 +5439,7 @@ export default function App() {
   if(loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"var(--bg)",flexDirection:"column",gap:14}}>
       <style>{css}</style>
-      <Icons.Spin/><div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)",letterSpacing:"0.08em"}}>LOADING…</div>
+      <Icons.Spin/><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",letterSpacing:"0.08em"}}>LOADING…</div>
     </div>
   );
 
@@ -5485,10 +5487,10 @@ export default function App() {
           {sidebarOpen?"✕":"☰"}
         </button>
         {/* SIDEBAR */}
-        <nav className={`cq-sidebar${sidebarOpen?" open":""}`} style={{width:216,flexShrink:0,background:"#0d1f33",borderRight:"1px solid rgba(255,255,255,0.07)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
+        <nav className={`cq-sidebar${sidebarOpen?" open":""}`} style={{width:216,flexShrink:0,background:"var(--surface)",borderRight:"1px solid var(--border)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
           <div style={{padding:"4px 10px",marginBottom:16}}>
-            <div style={{fontSize:13,fontWeight:600,letterSpacing:"-0.01em",color:"#ffffff"}}>CryptoQuant</div>
-            <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.35)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
+            <div style={{fontSize:13,fontWeight:600,letterSpacing:"-0.01em",color:"var(--text)"}}>CryptoQuant</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
           </div>
 
           {/* CAMPAIGN SELECTOR */}
@@ -5503,35 +5505,35 @@ export default function App() {
             const setCid = user.role==="client" ? setClientActiveCid : setActiveCid;
             if(!visibleCampaigns.length) return (
               <div style={{padding:"0 10px",marginBottom:16}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",marginBottom:6}}>Campaign</div>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"rgba(255,255,255,0.35)",padding:"8px 0"}}>No campaigns assigned.</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Campaign</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",padding:"8px 0"}}>No campaigns assigned.</div>
               </div>
             );
             return (
               <div ref={sidebarCampaignRef} style={{padding:"0 4px",marginBottom:16}}>
-                <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 6px",marginBottom:6}}>Campaign</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",padding:"0 6px",marginBottom:6}}>Campaign</div>
                 <button onClick={()=>setSidebarCampaignOpen(v=>!v)}
-                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:sidebarCampaignOpen?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.04)",border:"1px solid "+(sidebarCampaignOpen?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)"),borderRadius:6,cursor:"pointer",transition:"all .15s",textAlign:"left"}}
-                  onMouseEnter={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="rgba(255,255,255,0.06)"}}
-                  onMouseLeave={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="rgba(255,255,255,0.04)"}}>
+                  style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:sidebarCampaignOpen?"var(--surface3)":"var(--surface2)",border:"1px solid "+(sidebarCampaignOpen?"var(--border)":"var(--border)"),borderRadius:6,cursor:"pointer",transition:"all .15s",textAlign:"left"}}
+                  onMouseEnter={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="var(--border)"}}
+                  onMouseLeave={e=>{if(!sidebarCampaignOpen)e.currentTarget.style.background="var(--surface2)"}}>
                   {activeCl&&<div style={{width:7,height:7,borderRadius:"50%",background:activeCl.color,flexShrink:0}}/>}
-                  <span style={{flex:1,fontSize:12,fontWeight:500,color:activeCl?"rgba(255,255,255,0.9)":"rgba(255,255,255,0.4)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select…"}</span>
-                  <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.3)",transition:"transform .15s",display:"inline-block",transform:sidebarCampaignOpen?"rotate(180deg)":"none"}}>▾</span>
+                  <span style={{flex:1,fontSize:12,fontWeight:500,color:activeCl?"var(--text)":"var(--dim)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select…"}</span>
+                  <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:sidebarCampaignOpen?"rotate(180deg)":"none"}}>▾</span>
                 </button>
                 {sidebarCampaignOpen&&(
-                  <div style={{marginTop:4,background:"#162a42",border:"1px solid rgba(255,255,255,0.12)",borderRadius:8,overflow:"hidden",animation:"fadeUp .15s ease",maxHeight:240,overflowY:"auto"}}>
+                  <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",animation:"fadeUp .15s ease",maxHeight:240,overflowY:"auto"}}>
                     {visibleCampaigns.map((cl,i)=>{
                       const ia=currentCid===cl.id;
                       const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
                       const cc=citations.filter(c=>c.campaignId===cl.id).length;
                       return (
                         <button key={cl.id} onClick={()=>{setCid(cl.id);pushHash(tab,cl.id);setSidebarCampaignOpen(false);}}
-                          style={{display:"flex",alignItems:"center",gap:8,padding:"9px 10px",width:"100%",background:ia?"rgba(255,255,255,0.08)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid rgba(255,255,255,0.06)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
-                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="rgba(255,255,255,0.05)"}}
+                          style={{display:"flex",alignItems:"center",gap:8,padding:"9px 10px",width:"100%",background:ia?"color-mix(in srgb,var(--accent) 12%,transparent)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
+                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
                           onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
                           <div style={{width:7,height:7,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
-                          <span style={{flex:1,fontSize:12,fontWeight:ia?600:400,color:ia?"rgba(255,255,255,0.95)":"rgba(255,255,255,0.5)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
-                          <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,color:"rgba(255,255,255,0.3)"}}>{bc+cc}</span>
+                          <span style={{flex:1,fontSize:12,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc+cc}</span>
                         </button>
                       );
                     })}
@@ -5541,20 +5543,20 @@ export default function App() {
             );
           })()}
 
-          <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Navigation</div>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",padding:"0 10px",marginBottom:10}}>Navigation</div>
           {TABS.map((t,idx)=>{
             const ia=tab===t.id;
             const isFirstAdmin = user.role==="admin" && t.id==="campaigns_mgmt";
             return (
               <React.Fragment key={t.id}>
-                {isFirstAdmin&&<div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:8,letterSpacing:"0.14em",color:"rgba(255,255,255,0.3)",textTransform:"uppercase",padding:"0 10px",marginTop:12,marginBottom:10}}>Admin</div>}
+                {isFirstAdmin&&<div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",padding:"0 10px",marginTop:12,marginBottom:10}}>Admin</div>}
                 <button onClick={()=>navigate(t.id)}
-                  style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"rgba(255,255,255,0.1)":"transparent",color:ia?"#ffffff":"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
-                  onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}}
-                  onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}}>
-                  <span style={{color:ia?"#ffffff":"rgba(255,255,255,0.4)",flexShrink:0}}>{t.icon}</span>
+                  style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:ia?"color-mix(in srgb,var(--accent) 14%,transparent)":"transparent",color:ia?"var(--text)":"var(--muted)",cursor:"pointer",fontWeight:ia?600:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Hanken Grotesk',system-ui,sans-serif"}}
+                  onMouseEnter={e=>{if(!ia){e.currentTarget.style.background="var(--border)";e.currentTarget.style.color="var(--text)";}}}
+                  onMouseLeave={e=>{if(!ia){e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}}>
+                  <span style={{color:ia?"var(--accent)":"var(--dim)",flexShrink:0}}>{t.icon}</span>
                   <span style={{flex:1}}>{t.label}</span>
-                  {t.count!==""&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"rgba(255,255,255,0.15)":"rgba(255,255,255,0.08)",color:ia?"#ffffff":"rgba(255,255,255,0.4)"}}>{t.count}</span>}
+                  {t.count!==""&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"1px 6px",borderRadius:100,background:ia?"color-mix(in srgb,var(--accent) 22%,transparent)":"var(--surface2)",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>}
                 </button>
               </React.Fragment>
             );
@@ -5562,36 +5564,36 @@ export default function App() {
           {/* PDF Report — visible when a campaign is active */}
           {effectiveCid && tab!=="campaigns_mgmt" && (
             <button onClick={()=>setShowPdfModal(true)}
-              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"rgba(255,255,255,0.5)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Plus Jakarta Sans','Inter',sans-serif"}}
-              onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color="rgba(255,255,255,0.85)";}}
-              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="rgba(255,255,255,0.5)";}}>
-              <span style={{color:"rgba(255,255,255,0.35)",flexShrink:0,fontSize:12}}>↓</span>
+              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:8,border:"none",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:400,fontSize:13,textAlign:"left",width:"100%",transition:"all .15s",fontFamily:"'Hanken Grotesk',system-ui,sans-serif"}}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--border)";e.currentTarget.style.color="var(--text)";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="var(--muted)";}}>
+              <span style={{color:"var(--dim)",flexShrink:0,fontSize:12}}>↓</span>
               <span style={{flex:1}}>PDF Report</span>
             </button>
           )}
           {effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)&&(
             <div style={{marginTop:"auto",padding:"0 4px",marginBottom:10}}>
-              <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations} darkMode/>
+              <DrillSync program={effectiveClient} drillCamps={scopedCampaigns} drillCites={scopedCitations} setCampaigns={setCampaigns} setCitations={setCitations} darkMode={theme==="dark"}/>
             </div>
           )}
-          <div style={{marginTop:effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)?0:"auto",paddingTop:16,borderTop:"1px solid rgba(255,255,255,0.08)"}}>
-            {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'IBM Plex Mono',monospace",fontSize:10,color:"rgba(255,255,255,0.4)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
-            <div style={{padding:"8px 12px",borderRadius:8,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)"}}>
+          <div style={{marginTop:effectiveClient&&(effectiveClient.sheetBounties||effectiveClient.sheetMedia)?0:"auto",paddingTop:16,borderTop:"1px solid var(--border)"}}>
+            {saving&&<div style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"0 12px",marginBottom:8}}><Icons.Spin/>SAVING…</div>}
+            <div style={{padding:"8px 12px",borderRadius:8,background:"var(--surface2)",border:"1px solid var(--border)"}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(255,255,255,0.1)",border:"1px solid rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:"rgba(255,255,255,0.8)",flexShrink:0}}>{initials(user.username)}</div>
-                <span style={{fontSize:12,fontWeight:500,color:"rgba(255,255,255,0.9)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
+                <div style={{width:22,height:22,borderRadius:"50%",background:"var(--surface3)",border:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,color:"var(--muted)",flexShrink:0}}>{initials(user.username)}</div>
+                <span style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.username}</span>
               </div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
-                <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.55)",textTransform:"uppercase"}}>{rm.label}</span>
+                <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,padding:"1px 6px",borderRadius:4,background:"var(--surface3)",border:"1px solid var(--border)",color:"var(--muted)",textTransform:"uppercase"}}>{rm.label}</span>
                 <div style={{display:"flex",alignItems:"center",gap:4}}>
-                  <button onClick={toggleTheme} title={theme==="dark"?"Switch to light mode":"Switch to dark mode"} style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
-                    onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.3)";e.currentTarget.style.color="rgba(255,255,255,0.9)"}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
+                  <button onClick={toggleTheme} title={theme==="dark"?"Switch to light mode":"Switch to dark mode"} style={{width:24,height:24,borderRadius:6,border:"1px solid var(--border)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--dim)",transition:"all .15s"}}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--dim)";e.currentTarget.style.color="var(--text)"}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--dim)"}}>
                     {theme==="dark"?<Icons.Sun/>:<Icons.Moon/>}
                   </button>
-                  <button onClick={handleLogout} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid rgba(255,255,255,0.12)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(255,255,255,0.4)",transition:"all .15s"}}
+                  <button onClick={handleLogout} title="Sign out" style={{width:24,height:24,borderRadius:6,border:"1px solid var(--border)",background:"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--dim)",transition:"all .15s"}}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)"}}
-                    onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";e.currentTarget.style.color="rgba(255,255,255,0.4)"}}>
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--dim)"}}>
                     <Icons.Logout/>
                   </button>
                 </div>
@@ -5605,7 +5607,7 @@ export default function App() {
 
         {/* NO CAMPAIGN SELECTED warning for data tabs */}
         {!effectiveCid && (tab==="performance"||tab==="weekly"||tab==="analytics"||tab==="campaign"||tab==="media"||tab==="authors"||tab==="mine") && programs.length>0 && (
-          <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,animation:"fadeUp .5s ease .1s both"}}>
+          <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,animation:"fadeUp .5s ease .1s both"}}>
             <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>Select a campaign in the sidebar to view data</div>
           </div>
         )}
@@ -5624,8 +5626,8 @@ export default function App() {
       </div>
 
       <footer className="cq-footer" style={{borderTop:"1px solid var(--border)",padding:"14px 36px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
-        <div style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--dim)"}}>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>
           {programs.length} campaign{programs.length!==1?"s":""} · {campaigns.length} entries · {citations.length} citations · <span style={{color:"var(--green)"}}>synced</span>
         </div>
       </footer>
