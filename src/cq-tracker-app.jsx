@@ -2855,8 +2855,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
-          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
-          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Performance</h2>
+          <div style={{fontSize:18,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{dateRangeLabel}</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
           {/* Week navigator — arrows drive weekly mode */}
