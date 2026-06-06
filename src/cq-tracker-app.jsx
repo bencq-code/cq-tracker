@@ -99,23 +99,12 @@ const NEXO_CITATIONS = [
 
 // Differentiated but muted palette — each entry is visually distinct but stays
 // in the cool/desaturated family so tags don't feel childish.
+// Avatars are monochrome (institutional) — neutral surface + muted ink, theme-driven.
 const AUTHOR_PALETTE = [
-  {bg:"rgba(26,58,92,0.08)",  color:"#1a3a5c"}, // navy
-  {bg:"rgba(15,76,76,0.08)",  color:"#0f4c4c"}, // teal
-  {bg:"rgba(76,29,80,0.08)",  color:"#4c1d50"}, // plum
-  {bg:"rgba(86,62,20,0.08)",  color:"#563e14"}, // olive
-  {bg:"rgba(42,52,72,0.08)",  color:"#2a3448"}, // slate
-  {bg:"rgba(107,45,20,0.08)", color:"#6b2d14"}, // rust
-  {bg:"rgba(32,67,88,0.08)",  color:"#204358"}, // steel
-  {bg:"rgba(55,48,92,0.08)",  color:"#37305c"}, // indigo
+  {bg:"var(--surface3)", color:"var(--muted)"},
 ];
 const CLIENT_PALETTE = [
-  {bg:"rgba(26,58,92,0.08)", border:"rgba(26,58,92,0.22)",  color:"#1a3a5c"},
-  {bg:"rgba(15,76,76,0.08)", border:"rgba(15,76,76,0.22)",  color:"#0f4c4c"},
-  {bg:"rgba(76,29,80,0.08)", border:"rgba(76,29,80,0.22)",  color:"#4c1d50"},
-  {bg:"rgba(86,62,20,0.08)", border:"rgba(86,62,20,0.22)",  color:"#563e14"},
-  {bg:"rgba(42,52,72,0.08)", border:"rgba(42,52,72,0.22)",  color:"#2a3448"},
-  {bg:"rgba(107,45,20,0.08)",border:"rgba(107,45,20,0.22)", color:"#6b2d14"},
+  {bg:"var(--surface3)", border:"var(--border)", color:"var(--muted)"},
 ];
 // Tier colors are resolved via CSS variables so dark mode can shift them.
 const TIER_COLORS = {
@@ -125,9 +114,9 @@ const TIER_COLORS = {
   "Tier 4":{bg:"var(--tier-4-bg)",border:"var(--tier-4-border)",color:"var(--tier-4)"},
 };
 const ROLE_META = {
-  admin:  {label:"Admin",  color:"#1a3a5c", bg:"rgba(26,58,92,0.08)",  border:"rgba(26,58,92,0.2)"},
-  author: {label:"Author", color:"#1a3a5c", bg:"rgba(26,58,92,0.06)", border:"rgba(26,58,92,0.2)"},
-  client: {label:"Client", color:"#1a3a5c", bg:"rgba(26,58,92,0.06)", border:"rgba(26,58,92,0.2)"},
+  admin:  {label:"Admin",  color:"var(--accent)", bg:"color-mix(in srgb,var(--accent) 9%,transparent)",  border:"color-mix(in srgb,var(--accent) 24%,transparent)"},
+  author: {label:"Author", color:"var(--muted)", bg:"var(--surface2)", border:"var(--border)"},
+  client: {label:"Client", color:"var(--muted)", bg:"var(--surface2)", border:"var(--border)"},
 };
 
 const colorMaps = {};
@@ -503,7 +492,7 @@ const LoginScreen = ({onLogin}) => {
               {isRegister && (
                 <Field label="Account Type">
                   <div style={{display:"flex",gap:6}}>
-                    {[{id:"author",label:"Author",desc:"Submit bounties",color:"#1a3a5c"},{id:"admin",label:"Admin",desc:"Full access",color:"#7c3aed"},{id:"client",label:"Client",desc:"Read-only",color:"#0f766e"}].map(role=>{
+                    {[{id:"author",label:"Author",desc:"Submit bounties",color:"#1a3a5c"},{id:"admin",label:"Admin",desc:"Full access",color:"#7c3aed"},{id:"client",label:"Client",desc:"Read-only",color:"var(--accent)"}].map(role=>{
                       const active = regRole===role.id;
                       return (
                         <button key={role.id} onClick={()=>setRegRole(role.id)}
@@ -681,7 +670,7 @@ const UserForm = ({initial,onSave,onClose,campaignsList}) => {
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:20,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--purple)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE USER"}
           </button>
         </div>
@@ -701,7 +690,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
           <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--purple)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// user management</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Team & Access</h2>
         </div>
-        <button onClick={()=>{setEditUser(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--purple)",cursor:"pointer",fontWeight:500}}>
+        <button onClick={()=>{setEditUser(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--purple)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> ADD USER
         </button>
       </div>
@@ -766,7 +755,7 @@ const UsersPanel = ({users,campaigns,citations,campaignsList,onSaveUser,onDelete
               </div>
               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{u.createdAt?new Date(u.createdAt).toLocaleDateString():"—"}</div>
               <div style={{display:"flex",gap:4,justifyContent:"flex-end"}}>
-                <RowBtn onClick={()=>{setEditUser(u);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>
+                <RowBtn onClick={()=>{setEditUser(u);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>
                 {!isMe&&<RowBtn onClick={()=>setConfirmId(u.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
               </div>
             </div>
@@ -825,7 +814,7 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE ENTRY"}
           </button>
         </div>
@@ -856,7 +845,7 @@ const Pagination = ({page, total, onChange}) => {
         },[]).map((p,i)=>
           p==="…"
             ? <span key={`e${i}`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 8px",color:"var(--dim)"}}>…</span>
-            : <button key={p} onClick={()=>onChange(p)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 11px",borderRadius:7,border:`1px solid ${page===p?"rgba(26,58,92,0.2)":"var(--border)"}`,background:page===p?"rgba(26,58,92,0.08)":"var(--surface)",color:page===p?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:page===p?700:400}}>{p}</button>
+            : <button key={p} onClick={()=>onChange(p)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 11px",borderRadius:7,border:`1px solid ${page===p?"color-mix(in srgb,var(--accent) 22%,transparent)":"var(--border)"}`,background:page===p?"rgba(26,58,92,0.08)":"var(--surface)",color:page===p?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:page===p?700:400}}>{p}</button>
         )}
         <button onClick={()=>onChange(page+1)} disabled={page===totalPages} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>Next</button>
         <button onClick={()=>onChange(totalPages)} disabled={page===totalPages} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 10px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:page===totalPages?"default":"pointer",opacity:page===totalPages?.4:1}}>»</button>
@@ -927,7 +916,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
   );
   const LinkBtn = ({label, url}) => !url ? null : (
     <a href={url} target="_blank" rel="noreferrer"
-      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
       {label} ↗
     </a>
   );
@@ -969,13 +958,13 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
             </div>
           )}
           {(entry.summary || (isEditable && onGenerateSummary)) && (
-            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.04)"}}>
+            <div style={{marginBottom:16,padding:"12px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(15,118,110,0.04)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:6,marginBottom:entry.summary?8:0,flexWrap:"wrap"}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.08em"}}>AI Summary</div>
                 <div style={{display:"flex",gap:6}}>
                   {isEditable && onGenerateSummary && entry.cqLink && (
                     <button onClick={()=>genSummary(null)} disabled={gen.loading}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:gen.loading?"wait":"pointer",fontWeight:500}}>
                       {gen.loading?"GENERATING…":(entry.summary?"🔄 REGENERATE":"📝 GENERATE")}
                     </button>
                   )}
@@ -999,7 +988,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6,gap:8}}>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{pasteText.trim().length} chars (min 80)</span>
                     <button onClick={()=>genSummary(pasteText.trim())} disabled={gen.loading||pasteText.trim().length<80}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:gen.loading||pasteText.trim().length<80?"not-allowed":"pointer",fontWeight:500,opacity:pasteText.trim().length<80?0.5:1}}>
                       {gen.loading?"SUMMARIZING…":"SUMMARIZE PASTED"}
                     </button>
                   </div>
@@ -1022,12 +1011,12 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                       onKeyDown={e=>{if(e.key==="Enter"&&!linkBusy)linkByUrl();}}
                       style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 8px",borderRadius:5,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--text)"}}/>
                     <button onClick={linkByUrl} disabled={linkBusy||!linkUrl.trim()}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:linkBusy||!linkUrl.trim()?"not-allowed":"pointer",fontWeight:500,opacity:!linkUrl.trim()?0.5:1,whiteSpace:"nowrap"}}>
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:5,border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:linkBusy||!linkUrl.trim()?"not-allowed":"pointer",fontWeight:500,opacity:!linkUrl.trim()?0.5:1,whiteSpace:"nowrap"}}>
                       {linkBusy?"LINKING…":"🔗 LINK"}
                     </button>
                   </div>
                   {linkResult && (
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,marginTop:6,color:linkResult.ok?"#0f766e":"#b91c1c"}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,marginTop:6,color:linkResult.ok?"var(--accent)":"#b91c1c"}}>
                       {linkResult.ok?"✓ ":""}{linkResult.msg}
                     </div>
                   )}
@@ -1040,7 +1029,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                   {linkedCitations.map((c,i) => {
                     const tc = getTierColor(c.mediaTier);
                     return (
-                      <div key={c.id} style={{display:"grid",gridTemplateColumns:"96px 1fr auto",gap:10,alignItems:"center",padding:"9px 12px",borderBottom:i<linkedCitations.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
+                      <div key={c.id} style={{display:"grid",gridTemplateColumns:"96px 1fr auto",gap:10,alignItems:"center",padding:"9px 12px",borderBottom:i<linkedCitations.length-1?"1px solid var(--border)":"none",background:"transparent"}}>
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",whiteSpace:"nowrap"}}>{c.date||"—"}</div>
                         <div style={{minWidth:0}}>
                           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
@@ -1050,7 +1039,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
                           <div title={c.headline||c.topic||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||c.topic||"—"}</div>
                         </div>
                         <div style={{display:"flex",gap:4}}>
-                          {c.articleLink && <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>}
+                          {c.articleLink && <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>}
                         </div>
                       </div>
                     );
@@ -1063,7 +1052,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
-          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
+          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
       </div>
     </div>
@@ -1227,15 +1216,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       </div>
 
       {/* Stat cards */}
-      {contentMode==="all" ? (
-        <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
-          <StatCard label="Total Posts"       value={activeCampaigns.length} sub={dateRange}                                    c="var(--accent)"/>
-          <StatCard label="Unique Authors"     value={authors.length}   sub="Contributing analysts"                        c="var(--purple)"/>
-        </div>
-      ) : (
+      {contentMode!=="all" && (
         <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
           <StatCard label="Bounties" value={activeCampaigns.length} sub="Posts published" c="var(--accent)"/>
-          <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="#4a7fa8"/>
+          <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="var(--accent)"/>
           <StatCard label="Media Outlets" value={cqResearchData?.uniqueOutlets.length||0} sub="Unique publications" c="var(--accent)"/>
         </div>
       )}
@@ -1255,7 +1239,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 return (
                   <div key={b.id} onClick={()=>setView(b)}
                     style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(15,118,110,0.06)"}
+                    onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,gap:10}}>
                       <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
@@ -1263,10 +1247,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         <span title={b.title||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</span>
                         <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>· {fmtDate(b.date)}</span>
                       </div>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"#0f766e",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--accent)",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginLeft:22}}>
-                      <div style={{width:`${(tb.count/cqResearchData.maxBountyCount)*100}%`,height:"100%",background:"#0f766e",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                      <div style={{width:`${(tb.count/cqResearchData.maxBountyCount)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
                 );
@@ -1292,10 +1276,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                           <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                           <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                         </div>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                        <div style={{width:`${(h.count/cqResearchData.maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                        <div style={{width:`${(h.count/cqResearchData.maxHeadline)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                       </div>
                     </div>
                   ))}
@@ -1451,6 +1435,33 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         };
         return <BountyChart/>;
       })()}
+      {/* Summary stat strip — readout under the chart (chart-first, like Performance) */}
+      {contentMode==="all" && (()=>{
+        const total = activeCampaigns.length;
+        const valid = activeCampaigns.map(c=>c.date).filter(Boolean).sort();
+        let weeks = 1;
+        if(valid.length>1){ const ms = new Date(valid[valid.length-1]) - new Date(valid[0]); weeks = Math.max(1, Math.round(ms/(7*864e5))); }
+        const ac = {};
+        activeCampaigns.forEach(c=>{ if(c.author) ac[c.author]=(ac[c.author]||0)+1; });
+        const top = Object.entries(ac).sort((a,b)=>b[1]-a[1])[0];
+        const stats = [
+          {label:"Total Posts", value:total, sub:dateRange},
+          {label:"Unique Authors", value:authors.length, sub:"Contributing analysts"},
+          {label:"Avg / Week", value:(total/weeks).toFixed(1), sub:"Posting cadence"},
+          {label:"Top Author", value:top?top[0]:"\u2014", sub:top?`${top[1]} posts`:"\u2014", small:true},
+        ];
+        return (
+          <div className="cq-statstrip" style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:28,overflow:"hidden",animation:"fadeUp .5s ease both"}}>
+            {stats.map((s,i)=>(
+              <div key={i} style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:s.small?18:27,fontWeight:700,color:"var(--text)",lineHeight:s.small?1.5:1,marginTop:s.small?14:10,letterSpacing:"-0.03em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.value}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
       {/* Filter bar */}
       {(()=>{
         const hasFilters = search||filterAuthor!=="all"||filterDateFrom||filterDateTo;
@@ -1462,7 +1473,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search title or author…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
               </div>
               <button onClick={()=>setShowFilters(v=>!v)}
-                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
+                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
                 ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
@@ -1472,25 +1483,25 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
                 return <button onClick={()=>{if(sumBatch.running)return;if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}}
                   disabled={sumBatch.running||unsumCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:sumBatch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:sumBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
                   {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
                 </button>;
               })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 {sumBatch.running?(
                   <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:200}}>
                     <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${sumBatch.total?(sumBatch.processed/sumBatch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
+                      <div style={{height:"100%",width:`${sumBatch.total?(sumBatch.processed/sumBatch.total)*100:0}%`,background:"var(--accent)",transition:"width .3s"}}/>
                     </div>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{sumBatch.processed}/{sumBatch.total}</span>
                   </div>
                 ):(
                   <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
                     {sumBatch.total>0?`Summarize done · `:""}
-                    <b style={{color:"#0f766e"}}>{sumBatch.saved} saved</b> · {sumBatch.skipped} skipped · {sumBatch.errors} errors
+                    <b style={{color:"var(--accent)"}}>{sumBatch.saved} saved</b> · {sumBatch.skipped} skipped · {sumBatch.errors} errors
                     {sumBatch.lastMsg && ` · ${sumBatch.lastMsg}`}
                   </span>
                 )}
@@ -1521,10 +1532,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             )}
             {hasFilters&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
-                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
-                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
-                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
+                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>"{search}"</span>}
+                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>{filterAuthor}</span>}
+                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
+                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>To {filterDateTo}</span>}
               </div>
             )}
           </div>
@@ -1539,7 +1550,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
               <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
               <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>{contentMode==="cq_research"?"No CQ Research entries":"No entries yet"}</div>
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
             </div>
           : filtered.length===0
             ? <div style={{textAlign:"center",padding:"48px 20px"}}>
@@ -1553,20 +1564,20 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const editable=canEdit(c);
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
-                    onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
+                    style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
+                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                       <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                     </div>
                     <div style={{paddingRight:14,minWidth:0}}>
                       <div title={c.title||""} style={{fontSize:12,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.title}</div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
-                        {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Quicktake↗</a>}
-                        {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Analytics↗</a>}
-                        {c.authorTwitterLink&&<a href={c.authorTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Author X↗</a>}
-                        {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>CQ X↗</a>}
-                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none"}}>Telegram↗</a>}
+                        {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Quicktake↗</a>}
+                        {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Analytics↗</a>}
+                        {c.authorTwitterLink&&<a href={c.authorTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author X↗</a>}
+                        {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
+                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Telegram↗</a>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
@@ -1574,7 +1585,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                       <span title={c.author||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0,textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author}</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
-                      {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
+                      {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>}
                       {editable&&<RowBtn onClick={()=>setConfId(c.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
                     </div>
                   </div>
@@ -1628,9 +1639,9 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               const cb = c.citedBountyId && bountyById[c.citedBountyId];
               return (
                 <div key={c.id} onClick={()=>setViewCitation(c)}
-                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
-                  onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
-                  onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
+                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
+                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                   <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
                   <div style={{minWidth:0}}>
                     <div style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</div>
@@ -1644,7 +1655,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
                   <div onClick={e=>e.stopPropagation()}>
                     {cb && cb.cqLink
-                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
+                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
                       : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                   </div>
                   <div onClick={e=>e.stopPropagation()}>
@@ -1758,15 +1769,15 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
             <div style={{marginBottom:16}}>
               <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Article Link</div>
               <a href={entry.articleLink} target="_blank" rel="noreferrer"
-                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"6px 14px",borderRadius:8,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",color:"var(--accent)",textDecoration:"none",display:"inline-flex",alignItems:"center",gap:4}}>
                 Open Article ↗
               </a>
             </div>
           )}
           {currentCitedBounty && (
-            <div style={{marginBottom:16,padding:"10px 12px",borderRadius:8,border:"1px solid rgba(15,118,110,0.2)",background:"rgba(15,118,110,0.05)"}}>
+            <div style={{marginBottom:16,padding:"10px 12px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(15,118,110,0.05)"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"#0f766e",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited Bounty</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Cited Bounty</div>
                 {isEditable && onCitedBountyUpdate && (
                   <button onClick={()=>saveMatch("")} disabled={savingId!==null}
                     style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:savingId!==null?"wait":"pointer"}}>
@@ -1780,7 +1791,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
               </div>
               {currentCitedBounty.cqLink && (
                 <a href={currentCitedBounty.cqLink} target="_blank" rel="noreferrer"
-                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"4px 10px",borderRadius:6,background:"rgba(15,118,110,0.1)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",display:"inline-flex"}}>
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"4px 10px",borderRadius:6,background:"rgba(15,118,110,0.1)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none",display:"inline-flex"}}>
                   Open Bounty ↗
                 </a>
               )}
@@ -1791,7 +1802,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:matchState.result||matchState.error?10:0}}>
                 <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Bounty Match</div>
                 <button onClick={runMatch} disabled={matchState.loading}
-                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:matchState.loading?"wait":"pointer",fontWeight:500}}>
                   {matchState.loading?"MATCHING…":"🔗 FIND CITED BOUNTY"}
                 </button>
               </div>
@@ -1846,8 +1857,8 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                             <div style={{fontSize:12,fontWeight:500,lineHeight:1.35}}>{m.title||"(untitled)"}</div>
                             <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,flexShrink:0,
                               background: m.confidence==="high"?"rgba(15,118,110,0.1)":m.confidence==="medium"?"rgba(234,179,8,0.12)":"rgba(100,116,139,0.1)",
-                              color: m.confidence==="high"?"#0f766e":m.confidence==="medium"?"#a16207":"#475569",
-                              border: m.confidence==="high"?"1px solid rgba(15,118,110,0.25)":m.confidence==="medium"?"1px solid rgba(234,179,8,0.3)":"1px solid rgba(100,116,139,0.25)"
+                              color: m.confidence==="high"?"var(--accent)":m.confidence==="medium"?"#a16207":"var(--muted)",
+                              border: m.confidence==="high"?"1px solid color-mix(in srgb,var(--accent) 24%,transparent)":m.confidence==="medium"?"1px solid rgba(234,179,8,0.3)":"1px solid rgba(100,116,139,0.25)"
                             }}>{m.confidence}</span>
                           </div>
                           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:6}}>
@@ -1858,12 +1869,12 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                             {m.cqLink && <a href={m.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",textDecoration:"none"}}>View bounty ↗</a>}
                             {isEditable && onCitedBountyUpdate && entry.citedBountyId !== m.bountyId && (
                               <button onClick={()=>saveMatch(m.bountyId)} disabled={savingId!==null}
-                                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500}}>
+                                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:savingId!==null?"wait":"pointer",fontWeight:500}}>
                                 {savingId===m.bountyId?"SAVING…":"SAVE AS CITED"}
                               </button>
                             )}
                             {entry.citedBountyId === m.bountyId && (
-                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600}}>✓ saved</span>
+                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>✓ saved</span>
                             )}
                           </div>
                         </div>
@@ -1888,7 +1899,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                     bountySearchResults.map((b,i) => {
                       const isCurrent = entry.citedBountyId === b.id;
                       return (
-                        <div key={b.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderBottom:i<bountySearchResults.length-1?"1px solid var(--border)":"none",background:i%2?"var(--surface2)":"transparent"}}>
+                        <div key={b.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderBottom:i<bountySearchResults.length-1?"1px solid var(--border)":"none",background:"transparent"}}>
                           <div style={{flex:1,minWidth:0}}>
                             <div title={b.title||""} style={{fontSize:11,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</div>
                             <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>
@@ -1896,10 +1907,10 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
                             </div>
                           </div>
                           {isCurrent ? (
-                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#0f766e",fontWeight:600,whiteSpace:"nowrap"}}>✓ saved</span>
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,whiteSpace:"nowrap"}}>✓ saved</span>
                           ) : (
                             <button onClick={()=>saveMatch(b.id)} disabled={savingId!==null}
-                              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:5,border:"1px solid rgba(15,118,110,0.3)",background:"rgba(15,118,110,0.08)",color:"#0f766e",cursor:savingId!==null?"wait":"pointer",fontWeight:500,whiteSpace:"nowrap"}}>
+                              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:5,border:"1px solid color-mix(in srgb,var(--accent) 28%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:savingId!==null?"wait":"pointer",fontWeight:500,whiteSpace:"nowrap"}}>
                               {savingId===b.id?"SAVING…":"LINK"}
                             </button>
                           )}
@@ -1915,7 +1926,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
-          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
+          {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
       </div>
     </div>
@@ -1962,7 +1973,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--orange)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>{saving?<><Icons.Spin/>SAVING…</>:"SAVE CITATION"}</button>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--orange)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>{saving?<><Icons.Spin/>SAVING…</>:"SAVE CITATION"}</button>
         </div>
       </div>
     </div>
@@ -2059,11 +2070,6 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const COLS="108px 15% 11% 11% 1fr 64px 72px 54px";
   return (
     <>
-      <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:16,marginBottom:28,animation:"fadeUp .5s ease both"}}>
-        <StatCard label="Total Citations" value={citations.length} sub="All media mentions" c="var(--accent)"/>
-        <StatCard label="Media Outlets"   value={medias.length}    sub={medias.slice(0,3).join(", ")||"—"} c="var(--accent)"/>
-      </div>
-
       {/* Media activity charts */}
       {citations.length > 1 && (()=>{
         const GranularityToggle = ({value, onChange}) => (
@@ -2126,8 +2132,8 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                   <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
                     <defs>
                       <linearGradient id="gcChart" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor="#4a7fa8" stopOpacity={0.18}/>
-                        <stop offset="95%" stopColor="#4a7fa8" stopOpacity={0}/>
+                        <stop offset="5%"  stopColor="var(--accent)" stopOpacity={0.18}/>
+                        <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false}/>
@@ -2136,10 +2142,10 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     <Tooltip content={({active,payload,label})=>active&&payload?.length?(
                       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginBottom:4}}>{label}</div>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"#4a7fa8"}}>{payload[0].value} articles</div>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} articles</div>
                       </div>
                     ):null}/>
-                    <Area type="monotone" dataKey="count" stroke="#4a7fa8" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"#4a7fa8"}}/>
+                    <Area type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -2172,10 +2178,10 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     <div key={name}>
                       <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
                         <span style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:"65%"}}>{name}</span>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"#4a7fa8",fontWeight:600}}>{count}</span>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--accent)",fontWeight:600}}>{count}</span>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                        <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:1-i*0.15,borderRadius:99}}/>
+                        <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:1-i*0.15,borderRadius:99}}/>
                       </div>
                     </div>
                   ))}
@@ -2185,6 +2191,38 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
           );
         };
         return <MediaChart/>;
+      })()}
+      {/* Summary stat strip — readout under the chart */}
+      {citations.length>0 && (()=>{
+        const total = citations.length;
+        const valid = citations.map(c=>c.date).filter(Boolean).sort();
+        let weeks=1, range="\u2014";
+        if(valid.length){
+          const f=valid[0], l=valid[valid.length-1];
+          const fmt=x=>{const d=new Date(x+"T00:00:00");return isNaN(d.getTime())?x:d.toLocaleDateString("en-US",{month:"short",day:"numeric"});};
+          range = f===l ? fmt(f) : `${fmt(f)} \u2013 ${fmt(l)}`;
+          if(valid.length>1){ const ms=new Date(l)-new Date(f); weeks=Math.max(1,Math.round(ms/(7*864e5))); }
+        }
+        const oc={};
+        citations.forEach(c=>{ if(c.media) oc[c.media]=(oc[c.media]||0)+1; });
+        const top=Object.entries(oc).sort((a,b)=>b[1]-a[1])[0];
+        const stats=[
+          {label:"Total Citations", value:total, sub:range},
+          {label:"Unique Outlets", value:medias.length, sub:"Publications"},
+          {label:"Avg / Week", value:(total/weeks).toFixed(1), sub:"Coverage cadence"},
+          {label:"Top Outlet", value:top?top[0]:"\u2014", sub:top?`${top[1]} citations`:"\u2014", small:true},
+        ];
+        return (
+          <div className="cq-statstrip" style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:28,overflow:"hidden",animation:"fadeUp .5s ease both"}}>
+            {stats.map((s,i)=>(
+              <div key={i} style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:s.small?18:27,fontWeight:700,color:"var(--text)",lineHeight:s.small?1.5:1,marginTop:s.small?14:10,letterSpacing:"-0.03em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.value}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+        );
       })()}
       {/* Filter bar */}
       {(()=>{
@@ -2197,7 +2235,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 <input value={search} onChange={e=>{setSearch(e.target.value);setPage(1)}} placeholder="Search media, reporter, topic…" style={{...iStyle,padding:"8px 10px 8px 30px",fontSize:11}}/>
               </div>
               <button onClick={()=>setShowFilters(v=>!v)}
-                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"rgba(26,58,92,0.07)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
+                style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${showFilters||hasFilters?"rgba(26,58,92,0.3)":"var(--border)"}`,background:showFilters||hasFilters?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",color:showFilters||hasFilters?"var(--accent)":"var(--muted)",cursor:"pointer",transition:"all .15s"}}>
                 ⚙ Filters {hasFilters&&<span style={{background:"var(--accent)",color:"#fff",borderRadius:100,padding:"1px 6px",fontSize:9,fontWeight:500}}>{[search,filterAuthor!=="all",filterMedia!=="all",filterTier!=="all",filterDateFrom,filterDateTo].filter(Boolean).length}</span>}
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
@@ -2207,25 +2245,25 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 const unlinkedCount = filtered.filter(c=>!c.citedBountyId && c.articleLink).length;
                 return <button onClick={()=>{if(batch.running)return;if(!window.confirm(`Run bounty match on ${unlinkedCount} unlinked citation${unlinkedCount!==1?"s":""}? Only high-confidence matches will be auto-saved.`))return;runAutoMatch(filtered);}}
                   disabled={batch.running||unlinkedCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(15,118,110,0.25)",background:batch.running?"rgba(15,118,110,0.04)":"rgba(15,118,110,0.08)",color:"#0f766e",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
+                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:batch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
                   {batch.running?`MATCHING ${batch.processed}/${batch.total}…`:`🔗 AUTO-MATCH ${unlinkedCount} UNLINKED`}
                 </button>;
               })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
+              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
             </div>
             {(batch.running||batch.processed>0||batch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
                 {batch.running?(
                   <div style={{display:"flex",alignItems:"center",gap:8,flex:1,minWidth:200}}>
                     <div style={{flex:1,height:4,borderRadius:4,background:"var(--border)",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:`${batch.total?(batch.processed/batch.total)*100:0}%`,background:"#0f766e",transition:"width .3s"}}/>
+                      <div style={{height:"100%",width:`${batch.total?(batch.processed/batch.total)*100:0}%`,background:"var(--accent)",transition:"width .3s"}}/>
                     </div>
                     <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)",whiteSpace:"nowrap"}}>{batch.processed}/{batch.total}</span>
                   </div>
                 ):(
                   <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
                     {batch.total>0?`Auto-match done · `:""}
-                    <b style={{color:"#0f766e"}}>{batch.saved} saved</b> · {batch.skipped} skipped · {batch.errors} errors
+                    <b style={{color:"var(--accent)"}}>{batch.saved} saved</b> · {batch.skipped} skipped · {batch.errors} errors
                     {batch.lastMsg && ` · ${batch.lastMsg}`}
                   </span>
                 )}
@@ -2272,12 +2310,12 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
             )}
             {hasFilters&&(
               <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:8}}>
-                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>"{search}"</span>}
-                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterAuthor}</span>}
-                {filterMedia!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>{filterMedia}</span>}
-                {filterTier!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>Tier {filterTier}</span>}
-                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
-                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"rgba(26,58,92,0.07)",border:"1px solid rgba(26,58,92,0.15)",color:"var(--accent)"}}>To {filterDateTo}</span>}
+                {search&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>"{search}"</span>}
+                {filterAuthor!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>{filterAuthor}</span>}
+                {filterMedia!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>{filterMedia}</span>}
+                {filterTier!=="all"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>Tier {filterTier}</span>}
+                {filterDateFrom&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>From {filterDateFrom}</span>}
+                {filterDateTo&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 20%,transparent)",color:"var(--accent)"}}>To {filterDateTo}</span>}
               </div>
             )}
           </div>
@@ -2292,7 +2330,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
                   <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
                   <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No citations yet</div>
-                  {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.07)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST CITATION</button>}
+                  {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST CITATION</button>}
                 </div>
               : filtered.length===0
                 ? <div style={{textAlign:"center",padding:"48px 20px"}}>
@@ -2305,9 +2343,9 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     const dp=fmtDate(c.date).split(", ");
                     const editable=canEdit(c);
                     return (
-                      <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:i%2?"rgba(26,58,92,0.025)":"transparent"}}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.06)"}
-                        onMouseLeave={e=>e.currentTarget.style.background=i%2?"rgba(26,58,92,0.025)":"transparent"}>
+                      <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:"transparent"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                           <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                         </div>
@@ -2322,21 +2360,21 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                           {c.headline&&<div title={c.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
                           <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                             {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
-                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"rgba(100,116,139,0.08)",border:"1px solid rgba(100,116,139,0.2)",color:"#475569"}}>{c.language}</span>}
+                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>{c.language}</span>}
                           </div>
                         </div>
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {(()=>{const cb = c.citedBountyId && bountyById[c.citedBountyId]; return cb && cb.cqLink
-                            ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(15,118,110,0.08)",border:"1px solid rgba(15,118,110,0.25)",color:"#0f766e",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
+                            ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
                             : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>;})()}
                         </div>
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {c.articleLink
-                            ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
+                            ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
                             : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
                         </div>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
-                          {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>}
+                          {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>}
                           {editable&&<RowBtn onClick={()=>setConfId(c.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
                         </div>
                       </div>
@@ -2424,7 +2462,7 @@ const CQResearchTab = ({campaigns, citations}) => {
 
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
         <StatCard label="Bounties" value={bounties.length} sub="Posts published" c="var(--accent)"/>
-        <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="#4a7fa8"/>
+        <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="var(--accent)"/>
         <StatCard label="Media Outlets" value={uniqueOutlets.length} sub="Unique publications" c="var(--accent)"/>
       </div>
 
@@ -2448,10 +2486,10 @@ const CQResearchTab = ({campaigns, citations}) => {
                         <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                         <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                       </div>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                      <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                      <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
                 ))}
@@ -2732,9 +2770,9 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
 
   const SUMMARY = [
     {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)", drillKey:"bounties"},
-    {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"#4a7fa8",      drillKey:"citations"},
+    {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"var(--accent)",      drillKey:"citations"},
     {label:"Authors",           value:uniqueAuthors.length,    sub:"Unique contributors",    c:"var(--accent)"},
-    {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"#4a7fa8"},
+    {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"var(--accent)"},
     {label:"Total Impressions", value:fmtNum(totalImpressions),sub:"Twitter + Telegram",     c:"var(--accent)"},
   ];
 
@@ -2792,7 +2830,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                               </>
                           }
                         </div>
-                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
                       </div>
                     );
                   })}
@@ -2823,19 +2861,19 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goBack();}}}
               title="Previous week"
-              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"rgba(26,58,92,0.07)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
             {mode==="weekly" && !isLatestWeek && (
               <button onClick={goLatest} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
             )}
             <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goForward();}}} disabled={mode==="weekly"&&isLatestWeek}
               title="Next week"
-              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"rgba(26,58,92,0.07)":"var(--surface)",cursor:(mode==="weekly"&&isLatestWeek)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:(mode==="weekly"&&isLatestWeek)?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:(mode==="weekly"&&isLatestWeek)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:(mode==="weekly"&&isLatestWeek)?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
           </div>
           {/* Mode selector */}
           <div style={{display:"flex",gap:4}}>
             {[["custom","Custom"],["all","All"]].map(([val,label])=>(
               <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}
-                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"rgba(26,58,92,0.07)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"color-mix(in srgb,var(--accent) 8%,transparent)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
                 {label}
               </button>
             ))}
@@ -2905,8 +2943,8 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4a7fa8" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="#4a7fa8" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
@@ -3251,7 +3289,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
 
                   {modal==="topics" && (
                     <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
-                      {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="#4a7fa8"/>)}
+                      {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="var(--accent)"/>)}
                     </AllModal>
                   )}
                   {modal==="authors" && (
@@ -3264,7 +3302,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   )}
                   {modal==="outlets" && (
                     <AllModal title={`All Outlets (${allOutlets.length})`} onClose={()=>setModal(null)}>
-                      {allOutlets.map((r,i)=><ModalRow key={r.media} rank={i+1} label={r.media} value={r.count} pct={(r.count/maxOutlet)*100} color="#4a7fa8"/>)}
+                      {allOutlets.map((r,i)=><ModalRow key={r.media} rank={i+1} label={r.media} value={r.count} pct={(r.count/maxOutlet)*100} color="var(--accent)"/>)}
                     </AllModal>
                   )}
                   {tierModal!==null && tierMap[tierModal] && (()=>{
@@ -3282,7 +3320,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                                 {c.media||"—"}{c.author?` · ${c.author}`:""}
                               </div>
                             </div>
-                            {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.2)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗ Read</a>:null}
+                            {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none",flexShrink:0}}>↗ Read</a>:null}
                           </div>
                         )) : <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No citations</div>}
                       </AllModal>
@@ -3540,7 +3578,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     <div style={{minWidth:0}}>{renderRow(item)}</div>
                     {link&&(
                       <a href={link} target="_blank" rel="noreferrer"
-                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
+                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
                     )}
                   </div>
                   );
@@ -3632,9 +3670,9 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
         {[
           {label:"Bounties",      curr:weekBounties.length,  prev:mode==="weekly"?prevBounties.length:null,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
-          {label:"Citations",     curr:weekCitations.length, prev:mode==="weekly"?prevCitations.length:null, sub:"Media mentions",    c:"#4a7fa8",       key:"citations"},
+          {label:"Citations",     curr:weekCitations.length, prev:mode==="weekly"?prevCitations.length:null, sub:"Media mentions",    c:"var(--accent)",       key:"citations"},
           {label:"Active Authors",curr:authorsSet.size,      prev:null,                 sub:"Contributors",      c:"var(--accent)", key:null},
-          {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"#4a7fa8",      key:null},
+          {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"var(--accent)",      key:null},
         ].map((s,i)=>(
           <div key={i} onClick={s.key?()=>{setDrill({type:s.key});setDrillExpanded(false);}:undefined}
             style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 18px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)",cursor:s.key?"pointer":"default",transition:"all .15s"}}
@@ -3660,7 +3698,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexShrink:0}}>
             <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Daily Activity</div>
             <div style={{display:"flex",gap:14}}>
-              {[{color:"var(--accent)",label:"Bounties"},{color:"#4a7fa8",label:"Citations"}].map((l,i)=>(
+              {[{color:"var(--accent)",label:"Bounties"},{color:"var(--accent)",label:"Citations"}].map((l,i)=>(
                 <div key={i} style={{display:"flex",alignItems:"center",gap:5}}>
                   <div style={{width:8,height:8,borderRadius:2,background:l.color,opacity:.8}}/>
                   <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{l.label}</span>
@@ -3681,7 +3719,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                     {isEmpty
                       ? <div style={{width:"100%",height:"100%",background:"var(--surface2)",borderRadius:4,border:"1px dashed var(--border)"}}/>
                       : <>
-                          {d.citations>0&&<div style={{width:"100%",height:`${cPct}%`,minHeight:4,background:"#4a7fa8",opacity:.75,borderRadius:d.bounties>0?"3px 3px 0 0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
+                          {d.citations>0&&<div style={{width:"100%",height:`${cPct}%`,minHeight:4,background:"var(--accent)",opacity:.75,borderRadius:d.bounties>0?"3px 3px 0 0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
                           {d.bounties>0&&<div style={{width:"100%",height:`${bPct}%`,minHeight:4,background:"var(--accent)",opacity:.85,borderRadius:d.citations>0?"0":"3px 3px 0 0",transition:"height .4s ease"}}/>}
                           <div style={{height:2,background:color,width:"100%",opacity:.4,flexShrink:0}}/>
                         </>
@@ -3713,7 +3751,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
             : <div style={{display:"flex",flexDirection:"column",gap:0,flex:1}}>
                 {recentAll.map((item,i)=>(
                   <div key={item.id} style={{display:"flex",alignItems:"flex-start",gap:9,padding:"8px 0",borderBottom:i<recentAll.length-1?"1px solid var(--border)":"none"}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",flexShrink:0,marginTop:5}}/>
+                    <div style={{width:5,height:5,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"var(--accent)",flexShrink:0,marginTop:5}}/>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:1}}>
                         {item._type==="bounty"?item.title:(item.headline||item.media||"—")}
@@ -3738,7 +3776,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                 All bounties →
               </button>}
               {weekCitations.length>0&&<button onClick={()=>{setDrill({type:"citations"});setDrillExpanded(false);}} style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"5px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",letterSpacing:"0.04em",transition:"all .15s"}}
-                onMouseEnter={e=>{e.currentTarget.style.color="#4a7fa8";e.currentTarget.style.borderColor="rgba(74,127,168,0.3)"}}
+                onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.borderColor="rgba(74,127,168,0.3)"}}
                 onMouseLeave={e=>{e.currentTarget.style.color="var(--muted)";e.currentTarget.style.borderColor="var(--border)"}}>
                 All citations →
               </button>}
@@ -3770,10 +3808,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                       <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                       <span title={h.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
                     </div>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                    <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                    <div style={{width:`${(h.count/maxHeadline)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                   </div>
                 </div>
               ))}
@@ -3835,13 +3873,13 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                         </div>
                         <div style={{display:"flex",gap:8,alignItems:"center"}}>
                           {a.bounties>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>{a.bounties}b</span>}
-                          {a.citations>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600}}>{a.citations}c</span>}
+                          {a.citations>0&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600}}>{a.citations}c</span>}
                         </div>
                       </div>
                       <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
                         <div style={{display:"flex",height:"100%"}}>
                           <div style={{width:`${maxAuthorTotal?(a.bounties/maxAuthorTotal)*100:0}%`,background:"var(--accent)",opacity:.8,transition:"width .4s"}}/>
-                          <div style={{width:`${maxAuthorTotal?(a.citations/maxAuthorTotal)*100:0}%`,background:"#4a7fa8",opacity:.7,transition:"width .4s"}}/>
+                          <div style={{width:`${maxAuthorTotal?(a.citations/maxAuthorTotal)*100:0}%`,background:"var(--accent)",opacity:.7,transition:"width .4s"}}/>
                         </div>
                       </div>
                     </div>
@@ -3872,10 +3910,10 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
                         <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,textAlign:"right"}}>{i+1}</span>
                         <span title={display} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:160}}>{display}</span>
                       </div>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{count}</span>
                     </div>
                     <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                      <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                      <div style={{width:`${(count/maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                     </div>
                   </div>
                   );
@@ -3967,7 +4005,7 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
     const gp=weeks.length>1?(CW-(bW*weeks.length))/(weeks.length-1):0;
     const le=Math.max(1,Math.ceil(weeks.length/8));
     const fmtMD=iso=>{try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;}};
-    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="#4a7fa8" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="var(--accent)" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
+    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="var(--accent)" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="var(--accent)" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
     const guides=[0,0.25,0.5,0.75,1].map(p=>{const y=BA-(p*BA);return `<line x1="0" y1="${y}" x2="${CW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/><text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(p*maxWk)}</text>`;}).join("");
     const chartSvg=weeks.length?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${CH+20}" width="${CW}" height="${CH+20}" style="overflow:visible">${guides}${bars}</svg>`:`<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
 
@@ -4028,7 +4066,7 @@ ${inclChart?`<div class="chart-wrap">
     <div class="chart-title">Daily Activity</div>
     <div class="legend">
       <div class="leg-item"><div class="leg-dot" style="background:#1a3a5c;opacity:0.85"></div>Bounties</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#4a7fa8;opacity:0.75"></div>Citations</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--accent);opacity:0.75"></div>Citations</div>
     </div>
   </div>
   ${chartSvg}
@@ -4036,19 +4074,19 @@ ${inclChart?`<div class="chart-wrap">
 
 ${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopics&&topTopics.length)?`<div class="grid3">
   ${inclAuthors&&topAuthors.length?`<div class="panel"><div class="ph">Top Authors</div><table><tbody>${topAuthors.map((a,i)=>bRow(i+1,a.name,a.b+a.c,(topAuthors[0].b+topAuthors[0].c)||1)).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclOutlets&&topOutlets.length?`<div class="panel"><div class="ph">Top Media Outlets</div><table><tbody>${topOutlets.map(([n,v],i)=>bRow(i+1,n,v,topOutlets[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Headlines</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclOutlets&&topOutlets.length?`<div class="panel"><div class="ph">Top Media Outlets</div><table><tbody>${topOutlets.map(([n,v],i)=>bRow(i+1,n,v,topOutlets[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Headlines</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
 
 ${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
   ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const tc=getTierColor(tier);const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;font-size:10px;padding:2px 8px;border-radius:4px;background:${tc.bg};border:1px solid ${tc.border};color:${tc.color}">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${tc.color};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
   ${inclDR&&drEntries.length?`<div class="panel"><div class="ph">Direct Relationship</div><table><tbody>${drEntries.map(([d,v],i)=>bRow(i+1,d,v,drEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
 
 ${(inclAsset&&assetEntries.length)||(inclBranding&&brandEntries.length)?`<div class="grid2">
   ${inclAsset&&assetEntries.length?`<div class="panel"><div class="ph">Top Assets</div><table><tbody>${assetEntries.map(([a,v],i)=>bRow(i+1,a,v,assetEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclBranding&&brandEntries.length?`<div class="panel"><div class="ph">Branding Mentions</div><table><tbody>${brandEntries.map(([a,v],i)=>bRow(i+1,a,v,brandEntries[0][1],"#4a7fa8")).join("")}</tbody></table></div>`:"<div></div>"}
+  ${inclBranding&&brandEntries.length?`<div class="panel"><div class="ph">Branding Mentions</div><table><tbody>${brandEntries.map(([a,v],i)=>bRow(i+1,a,v,brandEntries[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
 </div>`:""}
 
 ${inclImpr&&totalImpr>0?`<div class="grid2" style="margin-bottom:24px">
@@ -4131,7 +4169,7 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
           <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
             {[
               {label:"Bounties",  value:b.length,  c:"var(--accent)"},
-              {label:"Citations", value:c.length,  c:"#4a7fa8"},
+              {label:"Citations", value:c.length,  c:"var(--accent)"},
               {label:"Authors",   value:[...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))].length, c:"var(--accent)"},
             ].map(s=>(
               <div key={s.label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:7,padding:"9px 12px"}}>
@@ -4239,7 +4277,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
           </Field>
           <Field label="Status">
             <button onClick={()=>setStatus(status==="active"?"completed":"active")}
-              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${status==="active"?"rgba(22,101,52,0.4)":"rgba(100,116,139,0.4)"}`,background:status==="active"?"rgba(22,101,52,0.08)":"rgba(100,116,139,0.08)",color:status==="active"?"#166534":"#475569",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all .15s",width:"100%"}}>
+              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${status==="active"?"rgba(22,101,52,0.4)":"rgba(100,116,139,0.4)"}`,background:status==="active"?"rgba(22,101,52,0.08)":"var(--surface2)",color:status==="active"?"#166534":"var(--muted)",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.06em",transition:"all .15s",width:"100%"}}>
               {status==="active"?"● Active":"✓ Completed"}
             </button>
           </Field>
@@ -4296,7 +4334,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",marginTop:24,paddingTop:20,borderTop:"1px solid var(--border)"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(217,119,6,0.35)",background:"rgba(26,58,92,0.07)",color:"var(--yellow)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
+          <button onClick={handleSave} disabled={saving} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 22px",borderRadius:8,border:"1px solid rgba(217,119,6,0.35)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--yellow)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:7}}>
             {saving?<><Icons.Spin/>SAVING…</>:"SAVE CAMPAIGN"}
           </button>
         </div>
@@ -4417,7 +4455,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
       <button onClick={doSync} disabled={syncing}
         style={darkMode
           ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
-          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
+          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
         }>
         {syncing?<><Icons.Spin/>Syncing…</>:"⟳ Sync Sheet"}
       </button>
@@ -4438,7 +4476,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// bounty management</div>
           <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Campaigns</h2>
         </div>
-        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
+        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
           <Icons.Plus/> NEW CAMPAIGN
         </button>
       </div>
@@ -4447,7 +4485,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
           <div style={{fontSize:15,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No campaigns yet</div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",marginBottom:20}}>Create your first campaign to start tracking data separately</div>
-          <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(26,58,92,0.2)",background:"rgba(26,58,92,0.06)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>CREATE FIRST CAMPAIGN</button>
+          <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>CREATE FIRST CAMPAIGN</button>
         </div>
       ) : (()=>{
         const activeCampaigns    = programs.filter(cl=>cl.status!=="completed");
@@ -4488,12 +4526,12 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
                 {(cl.sheetBounties||cl.sheetMedia)&&<DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/>}
                 <span onClick={e=>{e.stopPropagation();onSave({...cl,status:cl.status==="completed"?"active":"completed"},cl)}}
                   style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,cursor:"pointer",
-                  background:cl.status==="completed"?"rgba(100,116,139,0.08)":"rgba(22,101,52,0.07)",
-                  border:cl.status==="completed"?"1px solid rgba(100,116,139,0.2)":"1px solid rgba(22,101,52,0.2)",
-                  color:cl.status==="completed"?"#475569":"#166634"}}>
+                  background:cl.status==="completed"?"var(--surface2)":"rgba(22,101,52,0.07)",
+                  border:cl.status==="completed"?"1px solid var(--border)":"1px solid rgba(22,101,52,0.2)",
+                  color:cl.status==="completed"?"var(--muted)":"#166634"}}>
                   {cl.status==="completed"?"Completed":"Active"}
                 </span>
-                <RowBtn onClick={()=>{setEdit(cl);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="rgba(26,58,92,0.06)"><Icons.Edit/></RowBtn>
+                <RowBtn onClick={()=>{setEdit(cl);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>
                 <RowBtn onClick={()=>setConfId(cl.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>
               </div>
             </div>
@@ -4540,7 +4578,7 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         return (
           <div>
             <Section label="Active" items={activeCampaigns} accent="#166634" accentBg="rgba(22,101,52,0.07)" accentBorder="rgba(22,101,52,0.2)" defaultOpen={true}/>
-            <Section label="Completed" items={completedCampaigns} accent="#475569" accentBg="rgba(100,116,139,0.08)" accentBorder="rgba(100,116,139,0.2)" defaultOpen={false}/>
+            <Section label="Completed" items={completedCampaigns} accent="var(--muted)" accentBg="var(--surface2)" accentBorder="var(--border)" defaultOpen={false}/>
           </div>
         );
       })()}
@@ -4568,7 +4606,7 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
             <button key={t.id} onClick={()=>setSub(t.id)}
               style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 16px",borderRadius:8,border:`1px solid ${ia?"rgba(26,58,92,0.1)":"transparent"}`,background:ia?"var(--surface2)":"transparent",color:ia?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:ia?700:400,letterSpacing:"0.04em",transition:"all .15s"}}>
               {t.label}
-              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"rgba(26,58,92,0.07)":"transparent",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:100,background:ia?"color-mix(in srgb,var(--accent) 8%,transparent)":"transparent",color:ia?"var(--accent)":"var(--dim)"}}>{t.count}</span>
             </button>
           );
         })}
@@ -4732,8 +4770,8 @@ const AuthorsTab = ({campaigns, citations}) => {
           {[
             {label:"Contributors",   val:authors.length,            sub:"Active in campaign",  c:"var(--accent)"},
             {label:"Total Bounties", val:totalBounties,             sub:"Posts published",     c:"var(--accent)"},
-            {label:"Citations",      val:totalCitations,            sub:"Media mentions",      c:"#4a7fa8"},
-            {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"#4a7fa8"},
+            {label:"Citations",      val:totalCitations,            sub:"Media mentions",      c:"var(--accent)"},
+            {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"var(--accent)"},
           ].map((s,i)=>(
             <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03)"}}>
               <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>{s.label}</div>
@@ -4802,7 +4840,7 @@ const AuthorsTab = ({campaigns, citations}) => {
                   <div className="tabular" style={{textAlign:"right",fontSize:16,fontWeight:700,letterSpacing:"-0.02em",color:a.bounties>0?"var(--accent)":"var(--border2)"}}>{a.bounties}</div>
 
                   {/* Citations */}
-                  <div className="tabular" style={{textAlign:"right",fontSize:16,fontWeight:700,letterSpacing:"-0.02em",color:a.citations>0?"#4a7fa8":"var(--border2)"}}>{a.citations}</div>
+                  <div className="tabular" style={{textAlign:"right",fontSize:16,fontWeight:700,letterSpacing:"-0.02em",color:a.citations>0?"var(--accent)":"var(--border2)"}}>{a.citations}</div>
 
                   {/* Weeks */}
                   <div className="tabular" style={{textAlign:"right",fontSize:14,fontWeight:600,color:"var(--text)"}}>{a.activeWeeks}</div>
@@ -4940,9 +4978,9 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:18}}>
         {[
           {label:"Bounties", val:bounties.length, c:"var(--accent)"},
-          {label:"Citations", val:cits.length, c:"#4a7fa8"},
+          {label:"Citations", val:cits.length, c:"var(--accent)"},
           {label:"Active Weeks", val:weekSet.size, c:"var(--accent)"},
-          {label:"Weekly Avg", val:weeklyAvg, c:"#4a7fa8"},
+          {label:"Weekly Avg", val:weeklyAvg, c:"var(--accent)"},
           {label:"Longest Streak", val:`${longestStreak}w`, c:"var(--accent)"},
         ].map((s,i)=>(
           <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"14px 16px",boxShadow:"0 1px 2px rgba(0,0,0,0.04)"}}>
@@ -4992,10 +5030,10 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                       <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
                       <span title={o.label} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
                     </div>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"#4a7fa8",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
                   </div>
                   <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                    <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"#4a7fa8",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
+                    <div style={{width:`${(o.count/maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
                   </div>
                 </div>
               ))}
@@ -5036,7 +5074,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
           <div style={{display:"flex",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:3,gap:2}}>
             {[
               {id:"bounties",  label:"Bounties",  count:bountyTimeline.length,   accent:"var(--accent)"},
-              {id:"citations", label:"Citations", count:citationTimeline.length, accent:"#4a7fa8"},
+              {id:"citations", label:"Citations", count:citationTimeline.length, accent:"var(--accent)"},
             ].map(t=>{
               const active = timelineTab===t.id;
               return (
@@ -5061,7 +5099,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                     onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                     <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",paddingTop:2}}>{item.date}</div>
-                    <div style={{width:8,height:8,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"#4a7fa8",marginTop:6}}/>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:item._type==="bounty"?"var(--accent)":"var(--accent)",marginTop:6}}/>
                     <div style={{minWidth:0}}>
                       {item._type==="bounty"
                         ? <>
@@ -5072,7 +5110,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                             <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
                             {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
                             <div style={{display:"flex",alignItems:"center",gap:8}}>
-                              <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"#4a7fa8",textTransform:"uppercase",letterSpacing:"0.06em"}}>Citation</span>
+                              <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--accent)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Citation</span>
                               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>· {item.media}</span>
                             </div>
                           </>
@@ -5080,7 +5118,7 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
                     </div>
                     {link && (
                       <a href={link} target="_blank" rel="noreferrer"
-                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"rgba(26,58,92,0.06)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
+                        style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>
                     )}
                   </div>
                 );
