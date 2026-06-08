@@ -1064,7 +1064,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onCitedBountyUpdate}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onBountyImpressionsUpdate, onCitedBountyUpdate}) => {
   const bountyById = useMemo(()=>Object.fromEntries((campaigns||[]).map(b=>[b.id,b])),[campaigns]);
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
@@ -1078,6 +1078,32 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   const [view,setView]           = useState(null);
   const [showFilters,setShowFilters] = useState(false);
   const [sumBatch,setSumBatch] = useState({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
+  const [impBatch,setImpBatch] = useState({running:false,total:0,saved:0,skipped:0,lastMsg:""});
+  const runImpressions = async (scope) => {
+    // Bounties with at least one tweet link (analyst or CQ)
+    const targets = scope.filter(b => b.authorTwitterLink || b.cqTwitterLink);
+    if (!targets.length) {
+      setImpBatch({running:false,total:0,saved:0,skipped:0,lastMsg:"No bounties have a tweet link."});
+      return;
+    }
+    setImpBatch({running:true,total:targets.length,saved:0,skipped:0,lastMsg:""});
+    try {
+      const r = await fetch("/api/twitter-impressions", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ bountyIds: targets.map(b=>b.id) }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      for (const u of (data.updated || [])) {
+        if (!u.skipped && u.total!=null && onBountyImpressionsUpdate) {
+          await onBountyImpressionsUpdate(u.bountyId, String(u.total), true);
+        }
+      }
+      setImpBatch({running:false,total:targets.length,saved:data.saved||0,skipped:data.skipped||0,lastMsg:""});
+    } catch (e) {
+      setImpBatch({running:false,total:targets.length,saved:0,skipped:0,lastMsg:e.message});
+    }
+  };
 
   const resetFilters = () => { setSearch(""); setFA("all"); setDateFrom(""); setDateTo(""); setPage(1); };
   const runSummarize = async (scope) => {
@@ -1489,6 +1515,14 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
                 </button>;
               })()}
+              {onBountyImpressionsUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
+                const tweetCount = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
+                return <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Fetch live X/Twitter impressions for ${tweetCount} bounty${tweetCount!==1?"s":""} with a tweet link? Pulls the analyst tweet + CQ tweet via the X API and writes the combined total to each bounty's impressions.`))return;runImpressions(filtered);}}
+                  disabled={impBatch.running||tweetCount===0}
+                  style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:impBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:impBatch.running?"wait":(tweetCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:tweetCount===0?0.5:1}}>
+                  {impBatch.running?`FETCHING ${impBatch.total}…`:`𝕏 IMPRESSIONS ${tweetCount}`}
+                </button>;
+              })()}
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
@@ -1509,6 +1543,19 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 )}
                 {!sumBatch.running && sumBatch.processed>0 && (
                   <button onClick={()=>setSumBatch({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""})}
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                )}
+              </div>
+            )}
+            {(impBatch.running||impBatch.saved>0||impBatch.lastMsg)&&(
+              <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                  {impBatch.running
+                    ? `Fetching X impressions for ${impBatch.total} bounties…`
+                    : <>{`Impressions done · `}<b style={{color:"var(--accent)"}}>{impBatch.saved} updated</b> · {impBatch.skipped} skipped{impBatch.lastMsg && ` · ${impBatch.lastMsg}`}</>}
+                </span>
+                {!impBatch.running && (impBatch.saved>0||impBatch.lastMsg) && (
+                  <button onClick={()=>setImpBatch({running:false,total:0,saved:0,skipped:0,lastMsg:""})}
                     style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
                 )}
               </div>
@@ -4423,7 +4470,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
             const inNew=newBounties.some(b=>rowNo?b.sheetRowNo===rowNo:(link&&b.cqLink===link));
             const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(link&&exB.some(b=>b.cq_link===link));
             if(inNew||inDB){skipped++;continue;}
-            newBounties.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),author:norm(r["author"]),title,cqLink:link,analyticsLink:safe(r["analytics link"]||r["cq analytics link"]),authorTwitterLink:safe(r["author twitter/x"]||r["analyst twitter/x post"]),cqTwitterLink:safe(r["cq twitter/x"]||r["twitter/x link"]),telegramLink:safe(r["telegram link"]),category:titleCase(safe(r["category"])),asset:titleCase(safe(r["asset"])),twitterImpressions:safe(r["twitter impressions"]||r["cq twitter/x impressions"]),telegramImpressions:safe(r["telegram impressions"]),sheetRowNo:rowNo,createdBy:"sheet_sync"});
+            newBounties.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),author:norm(r["author"]),title,cqLink:link,analyticsLink:safe(r["analytics link"]||r["cq analytics link"]),authorTwitterLink:safe(r["author twitter/x"]||r["analyst twitter/x post"]),authorTelegramLink:safe(r["author telegram"]||r["analyst telegram"]),cqTwitterLink:safe(r["cq twitter/x"]||r["twitter/x link"]),telegramLink:safe(r["cq telegram link"]||r["telegram link"]),category:titleCase(safe(r["category"])),asset:titleCase(safe(r["asset"])),twitterImpressions:safe(r["twitter impressions"]||r["cq twitter/x impressions"]),telegramImpressions:safe(r["telegram impressions"]),sheetRowNo:rowNo,createdBy:"sheet_sync"});
           }catch(rowErr){badRows++;console.warn("Skipped bad bounty row:",rowErr,r);}
         }
       }
@@ -5452,6 +5499,10 @@ export default function App() {
     setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,summary:summary||""}:b));
     if(!silent) showToast("Summary saved ✓");
   };
+  const handleBountyImpressionsUpdate=async(bountyId,value,silent=false)=>{
+    setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,twitterImpressions:value||""}:b));
+    if(!silent) showToast("Impressions updated ✓");
+  };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
   const activeClient = programs.find(c=>c.id===activeCid)||null;
@@ -5658,7 +5709,7 @@ export default function App() {
 
         {/* CONTENT */}
         {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?()=>setShowPdfModal(true):null}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid} allBounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}

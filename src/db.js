@@ -106,6 +106,7 @@ const fromCampaign = (r) => ({
   authorTwitterLink: r.author_twitter_link,
   analyticsLink:     r.analytics_link,
   cqTwitterLink:     r.cq_twitter_link,
+  authorTelegramLink:r.author_telegram_link || "",
   telegramLink:      r.telegram_link || "",
   category:          r.category || "",
   asset:             r.asset || "",
@@ -126,6 +127,7 @@ const toCampaign = (c) => ({
   author_twitter_link: c.authorTwitterLink,
   analytics_link:      c.analyticsLink,
   cq_twitter_link:     c.cqTwitterLink,
+  author_telegram_link:c.authorTelegramLink || "",
   telegram_link:       c.telegramLink || "",
   category:            c.category || "",
   asset:               c.asset || "",
@@ -211,7 +213,7 @@ export const db = {
 
   // ── Bounties ──
   async getCampaigns() {
-    const data = await fetchAll("bounties", q => q.select("id,campaign_id,date,author,title,cq_link,author_twitter_link,analytics_link,cq_twitter_link,telegram_link,category,asset,twitter_impressions,telegram_impressions,sheet_row_no,summary,created_by,created_at").order("date", { ascending: false }));
+    const data = await fetchAll("bounties", q => q.select("id,campaign_id,date,author,title,cq_link,author_twitter_link,analytics_link,cq_twitter_link,author_telegram_link,telegram_link,category,asset,twitter_impressions,telegram_impressions,sheet_row_no,summary,created_by,created_at").order("date", { ascending: false }));
     return data.map(fromCampaign);
   },
   async setCampaigns(campaigns) {
