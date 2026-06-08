@@ -2873,7 +2873,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
     } catch { return null; }
   };
 
-  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions} = useMemo(()=>{
+  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
     const bucketMap = {};
     const addTo = (iso, key) => {
       if(!iso) return;
@@ -2908,9 +2908,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
     const rangeStart = allWeeks.length ? allWeeks[0].week : null;
     const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
     const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
-    const totalImpressions = inRange(campaigns).reduce((s,c)=>s+parseNum(c.twitterImpressions)+parseNum(c.telegramImpressions),0);
+    const rc = inRange(campaigns);
+    const totalTwitter  = rc.reduce((s,c)=>s+parseNum(c.twitterImpressions),0);
+    const totalTelegram = rc.reduce((s,c)=>s+parseNum(c.telegramImpressions),0);
+    const tweetCount    = rc.reduce((n,c)=>n+(c.authorTwitterLink?1:0)+(c.cqTwitterLink?1:0),0);
+    const tgPostCount   = rc.reduce((n,c)=>n+(c.authorTelegramLink?1:0)+(c.telegramLink?1:0),0);
+    const totalImpressions = totalTwitter + totalTelegram;
 
-    return {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions};
+    return {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount};
   },[campaigns, citations, granularity]);
 
   const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
@@ -3139,6 +3144,43 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               </div>
             ))}
           </div>
+          {/* Social breakdown — X vs Telegram */}
+          {(totalTwitter>0||totalTelegram>0)&&(()=>{
+            const totalSocial=totalTwitter+totalTelegram;
+            const twPct=totalSocial?Math.round(totalTwitter/totalSocial*100):0;
+            const tgPct=100-twPct;
+            const avgTw=tweetCount?Math.round(totalTwitter/tweetCount):0;
+            const avgTg=tgPostCount?Math.round(totalTelegram/tgPostCount):0;
+            const X_C="var(--accent)", TG_C="#229ED9";
+            const Card=({c,icon,name,total,totalLabel,posts,avg,pct})=>(
+              <div style={{flex:1,minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 18px",boxShadow:"var(--shadow-sm)",borderLeft:`3px solid ${c}`}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                  <span style={{fontSize:14}}>{icon}</span>
+                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--muted)"}}>{name}</span>
+                  <span style={{marginLeft:"auto",fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:c}}>{pct}%</span>
+                </div>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:26,fontWeight:700,color:"var(--text)",lineHeight:1,letterSpacing:"-0.03em"}}>{fmtNum(total)}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:5}}>{totalLabel}</div>
+                <div style={{display:"flex",gap:20,marginTop:14,paddingTop:12,borderTop:"1px solid var(--border)"}}>
+                  <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:15,fontWeight:600,color:"var(--text)"}}>{posts}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>posts</div></div>
+                  <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:15,fontWeight:600,color:"var(--text)"}}>{fmtNum(avg)}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>avg / post</div></div>
+                </div>
+              </div>
+            );
+            return (
+              <div style={{marginBottom:28,animation:"fadeUp .5s ease both"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social Breakdown</div>
+                <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12}}>
+                  {Card({c:X_C,icon:"𝕏",name:"X / Twitter",total:totalTwitter,totalLabel:"Impressions",posts:tweetCount,avg:avgTw,pct:twPct})}
+                  {Card({c:TG_C,icon:"📣",name:"Telegram",total:totalTelegram,totalLabel:"Post views",posts:tgPostCount,avg:avgTg,pct:tgPct})}
+                </div>
+                <div style={{display:"flex",height:8,borderRadius:5,overflow:"hidden",border:"1px solid var(--border)"}} title={`X ${twPct}% · Telegram ${tgPct}%`}>
+                  <div style={{width:`${twPct}%`,background:X_C}}/>
+                  <div style={{width:`${tgPct}%`,background:TG_C}}/>
+                </div>
+              </div>
+            );
+          })()}
           {/* Leaderboards — 3-column compact grid */}
           {(()=>{
             // Topics
