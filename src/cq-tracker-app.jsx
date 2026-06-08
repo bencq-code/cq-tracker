@@ -3572,43 +3572,40 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   {(()=>{
                     const research = campaigns.filter(b=>(b.author||"").toLowerCase()==="cq research");
                     if(!research.length) return null;
-                    // citations linked to each research bounty
                     const citeMap={};
-                    citations.forEach(c=>{
-                      const bid=c.citedBountyId; if(!bid) return;
-                      if(!citeMap[bid]) citeMap[bid]={count:0,outlets:{}};
-                      citeMap[bid].count++;
-                      const m=(c.media||"").trim(); if(m) citeMap[bid].outlets[m]=(citeMap[bid].outlets[m]||0)+1;
-                    });
-                    const rows=research.map(b=>{
-                      const cm=citeMap[b.id]||{count:0,outlets:{}};
-                      return {...b, cites:cm.count, impressions:parseNum(b.twitterImpressions)+parseNum(b.telegramImpressions), topOutlet:Object.entries(cm.outlets).sort((a,b)=>b[1]-a[1])[0]?.[0]||"—"};
-                    }).sort((a,b)=>b.impressions-a.impressions || b.cites-a.cites);
+                    citations.forEach(c=>{ const bid=c.citedBountyId; if(bid) citeMap[bid]=(citeMap[bid]||0)+1; });
+                    const rows=research.map(b=>({...b, cites:citeMap[b.id]||0, impressions:parseNum(b.twitterImpressions)+parseNum(b.telegramImpressions)}))
+                      .sort((a,b)=>b.impressions-a.impressions || b.cites-a.cites);
                     const maxImp=Math.max(1,...rows.map(r=>r.impressions));
-                    const gcols="minmax(0,1fr) 84px 150px 54px";
+                    const maxCit=Math.max(1,...rows.map(r=>r.cites));
+                    const show=rows.slice(0,10);
+                    const gcols="minmax(0,1fr) 150px 170px 44px";
+                    const Metric=({value,pct,dim})=>(
+                      <div style={{minWidth:0}}>
+                        <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:dim?"var(--border2)":"var(--text)",textAlign:"right",marginBottom:5}}>{value}</div>
+                        <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
+                          <div style={{width:`${pct}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:.85}}/>
+                        </div>
+                      </div>
+                    );
                     return (<>
                       <SectionLabel>CQ Research · Content</SectionLabel>
                       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
-                        <div style={{display:"grid",gridTemplateColumns:gcols,gap:16,padding:"11px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-                          {["Content","Citations","Impressions","Link"].map((h,i)=><span key={i} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",textAlign:(i===1||i===2)?"right":(i===3?"center":"left")}}>{h}</span>)}
+                        <div style={{display:"grid",gridTemplateColumns:gcols,gap:20,padding:"11px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
+                          {[["Content","left"],["Citations","right"],["Impressions","right"],["Link","center"]].map(([h,al],i)=><span key={i} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",textAlign:al}}>{h}</span>)}
                         </div>
-                        {rows.map((t,i)=>(
-                          <div key={t.id||t.title} style={{display:"grid",gridTemplateColumns:gcols,gap:16,alignItems:"center",padding:"12px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
+                        {show.map((t,i)=>(
+                          <div key={t.id||t.title} style={{display:"grid",gridTemplateColumns:gcols,gap:20,alignItems:"center",padding:"13px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
                             <div style={{minWidth:0}}>
-                              <div title={t.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:t.date?3:0}}>{t.title||"(untitled)"}</div>
-                              {t.date&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{t.date}</div>}
+                              <div title={t.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"(untitled)"}</div>
+                              {t.date&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:3}}>{t.date}</div>}
                             </div>
-                            <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:14,fontWeight:700,color:t.cites?"var(--text)":"var(--border2)",textAlign:"right"}}>{t.cites}</span>
-                            <div style={{minWidth:0}}>
-                              <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12.5,fontWeight:600,color:"var(--text)",textAlign:"right",marginBottom:5}}>{fmtNum(t.impressions)}</div>
-                              <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                                <div style={{width:`${(t.impressions/maxImp)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:.85}}/>
-                              </div>
-                            </div>
+                            <Metric value={t.cites} pct={(t.cites/maxCit)*100} dim={!t.cites}/>
+                            <Metric value={fmtNum(t.impressions)} pct={(t.impressions/maxImp)*100}/>
                             <div style={{display:"flex",justifyContent:"center"}}>
                               {t.cqLink
-                                ? <a href={t.cqLink} target="_blank" rel="noreferrer" title={t.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none"}}>↗</a>
-                                : <span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
+                                ? <a href={t.cqLink} target="_blank" rel="noopener noreferrer" title={t.title||"Open content"} style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--dim)",textDecoration:"none",fontSize:11}}>↗</a>
+                                : <span style={{color:"var(--dim)",opacity:.4,fontSize:11}}>—</span>}
                             </div>
                           </div>
                         ))}
