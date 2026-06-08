@@ -1497,7 +1497,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} bounties</div>
                       </div>
                     ):null}/>
-                    <Area type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
+                    <Area isAnimationActive={false} type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -2289,7 +2289,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--accent)"}}>{payload[0].value} articles</div>
                       </div>
                     ):null}/>
-                    <Area type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
+                    <Area isAnimationActive={false} type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -2786,542 +2786,10 @@ const CQResearchTab = ({campaigns, citations}) => {
   );
 };
 
-const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientName, color, onExport}) => {
-  // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
-  const [mode, setMode] = useState("all");
-  const [granularity, setGranularity] = useState("daily");
-  const [customFrom, setCustomFrom] = useState("");
-  const [customTo,   setCustomTo]   = useState("");
-  const [drill, setDrill] = useState(null);
-  const [drillExpanded, setDrillExpanded] = useState(false);
-  const [topOpen, setTopOpen] = useState(false);
-
-  const getMondayOf = (date) => {
-    const d = new Date(date);
-    d.setHours(0,0,0,0);
-    const day = d.getDay();
-    d.setDate(d.getDate() - ((day + 6) % 7));
-    return d;
-  };
-  const toLocalDateStr = (d) => {
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const day = String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${day}`;
-  };
-
-  const todayMonday = getMondayOf(new Date());
-  const [weekStart, setWeekStart] = useState(todayMonday);
-  const [manuallyNavigated, setManuallyNavigated] = useState(false);
-
-  useEffect(()=>{
-    if(mode!=="weekly") return;
-    if(manuallyNavigated) return;
-    const allDates = [...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)]
-      .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
-    if(!allDates.length) return;
-    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
-    if(isNaN(lastDate.getTime())) return;
-    const lastMonday = getMondayOf(lastDate);
-    if(isNaN(lastMonday.getTime())) return;
-    setWeekStart(lastMonday > todayMonday ? todayMonday : lastMonday);
-  },[mode, campaignsRaw.length, citationsRaw.length]);
-
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  const weekStartStr = toLocalDateStr(weekStart);
-  const weekEndStr   = toLocalDateStr(weekEnd);
-  const isCurrentWeek = weekStartStr === toLocalDateStr(todayMonday);
-  const latestDataMonday = (() => {
-    const allDates = [...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)].filter(Boolean).sort();
-    if(!allDates.length) return todayMonday;
-    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
-    if(isNaN(lastDate.getTime())) return todayMonday;
-    const lastMonday = getMondayOf(lastDate);
-    return lastMonday > todayMonday ? todayMonday : lastMonday;
-  })();
-  const isLatestWeek = weekStartStr === toLocalDateStr(latestDataMonday);
-  const goBack    = () => { const d=new Date(weekStart); d.setDate(d.getDate()-7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
-  const goForward = () => { if(isCurrentWeek) return; const d=new Date(weekStart); d.setDate(d.getDate()+7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
-  const goLatest  = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
-
-  // Effective date range derived from mode
-  const effectiveFrom = mode==="custom" ? customFrom
-                      : mode==="weekly" ? weekStartStr
-                      : mode==="all" ? ""
-                      : (() => { const d=new Date(); d.setMonth(d.getMonth()-parseInt(mode)); return toLocalDateStr(d); })();
-  const effectiveTo   = mode==="custom" ? customTo
-                      : mode==="weekly" ? weekEndStr
-                      : "";
-
-  const campaigns = useMemo(()=> campaignsRaw.filter(c => c.date && (!effectiveFrom||c.date>=effectiveFrom) && (!effectiveTo||c.date<=effectiveTo)), [campaignsRaw, effectiveFrom, effectiveTo]);
-  const citations = useMemo(()=> citationsRaw.filter(c => c.date && (!effectiveFrom||c.date>=effectiveFrom) && (!effectiveTo||c.date<=effectiveTo)), [citationsRaw, effectiveFrom, effectiveTo]);
-
-  const totalBounties  = campaigns.length;
-  const totalCitations = citations.length;
-  const dateRangeLabel = mode==="custom" && customFrom && customTo
-    ? `${customFrom} → ${customTo}`
-    : mode==="weekly"
-      ? `${weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`
-      : mode==="all" ? "All time"
-      : `Last ${mode} months`;
-
-  // Build chart series — daily or weekly
-  const getWeekKey = (iso) => {
-    try {
-      const d = new Date(iso+"T00:00:00");
-      if(isNaN(d.getTime())) return null;
-      const day = d.getDay();
-      const monday = new Date(d);
-      monday.setDate(d.getDate() - ((day+6)%7));
-      return monday.toISOString().slice(0,10);
-    } catch { return null; }
-  };
-
-  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
-    const bucketMap = {};
-    const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
-    const addTo = (iso, key) => {
-      if(!iso) return;
-      const bkey = granularity === "daily" ? iso : getWeekKey(iso);
-      if(!bkey) return;
-      if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0, reach:0};
-      bucketMap[bkey][key]++;
-    };
-    campaigns.forEach(c => { addTo(c.date, "bounties"); if(c.date){ const bk = granularity==="daily"?c.date:getWeekKey(c.date); if(bk&&bucketMap[bk]) bucketMap[bk].reach += pNum(c.twitterImpressions)+pNum(c.telegramImpressions); } });
-    citations.forEach(c => addTo(c.date, "citations"));
-
-    const weekMap = {};
-    campaigns.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].bounties++;} });
-    citations.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].citations++;} });
-
-    const allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
-    const allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
-
-    let cumB = 0, cumC = 0, cumR = 0;
-    const chartData = allBuckets.map(w => {
-      cumB += w.bounties; cumC += w.citations; cumR += (w.reach||0);
-      try {
-        const d = new Date(w.period+"T00:00:00");
-        const label = isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-        return { ...w, label, cumBounties: cumB, cumCitations: cumC, cumReach: cumR };
-      } catch { return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC, cumReach: cumR }; }
-    });
-
-    const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
-    const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
-
-    const rangeStart = allWeeks.length ? allWeeks[0].week : null;
-    const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
-    const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
-    const rc = inRange(campaigns);
-    const totalTwitter  = rc.reduce((s,c)=>s+parseNum(c.twitterImpressions),0);
-    const totalTelegram = rc.reduce((s,c)=>s+parseNum(c.telegramImpressions),0);
-    const tweetCount    = rc.reduce((n,c)=>n+(c.authorTwitterLink?1:0)+(c.cqTwitterLink?1:0),0);
-    const tgPostCount   = rc.reduce((n,c)=>n+(c.authorTelegramLink?1:0)+(c.telegramLink?1:0),0);
-    const totalImpressions = totalTwitter + totalTelegram;
-
-    return {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount};
-  },[campaigns, citations, granularity]);
-
-  const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
-  const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
-
-  const SUMMARY = [
-    {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)", drillKey:"bounties"},
-    {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"var(--accent)",      drillKey:"citations"},
-    {label:"Authors",           value:uniqueAuthors.length,    sub:"Unique contributors",    c:"var(--accent)"},
-    {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"var(--accent)"},
-    {label:"Total Impressions", value:fmtNum(totalImpressions),sub:"Twitter + Telegram",     c:"var(--accent)"},
-  ];
-
-  const CustomTooltip = ({active,payload,label,nameMap={}}) => {
-    if(!active||!payload?.length) return null;
-    return (
-      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
-        {payload.map(p=>(
-          <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{nameMap[p.dataKey]||p.dataKey}:</span>
-            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  if (drill) {
-    const items = drill.type==="bounties" ? campaigns : citations;
-    const kind = drill.type==="bounties" ? "bounty" : "citation";
-    const title = drill.type==="bounties" ? "Bounties" : "Media Citations";
-    const sorted = [...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-    const visible = drillExpanded ? sorted : sorted.slice(0,10);
-    return (
-      <div style={{animation:"fadeUp .4s ease both"}}>
-        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
-          ← Back to Performance
-        </button>
-        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
-        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{title} <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
-          {sorted.length===0
-            ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
-            : <>
-                <div style={{maxHeight:"520px",overflowY:"auto"}}>
-                  {visible.map((item,i)=>{
-                    const link = kind==="bounty" ? item.cqLink : item.articleLink;
-                    return (
-                      <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
-                        <div style={{minWidth:0}}>
-                          {kind==="bounty"
-                            ? <>
-                                <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
-                              </>
-                            : <>
-                                <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-                                {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
-                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
-                              </>
-                          }
-                        </div>
-                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
-                      </div>
-                    );
-                  })}
-                </div>
-                {sorted.length>10 && (
-                  <button onClick={()=>setDrillExpanded(v=>!v)}
-                    style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em"}}>
-                    {drillExpanded?`▲ SHOW LESS`:`▼ SHOW ALL ${sorted.length} ENTRIES`}
-                  </button>
-                )}
-              </>
-          }
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{animation:"fadeUp .5s ease both"}}>
-      {/* Header */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
-        <div>
-          <div style={{fontSize:18,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{dateRangeLabel}</div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-          {/* Custom date inputs — sit left of the arrows, next to the Custom button */}
-          {mode==="custom" && (
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
-              <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-            </div>
-          )}
-          {/* Week navigator — arrows drive weekly mode */}
-          <div style={{display:"flex",alignItems:"center",gap:6}}>
-            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goBack();}}}
-              title="Previous week"
-              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
-            {mode==="weekly" && !isLatestWeek && (
-              <button onClick={goLatest} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
-            )}
-            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goForward();}}} disabled={mode==="weekly"&&isLatestWeek}
-              title="Next week"
-              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:(mode==="weekly"&&isLatestWeek)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:(mode==="weekly"&&isLatestWeek)?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
-          </div>
-          {/* Mode selector */}
-          <div style={{display:"flex",gap:4}}>
-            {[["custom","Custom"],["all","All"]].map(([val,label])=>(
-              <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const allDates=[...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)].filter(Boolean).sort();const latest=allDates[allDates.length-1];if(latest){const fromD=getMondayOf(new Date(latest+"T00:00:00"));fromD.setDate(fromD.getDate()-7);setCustomFrom(toLocalDateStr(fromD));if(!customTo)setCustomTo(latest);}else{const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}}
-                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"color-mix(in srgb,var(--accent) 8%,transparent)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {/* Export (PDF report) */}
-          {onExport && (
-            <button onClick={onExport} title="Export PDF report"
-              style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
-              <span style={{fontSize:11}}>↓</span> Export
-            </button>
-          )}
-        </div>
-      </div>
-
-      {chartData.length === 0 ? (
-        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
-          <div style={{fontSize:28,marginBottom:10,opacity:.25}}>⬡</div>
-          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
-        </div>
-      ) : (
-        <>
-          {/* Combined chart */}
-          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600,margin:"4px 2px 12px"}}>Program Activity</div>
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
-                <div style={{display:"flex",gap:14,flexWrap:"wrap",alignItems:"center"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:9,height:9,borderRadius:2,background:"var(--accent)"}}/>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Bounties</span>
-                    <div style={{width:9,height:9,borderRadius:2,background:"var(--dim)",marginLeft:6}}/>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Citations</span>
-                  </div>
-                  <div style={{width:1,height:11,background:"var(--border2)"}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:7,height:11,borderRadius:1.5,background:"var(--dim)",opacity:.4}}/>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>per {granularity==="daily"?"day":"wk"}</span>
-                    <div style={{width:14,height:2,borderRadius:1,background:"var(--dim)",marginLeft:6}}/>
-                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>running total</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
-                  {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
-                    <button key={val} onClick={()=>setGranularity(val)}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>{lbl}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={chartData} margin={{top:8,right:12,left:0,bottom:0}}>
-                <defs>
-                  <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--dim)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--dim)" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
-                <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
-                <YAxis yAxisId="per" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
-                <YAxis yAxisId="cum" orientation="right" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--accent)"}} axisLine={false} tickLine={false} width={32} allowDecimals={false}/>
-                <Tooltip content={({active,payload,label})=>{
-                  if(!active||!payload?.length) return null;
-                  const names={bounties:`Bounties / ${granularity==="daily"?"day":"wk"}`,citations:`Citations / ${granularity==="daily"?"day":"wk"}`,cumBounties:"Total Bounties",cumCitations:"Total Citations"};
-                  return (
-                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
-                      {payload.map(p=>(
-                        <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
-                          <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{names[p.dataKey]||p.dataKey}:</span>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                }}/>
-                {[
-                  <Area key="ac" yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="none" fill="url(#gC)"/>,
-                  <Area key="ab" yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="none" fill="url(#gB)"/>,
-                  <Bar key="bc" yAxisId="per" dataKey="citations" fill="var(--dim)" fillOpacity={0.34} radius={[2,2,0,0]}/>,
-                  <Bar key="bb" yAxisId="per" dataKey="bounties" fill="var(--accent)" fillOpacity={0.30} radius={[2,2,0,0]}/>,
-                  <Line key="cc" yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="var(--dim)" strokeWidth={1.8} dot={false} activeDot={{r:4}}/>,
-                  <Line key="cb" yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="var(--accent)" strokeWidth={2.4} dot={false} activeDot={{r:4}}/>,
-                ]}
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Stat strip — summary readout under the chart */}
-          <div className="cq-statstrip" style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:28,overflow:"hidden",animation:"fadeUp .5s ease both"}}>
-            {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
-              <div key={i}
-                onClick={s.drillKey?()=>{setDrill({type:s.drillKey});setDrillExpanded(false);}:undefined}
-                style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none",cursor:s.drillKey?"pointer":"default",transition:"background .15s"}}
-                onMouseEnter={e=>{if(s.drillKey)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 4%,transparent)";}}
-                onMouseLeave={e=>{if(s.drillKey)e.currentTarget.style.background="transparent";}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {s.label}{s.drillKey&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
-                </div>
-                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:27,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:10,letterSpacing:"-0.03em"}}>{s.value}</div>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.sub}</div>
-              </div>
-            ))}
-          </div>
-          {/* Social — combined reach, channel mix & top content */}
-          {(totalTwitter>0||totalTelegram>0)&&(()=>{
-            const totalSocial=totalTwitter+totalTelegram;
-            const twPct=totalSocial?Math.round(totalTwitter/totalSocial*100):0;
-            const tgPct=100-twPct;
-            const postsWithReach=tweetCount+tgPostCount;
-            const avgPost=postsWithReach?Math.round(totalSocial/postsWithReach):0;
-            // top content by combined reach
-            const topPosts=[...campaigns]
-              .map(c=>({...c, reach:parseNum(c.twitterImpressions)+parseNum(c.telegramImpressions)}))
-              .filter(c=>c.reach>0)
-              .sort((a,b)=>b.reach-a.reach);
-            const maxReach=topPosts[0]?.reach||1;
-            return (
-              <div style={{marginBottom:28,animation:"fadeUp .5s ease both"}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social</div>
-                <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12,alignItems:"stretch"}}>
-                  {/* cumulative reach chart */}
-                  <div style={{flex:"1.7 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-                      <div style={{width:14,height:2,background:"var(--accent)",borderRadius:2}}/>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Cumulative reach</span>
-                    </div>
-                    <ResponsiveContainer width="100%" height={170}>
-                      <ComposedChart data={chartData} margin={{top:6,right:8,left:0,bottom:0}}>
-                        <defs>
-                          <linearGradient id="gReach" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.22}/>
-                            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.01}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
-                        <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
-                        <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={38} tickFormatter={fmtNum}/>
-                        <Tooltip content={({active,payload,label})=>{
-                          if(!active||!payload?.length) return null;
-                          return (
-                            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
-                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
-                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>Reach: {fmtNum(payload[0].value)}</div>
-                            </div>
-                          );
-                        }}/>
-                        <Area type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" dot={false} activeDot={{r:4}}/>
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                  {/* combined total impressions */}
-                  <div style={{flex:"1 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)",display:"flex",flexDirection:"column"}}>
-                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Total Impressions</div>
-                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:34,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:12,letterSpacing:"-0.03em"}}>{fmtNum(totalSocial)}</div>
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6}}>Twitter + Telegram combined</div>
-                    <div style={{display:"flex",gap:24,marginTop:16,paddingTop:14,borderTop:"1px solid var(--border)"}}>
-                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{postsWithReach}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>posts</div></div>
-                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{fmtNum(avgPost)}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>avg / post</div></div>
-                    </div>
-                    <div style={{marginTop:"auto",paddingTop:16}}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
-                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Channel mix</span>
-                        <span style={{display:"flex",gap:12,fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>
-                          <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {twPct}%</span><span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {tgPct}%</span>
-                        </span>
-                      </div>
-                      <div style={{display:"flex",height:5,borderRadius:99,overflow:"hidden",background:"var(--surface2)",gap:1.5}}>
-                        <div style={{width:`${twPct}%`,background:"var(--accent)"}}/>
-                        <div style={{width:`${tgPct}%`,background:"var(--dim)",opacity:.7}}/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* collapsible top content by reach */}
-                {topPosts.length>0 && (
-                  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
-                    <div onClick={()=>setTopOpen(v=>!v)} role="button" aria-expanded={topOpen}
-                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"14px 18px",cursor:"pointer",transition:"background .13s",background:topOpen?"color-mix(in srgb,var(--accent) 6%,transparent)":"transparent"}}
-                      onMouseEnter={e=>{if(!topOpen)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)";}}
-                      onMouseLeave={e=>{if(!topOpen)e.currentTarget.style.background="transparent";}}>
-                      <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}>
-                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>Top Content · by reach</span>
-                        {!topOpen&&topPosts[0]&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>#1 <span style={{color:"var(--text)"}}>{topPosts[0].title}</span> · <span style={{color:"var(--accent)",fontWeight:600}}>{fmtNum(topPosts[0].reach)}</span></span>}
-                      </div>
-                      <div style={{display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topPosts.length} posts</span>
-                        <span style={{color:"var(--dim)",fontSize:11,transform:topOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
-                      </div>
-                    </div>
-                    {topOpen&&topPosts.slice(0,10).map((b,i)=>{
-                      const tw=parseNum(b.twitterImpressions), tg=parseNum(b.telegramImpressions);
-                      const xUrl=b.cqTwitterLink||b.authorTwitterLink, tgUrl=b.telegramLink||b.authorTelegramLink;
-                      return (
-                        <div key={b.id||b.title} style={{display:"grid",gridTemplateColumns:"26px minmax(0,1fr) 150px 116px",alignItems:"center",gap:16,padding:"12px 18px",borderTop:"1px solid var(--border)"}}>
-                          <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
-                          <div style={{minWidth:0}}>
-                            <div title={b.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{b.title}</div>
-                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{b.author} · {b.date}</div>
-                          </div>
-                          <div style={{minWidth:0}}>
-                            <div style={{height:5,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginBottom:5}}>
-                              <div style={{width:`${(b.reach/maxReach)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:1-i*0.07}}/>
-                            </div>
-                            <div style={{display:"flex",gap:10,fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)"}}>
-                              {tw>0&&(xUrl
-                                ? <a href={xUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open X post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.X s={10}/> {fmtNum(tw)}</a>
-                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {fmtNum(tw)}</span>)}
-                              {tg>0&&(tgUrl
-                                ? <a href={tgUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open Telegram post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.Telegram s={10}/> {fmtNum(tg)}</a>
-                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {fmtNum(tg)}</span>)}
-                            </div>
-                          </div>
-                          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8}}>
-                            <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{fmtNum(b.reach)}</div>
-                            {b.cqLink&&<a href={b.cqLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-          {/* Leaderboards — 3-column compact grid */}
-          {(()=>{
-            // Topics
-            const topicMap = {};
-            citations.forEach(c=>{
-              const t=((c.headline||c.topic)||"").trim()||"Uncategorised";
-              const tk=t.toLowerCase();
-              if(!topicMap[tk]) topicMap[tk]={topic:t,count:0};
-              topicMap[tk].count++;
-            });
-            const allTopics  = Object.values(topicMap).sort((a,b)=>b.count-a.count);
-            const topTopics  = allTopics.slice(0,10);
-            const maxTopic   = allTopics[0]?.count||1;
-
-            // Authors
-            const authorMap = {};
-            campaigns.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].bounties++; });
-            citations.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].citations++; });
-            const allAuthors = Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations));
-            const topAuthors = allAuthors.slice(0,5);
-            const maxAuthor  = (allAuthors[0]?.bounties||0)+(allAuthors[0]?.citations||0)||1;
-
-            // Outlets
-            const mediaMap = {};
-            citations.forEach(c=>{ const m=(c.media||"").trim()||"Unknown"; const mk=m.toLowerCase(); if(!mediaMap[mk]) mediaMap[mk]={media:m,count:0}; mediaMap[mk].count++; });
-            const allOutlets = Object.values(mediaMap).sort((a,b)=>b.count-a.count);
-            const topOutlets = allOutlets.slice(0,5);
-            const maxOutlet  = allOutlets[0]?.count||1;
-
-            // Media tiers (shared by Panel cards + "View all" modal)
-            const tierMap = {};
-            citations.forEach(c=>{
-              if(c.mediaTier){
-                const t=String(c.mediaTier).trim();
-                if(t){
-                  if(!tierMap[t]) tierMap[t]={count:0,outlets:{},authors:new Set(),dates:[],items:[]};
-                  tierMap[t].count++;
-                  const m=(c.media||"").trim();
-                  if(m){const mk=m.toLowerCase();if(!tierMap[t].outlets[mk])tierMap[t].outlets[mk]={label:m,count:0};tierMap[t].outlets[mk].count++;}
-                  const a=(c.author||"").trim();
-                  if(a) tierMap[t].authors.add(a.toLowerCase());
-                  if(c.date) tierMap[t].dates.push(c.date);
-                  tierMap[t].items.push(c);
-                }
-              }
-            });
-            const tierEntries = Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
-            const totalTierCits = tierEntries.reduce((s,[,d])=>s+d.count,0);
+// Performance-tab leaderboards — module-level so it isn't remounted (and its tier/modal
+// state isn't reset) on every AnalyticsTab re-render. Heavy data comes pre-memoized via props.
+const LeaderboardsSection = ({leaderData, citations, campaigns, fmtNum, parseNum}) => {
+            const {allTopics, topTopics, maxTopic, allAuthors, topAuthors, maxAuthor, allOutlets, topOutlets, maxOutlet, tierMap, tierEntries, totalTierCits} = leaderData;
 
             // "View all" modal
             const AllModal = ({title, onClose, children}) => (
@@ -3352,7 +2820,6 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               </div>
             );
 
-            const Leaderboards = () => {
               const [modal,setModal] = useState(null); // "topics"|"authors"|"outlets"
               const [tierModal,setTierModal] = useState(null); // tier key or null
               const [tierOpen,setTierOpen] = useState(null); // expanded tier row
@@ -3654,10 +3121,547 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   })()}
                 </>
               );
-            };
 
-            return <Leaderboards/>;
+};
+
+const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientName, color, onExport}) => {
+  // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
+  const [mode, setMode] = useState("all");
+  const [granularity, setGranularity] = useState("daily");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo,   setCustomTo]   = useState("");
+  const [drill, setDrill] = useState(null);
+  const [drillExpanded, setDrillExpanded] = useState(false);
+  const [topOpen, setTopOpen] = useState(false);
+
+  const getMondayOf = (date) => {
+    const d = new Date(date);
+    d.setHours(0,0,0,0);
+    const day = d.getDay();
+    d.setDate(d.getDate() - ((day + 6) % 7));
+    return d;
+  };
+  const toLocalDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const todayMonday = getMondayOf(new Date());
+  const [weekStart, setWeekStart] = useState(todayMonday);
+  const [manuallyNavigated, setManuallyNavigated] = useState(false);
+
+  useEffect(()=>{
+    if(mode!=="weekly") return;
+    if(manuallyNavigated) return;
+    const allDates = [...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)]
+      .filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+    if(!allDates.length) return;
+    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
+    if(isNaN(lastDate.getTime())) return;
+    const lastMonday = getMondayOf(lastDate);
+    if(isNaN(lastMonday.getTime())) return;
+    setWeekStart(lastMonday > todayMonday ? todayMonday : lastMonday);
+  },[mode, campaignsRaw.length, citationsRaw.length]);
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  const weekStartStr = toLocalDateStr(weekStart);
+  const weekEndStr   = toLocalDateStr(weekEnd);
+  const isCurrentWeek = weekStartStr === toLocalDateStr(todayMonday);
+  const latestDataMonday = (() => {
+    const allDates = [...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)].filter(Boolean).sort();
+    if(!allDates.length) return todayMonday;
+    const lastDate = new Date(allDates[allDates.length-1]+"T00:00:00");
+    if(isNaN(lastDate.getTime())) return todayMonday;
+    const lastMonday = getMondayOf(lastDate);
+    return lastMonday > todayMonday ? todayMonday : lastMonday;
+  })();
+  const isLatestWeek = weekStartStr === toLocalDateStr(latestDataMonday);
+  const goBack    = () => { const d=new Date(weekStart); d.setDate(d.getDate()-7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
+  const goForward = () => { if(isCurrentWeek) return; const d=new Date(weekStart); d.setDate(d.getDate()+7); setWeekStart(d); setManuallyNavigated(true); setDrill(null); };
+  const goLatest  = () => { setWeekStart(latestDataMonday); setManuallyNavigated(true); setDrill(null); };
+
+  // Effective date range derived from mode
+  const effectiveFrom = mode==="custom" ? customFrom
+                      : mode==="weekly" ? weekStartStr
+                      : mode==="all" ? ""
+                      : (() => { const d=new Date(); d.setMonth(d.getMonth()-parseInt(mode)); return toLocalDateStr(d); })();
+  const effectiveTo   = mode==="custom" ? customTo
+                      : mode==="weekly" ? weekEndStr
+                      : "";
+
+  const campaigns = useMemo(()=> campaignsRaw.filter(c => c.date && (!effectiveFrom||c.date>=effectiveFrom) && (!effectiveTo||c.date<=effectiveTo)), [campaignsRaw, effectiveFrom, effectiveTo]);
+  const citations = useMemo(()=> citationsRaw.filter(c => c.date && (!effectiveFrom||c.date>=effectiveFrom) && (!effectiveTo||c.date<=effectiveTo)), [citationsRaw, effectiveFrom, effectiveTo]);
+
+  const totalBounties  = campaigns.length;
+  const totalCitations = citations.length;
+  const dateRangeLabel = mode==="custom" && customFrom && customTo
+    ? `${customFrom} → ${customTo}`
+    : mode==="weekly"
+      ? `${weekStart.toLocaleDateString("en-US",{month:"short",day:"numeric"})} – ${weekEnd.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`
+      : mode==="all" ? "All time"
+      : `Last ${mode} months`;
+
+  // Build chart series — daily or weekly
+  const getWeekKey = (iso) => {
+    try {
+      const d = new Date(iso+"T00:00:00");
+      if(isNaN(d.getTime())) return null;
+      const day = d.getDay();
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - ((day+6)%7));
+      return monday.toISOString().slice(0,10);
+    } catch { return null; }
+  };
+
+  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
+    const bucketMap = {};
+    const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+    const addTo = (iso, key) => {
+      if(!iso) return;
+      const bkey = granularity === "daily" ? iso : getWeekKey(iso);
+      if(!bkey) return;
+      if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0, reach:0};
+      bucketMap[bkey][key]++;
+    };
+    campaigns.forEach(c => { addTo(c.date, "bounties"); if(c.date){ const bk = granularity==="daily"?c.date:getWeekKey(c.date); if(bk&&bucketMap[bk]) bucketMap[bk].reach += pNum(c.twitterImpressions)+pNum(c.telegramImpressions); } });
+    citations.forEach(c => addTo(c.date, "citations"));
+
+    const weekMap = {};
+    campaigns.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].bounties++;} });
+    citations.forEach(c => { if(!c.date) return; const wk=getWeekKey(c.date); if(wk){if(!weekMap[wk])weekMap[wk]={week:wk,bounties:0,citations:0};weekMap[wk].citations++;} });
+
+    const allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
+    const allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
+
+    let cumB = 0, cumC = 0, cumR = 0;
+    const chartData = allBuckets.map(w => {
+      cumB += w.bounties; cumC += w.citations; cumR += (w.reach||0);
+      try {
+        const d = new Date(w.period+"T00:00:00");
+        const label = isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+        return { ...w, label, cumBounties: cumB, cumCitations: cumC, cumReach: cumR };
+      } catch { return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC, cumReach: cumR }; }
+    });
+
+    const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
+    const uniqueOutlets = [...new Set(citations.map(c=>c.media).filter(Boolean))];
+
+    const rangeStart = allWeeks.length ? allWeeks[0].week : null;
+    const inRange = arr => rangeStart ? arr.filter(c=>c.date&&c.date>=rangeStart) : arr;
+    const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+    const rc = inRange(campaigns);
+    const totalTwitter  = rc.reduce((s,c)=>s+parseNum(c.twitterImpressions),0);
+    const totalTelegram = rc.reduce((s,c)=>s+parseNum(c.telegramImpressions),0);
+    const tweetCount    = rc.reduce((n,c)=>n+(c.authorTwitterLink?1:0)+(c.cqTwitterLink?1:0),0);
+    const tgPostCount   = rc.reduce((n,c)=>n+(c.authorTelegramLink?1:0)+(c.telegramLink?1:0),0);
+    const totalImpressions = totalTwitter + totalTelegram;
+
+    return {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount};
+  },[campaigns, citations, granularity]);
+
+  const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
+  const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+
+  const SUMMARY = [
+    {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)", drillKey:"bounties"},
+    {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"var(--accent)",      drillKey:"citations"},
+    {label:"Authors",           value:uniqueAuthors.length,    sub:"Unique contributors",    c:"var(--accent)"},
+    {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"var(--accent)"},
+    {label:"Total Impressions", value:fmtNum(totalImpressions),sub:"Twitter + Telegram",     c:"var(--accent)"},
+  ];
+
+  // Leaderboard aggregations — memoized so they don't recompute on every render
+  // (date typing, drill toggles, tier expands all trigger re-renders).
+  const leaderData = useMemo(()=>{
+    const topicMap = {};
+    citations.forEach(c=>{
+      const t=((c.headline||c.topic)||"").trim()||"Uncategorised";
+      const tk=t.toLowerCase();
+      if(!topicMap[tk]) topicMap[tk]={topic:t,count:0};
+      topicMap[tk].count++;
+    });
+    const allTopics  = Object.values(topicMap).sort((a,b)=>b.count-a.count);
+
+    const authorMap = {};
+    campaigns.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].bounties++; });
+    citations.forEach(c=>{ const a=c.author||"Unknown"; const ak=a.toLowerCase(); if(!authorMap[ak]) authorMap[ak]={author:a,bounties:0,citations:0}; authorMap[ak].citations++; });
+    const allAuthors = Object.values(authorMap).sort((a,b)=>(b.bounties+b.citations)-(a.bounties+a.citations));
+
+    const mediaMap = {};
+    citations.forEach(c=>{ const m=(c.media||"").trim()||"Unknown"; const mk=m.toLowerCase(); if(!mediaMap[mk]) mediaMap[mk]={media:m,count:0}; mediaMap[mk].count++; });
+    const allOutlets = Object.values(mediaMap).sort((a,b)=>b.count-a.count);
+
+    const tierMap = {};
+    citations.forEach(c=>{
+      if(c.mediaTier){
+        const t=String(c.mediaTier).trim();
+        if(t){
+          if(!tierMap[t]) tierMap[t]={count:0,outlets:{},authors:new Set(),dates:[],items:[]};
+          tierMap[t].count++;
+          const m=(c.media||"").trim();
+          if(m){const mk=m.toLowerCase();if(!tierMap[t].outlets[mk])tierMap[t].outlets[mk]={label:m,count:0};tierMap[t].outlets[mk].count++;}
+          const a=(c.author||"").trim();
+          if(a) tierMap[t].authors.add(a.toLowerCase());
+          if(c.date) tierMap[t].dates.push(c.date);
+          tierMap[t].items.push(c);
+        }
+      }
+    });
+    const tierEntries = Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
+    const totalTierCits = tierEntries.reduce((s,[,d])=>s+d.count,0);
+
+    return {
+      allTopics, topTopics: allTopics.slice(0,10), maxTopic: allTopics[0]?.count||1,
+      allAuthors, topAuthors: allAuthors.slice(0,5), maxAuthor: (allAuthors[0]?.bounties||0)+(allAuthors[0]?.citations||0)||1,
+      allOutlets, topOutlets: allOutlets.slice(0,5), maxOutlet: allOutlets[0]?.count||1,
+      tierMap, tierEntries, totalTierCits,
+    };
+  },[campaigns, citations]);
+
+  const CustomTooltip = ({active,payload,label,nameMap={}}) => {
+    if(!active||!payload?.length) return null;
+    return (
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
+        {payload.map(p=>(
+          <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",textTransform:"capitalize"}}>{nameMap[p.dataKey]||p.dataKey}:</span>
+            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  if (drill) {
+    const items = drill.type==="bounties" ? campaigns : citations;
+    const kind = drill.type==="bounties" ? "bounty" : "citation";
+    const title = drill.type==="bounties" ? "Bounties" : "Media Citations";
+    const sorted = [...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+    const visible = drillExpanded ? sorted : sorted.slice(0,10);
+    return (
+      <div style={{animation:"fadeUp .4s ease both"}}>
+        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
+          ← Back to Performance
+        </button>
+        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
+        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{title} <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
+        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+          {sorted.length===0
+            ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
+            : <>
+                <div style={{maxHeight:"520px",overflowY:"auto"}}>
+                  {visible.map((item,i)=>{
+                    const link = kind==="bounty" ? item.cqLink : item.articleLink;
+                    return (
+                      <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
+                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
+                        <div style={{minWidth:0}}>
+                          {kind==="bounty"
+                            ? <>
+                                <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
+                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
+                              </>
+                            : <>
+                                <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
+                                {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
+                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
+                              </>
+                          }
+                        </div>
+                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                      </div>
+                    );
+                  })}
+                </div>
+                {sorted.length>10 && (
+                  <button onClick={()=>setDrillExpanded(v=>!v)}
+                    style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em"}}>
+                    {drillExpanded?`▲ SHOW LESS`:`▼ SHOW ALL ${sorted.length} ENTRIES`}
+                  </button>
+                )}
+              </>
+          }
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{animation:"fadeUp .5s ease both"}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontSize:18,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{dateRangeLabel}</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          {/* Custom date inputs — sit left of the arrows, next to the Custom button */}
+          {mode==="custom" && (
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
+              <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+            </div>
+          )}
+          {/* Week navigator — arrows drive weekly mode */}
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goBack();}}}
+              title="Previous week"
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",fontSize:14}}>‹</button>
+            {mode==="weekly" && !isLatestWeek && (
+              <button onClick={goLatest} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",cursor:"pointer"}}>Latest</button>
+            )}
+            <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goForward();}}} disabled={mode==="weekly"&&isLatestWeek}
+              title="Next week"
+              style={{width:32,height:32,borderRadius:8,border:`1px solid ${mode==="weekly"?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode==="weekly"?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",cursor:(mode==="weekly"&&isLatestWeek)?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:(mode==="weekly"&&isLatestWeek)?"var(--border2)":"var(--muted)",fontSize:14}}>›</button>
+          </div>
+          {/* Mode selector */}
+          <div style={{display:"flex",gap:4}}>
+            {[["custom","Custom"],["all","All"]].map(([val,label])=>(
+              <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const allDates=[...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)].filter(Boolean).sort();const latest=allDates[allDates.length-1];if(latest){const fromD=getMondayOf(new Date(latest+"T00:00:00"));fromD.setDate(fromD.getDate()-7);setCustomFrom(toLocalDateStr(fromD));if(!customTo)setCustomTo(latest);}else{const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}}
+                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"color-mix(in srgb,var(--accent) 8%,transparent)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
+                {label}
+              </button>
+            ))}
+          </div>
+          {/* Export (PDF report) */}
+          {onExport && (
+            <button onClick={onExport} title="Export PDF report"
+              style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
+              <span style={{fontSize:11}}>↓</span> Export
+            </button>
+          )}
+        </div>
+      </div>
+
+      {chartData.length === 0 ? (
+        <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
+          <div style={{fontSize:28,marginBottom:10,opacity:.25}}>⬡</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
+        </div>
+      ) : (
+        <>
+          {/* Combined chart */}
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600,margin:"4px 2px 12px"}}>Program Activity</div>
+          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"24px",marginBottom:16,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+                <div style={{display:"flex",gap:14,flexWrap:"wrap",alignItems:"center"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:9,height:9,borderRadius:2,background:"var(--accent)"}}/>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Bounties</span>
+                    <div style={{width:9,height:9,borderRadius:2,background:"var(--dim)",marginLeft:6}}/>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Citations</span>
+                  </div>
+                  <div style={{width:1,height:11,background:"var(--border2)"}}/>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:7,height:11,borderRadius:1.5,background:"var(--dim)",opacity:.4}}/>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>per {granularity==="daily"?"day":"wk"}</span>
+                    <div style={{width:14,height:2,borderRadius:1,background:"var(--dim)",marginLeft:6}}/>
+                    <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>running total</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
+                  {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setGranularity(val)}
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 10px",borderRadius:5,border:"none",background:granularity===val?"var(--surface)":"transparent",color:granularity===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:granularity===val?700:400,boxShadow:granularity===val?"0 1px 3px rgba(0,0,0,0.1)":"none",transition:"all .15s"}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={260}>
+              <ComposedChart data={chartData} margin={{top:8,right:12,left:0,bottom:0}}>
+                <defs>
+                  <linearGradient id="gB" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--dim)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--dim)" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
+                <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
+                <YAxis yAxisId="per" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
+                <YAxis yAxisId="cum" orientation="right" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--accent)"}} axisLine={false} tickLine={false} width={32} allowDecimals={false}/>
+                <Tooltip content={({active,payload,label})=>{
+                  if(!active||!payload?.length) return null;
+                  const names={bounties:`Bounties / ${granularity==="daily"?"day":"wk"}`,citations:`Citations / ${granularity==="daily"?"day":"wk"}`,cumBounties:"Total Bounties",cumCitations:"Total Citations"};
+                  return (
+                    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:8}}>{label}</div>
+                      {payload.map(p=>(
+                        <div key={p.dataKey} style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                          <div style={{width:8,height:8,borderRadius:"50%",background:p.color}}/>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{names[p.dataKey]||p.dataKey}:</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>{p.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }}/>
+                {[
+                  <Area key="ac" isAnimationActive={false} yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="none" fill="url(#gC)"/>,
+                  <Area key="ab" isAnimationActive={false} yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="none" fill="url(#gB)"/>,
+                  <Bar key="bc" isAnimationActive={false} yAxisId="per" dataKey="citations" fill="var(--dim)" fillOpacity={0.34} radius={[2,2,0,0]}/>,
+                  <Bar key="bb" isAnimationActive={false} yAxisId="per" dataKey="bounties" fill="var(--accent)" fillOpacity={0.30} radius={[2,2,0,0]}/>,
+                  <Line key="cc" isAnimationActive={false} yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="var(--dim)" strokeWidth={1.8} dot={false} activeDot={{r:4}}/>,
+                  <Line key="cb" isAnimationActive={false} yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="var(--accent)" strokeWidth={2.4} dot={false} activeDot={{r:4}}/>,
+                ]}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Stat strip — summary readout under the chart */}
+          <div className="cq-statstrip" style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:28,overflow:"hidden",animation:"fadeUp .5s ease both"}}>
+            {SUMMARY.slice(0, totalImpressions>0 ? 5 : 4).map((s,i)=>(
+              <div key={i}
+                onClick={s.drillKey?()=>{setDrill({type:s.drillKey});setDrillExpanded(false);}:undefined}
+                style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none",cursor:s.drillKey?"pointer":"default",transition:"background .15s"}}
+                onMouseEnter={e=>{if(s.drillKey)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 4%,transparent)";}}
+                onMouseLeave={e=>{if(s.drillKey)e.currentTarget.style.background="transparent";}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  {s.label}{s.drillKey&&<span style={{marginLeft:5,opacity:.4}}>→</span>}
+                </div>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:27,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:10,letterSpacing:"-0.03em"}}>{s.value}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+          {/* Social — combined reach, channel mix & top content */}
+          {(totalTwitter>0||totalTelegram>0)&&(()=>{
+            const totalSocial=totalTwitter+totalTelegram;
+            const twPct=totalSocial?Math.round(totalTwitter/totalSocial*100):0;
+            const tgPct=100-twPct;
+            const postsWithReach=tweetCount+tgPostCount;
+            const avgPost=postsWithReach?Math.round(totalSocial/postsWithReach):0;
+            // top content by combined reach
+            const topPosts=[...campaigns]
+              .map(c=>({...c, reach:parseNum(c.twitterImpressions)+parseNum(c.telegramImpressions)}))
+              .filter(c=>c.reach>0)
+              .sort((a,b)=>b.reach-a.reach);
+            const maxReach=topPosts[0]?.reach||1;
+            return (
+              <div style={{marginBottom:28,animation:"fadeUp .5s ease both"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social</div>
+                <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12,alignItems:"stretch"}}>
+                  {/* cumulative reach chart */}
+                  <div style={{flex:"1.7 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                      <div style={{width:14,height:2,background:"var(--accent)",borderRadius:2}}/>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Cumulative reach</span>
+                    </div>
+                    <ResponsiveContainer width="100%" height={170}>
+                      <ComposedChart data={chartData} margin={{top:6,right:8,left:0,bottom:0}}>
+                        <defs>
+                          <linearGradient id="gReach" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.22}/>
+                            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.01}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
+                        <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
+                        <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={38} tickFormatter={fmtNum}/>
+                        <Tooltip content={({active,payload,label})=>{
+                          if(!active||!payload?.length) return null;
+                          return (
+                            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
+                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>Reach: {fmtNum(payload[0].value)}</div>
+                            </div>
+                          );
+                        }}/>
+                        <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" dot={false} activeDot={{r:4}}/>
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* combined total impressions */}
+                  <div style={{flex:"1 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)",display:"flex",flexDirection:"column"}}>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Total Impressions</div>
+                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:34,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:12,letterSpacing:"-0.03em"}}>{fmtNum(totalSocial)}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6}}>Twitter + Telegram combined</div>
+                    <div style={{display:"flex",gap:24,marginTop:16,paddingTop:14,borderTop:"1px solid var(--border)"}}>
+                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{postsWithReach}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>posts</div></div>
+                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{fmtNum(avgPost)}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>avg / post</div></div>
+                    </div>
+                    <div style={{marginTop:"auto",paddingTop:16}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Channel mix</span>
+                        <span style={{display:"flex",gap:12,fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>
+                          <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {twPct}%</span><span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {tgPct}%</span>
+                        </span>
+                      </div>
+                      <div style={{display:"flex",height:5,borderRadius:99,overflow:"hidden",background:"var(--surface2)",gap:1.5}}>
+                        <div style={{width:`${twPct}%`,background:"var(--accent)"}}/>
+                        <div style={{width:`${tgPct}%`,background:"var(--dim)",opacity:.7}}/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* collapsible top content by reach */}
+                {topPosts.length>0 && (
+                  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
+                    <div onClick={()=>setTopOpen(v=>!v)} role="button" aria-expanded={topOpen}
+                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"14px 18px",cursor:"pointer",transition:"background .13s",background:topOpen?"color-mix(in srgb,var(--accent) 6%,transparent)":"transparent"}}
+                      onMouseEnter={e=>{if(!topOpen)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)";}}
+                      onMouseLeave={e=>{if(!topOpen)e.currentTarget.style.background="transparent";}}>
+                      <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>Top Content · by reach</span>
+                        {!topOpen&&topPosts[0]&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>#1 <span style={{color:"var(--text)"}}>{topPosts[0].title}</span> · <span style={{color:"var(--accent)",fontWeight:600}}>{fmtNum(topPosts[0].reach)}</span></span>}
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topPosts.length} posts</span>
+                        <span style={{color:"var(--dim)",fontSize:11,transform:topOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
+                      </div>
+                    </div>
+                    {topOpen&&topPosts.slice(0,10).map((b,i)=>{
+                      const tw=parseNum(b.twitterImpressions), tg=parseNum(b.telegramImpressions);
+                      const xUrl=b.cqTwitterLink||b.authorTwitterLink, tgUrl=b.telegramLink||b.authorTelegramLink;
+                      return (
+                        <div key={b.id||b.title} style={{display:"grid",gridTemplateColumns:"26px minmax(0,1fr) 150px 116px",alignItems:"center",gap:16,padding:"12px 18px",borderTop:"1px solid var(--border)"}}>
+                          <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
+                          <div style={{minWidth:0}}>
+                            <div title={b.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{b.title}</div>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{b.author} · {b.date}</div>
+                          </div>
+                          <div style={{minWidth:0}}>
+                            <div style={{height:5,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginBottom:5}}>
+                              <div style={{width:`${(b.reach/maxReach)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:1-i*0.07}}/>
+                            </div>
+                            <div style={{display:"flex",gap:10,fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)"}}>
+                              {tw>0&&(xUrl
+                                ? <a href={xUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open X post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.X s={10}/> {fmtNum(tw)}</a>
+                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {fmtNum(tw)}</span>)}
+                              {tg>0&&(tgUrl
+                                ? <a href={tgUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open Telegram post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.Telegram s={10}/> {fmtNum(tg)}</a>
+                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {fmtNum(tg)}</span>)}
+                            </div>
+                          </div>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8}}>
+                            <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{fmtNum(b.reach)}</div>
+                            {b.cqLink&&<a href={b.cqLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
           })()}
+          {/* Leaderboards — 3-column compact grid */}
+          <LeaderboardsSection leaderData={leaderData} citations={citations} campaigns={campaigns} fmtNum={fmtNum} parseNum={parseNum}/>
         </>
       )}
     </div>
@@ -5617,17 +5621,20 @@ export default function App() {
   },[tab]);
 
   // ── LOAD ──
+  // Two-phase so first paint isn't blocked on the heavy data:
+  //   Phase 1 — users + programs (all the shell/login/campaign-list needs) → drop the loading gate.
+  //   Phase 2 — bounties + citations (+ one-time seeding) fetched in the background; the dashboard
+  //             renders immediately with empty arrays and fills in when they arrive.
   useEffect(()=>{
     (async()=>{
+      let loadedPrograms = [];
+      // Phase 1 — light data needed to render the shell
       try {
-        const [loadedUsers, loadedPrograms, loadedCamps, loadedCits, nexoSeeded, nexoCitSeeded] = await Promise.all([
+        const [loadedUsers, lp] = await Promise.all([
           db.getUsers().catch(()=>[]),
           db.getPrograms().catch(()=>[]),
-          db.getCampaigns().catch(()=>[]),
-          db.getCitations().catch(()=>[]),
-          db.getFlag(NEXO_SEEDED_KEY).catch(()=>false),
-          db.getFlag(NEXO_CIT_SEEDED_KEY).catch(()=>false),
         ]);
+        loadedPrograms = lp;
 
         // Bootstrap admin if no users exist
         if (!loadedUsers.length) {
@@ -5648,6 +5655,16 @@ export default function App() {
         }
 
         setPrograms(loadedPrograms);
+      } finally { setLoading(false); }
+
+      // Phase 2 — heavy data + one-time seeding, in the background
+      try {
+        const [loadedCamps, loadedCits, nexoSeeded, nexoCitSeeded] = await Promise.all([
+          db.getCampaigns().catch(()=>[]),
+          db.getCitations().catch(()=>[]),
+          db.getFlag(NEXO_SEEDED_KEY).catch(()=>false),
+          db.getFlag(NEXO_CIT_SEEDED_KEY).catch(()=>false),
+        ]);
 
         // Seed Nexo bounties if not yet done
         if(!nexoSeeded) {
@@ -5680,7 +5697,7 @@ export default function App() {
         } else {
           setCitations(loadedCits);
         }
-      } finally { setLoading(false); }
+      } catch {}
     })();
   },[]);
 
