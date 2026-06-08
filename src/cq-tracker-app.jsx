@@ -1080,11 +1080,13 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   const [showFilters,setShowFilters] = useState(false);
   const [sumBatch,setSumBatch] = useState({running:false,total:0,processed:0,saved:0,skipped:0,errors:0,lastMsg:""});
   const [impBatch,setImpBatch] = useState({running:false,total:0,saved:0,skipped:0,lastMsg:""});
-  const runImpressions = async (scope) => {
-    // Bounties with at least one tweet link (analyst or CQ)
-    const targets = scope.filter(b => b.authorTwitterLink || b.cqTwitterLink);
+  const runImpressions = async (scope, {force=false}={}) => {
+    // force=false → only NEW bounties (no impressions value yet); avoids re-fetching synced tweets.
+    // force=true  → re-fetch ALL bounties with a tweet link, overwriting existing numbers.
+    const withLink = scope.filter(b => b.authorTwitterLink || b.cqTwitterLink);
+    const targets = force ? withLink : withLink.filter(b => !String(b.twitterImpressions||"").trim());
     if (!targets.length) {
-      setImpBatch({running:false,total:0,saved:0,skipped:0,lastMsg:"No bounties have a tweet link."});
+      setImpBatch({running:false,total:0,saved:0,skipped:0,lastMsg:force?"No bounties have a tweet link to refresh.":"All tweets already have impressions — nothing new to fetch."});
       return;
     }
     setImpBatch({running:true,total:targets.length,saved:0,skipped:0,lastMsg:""});
@@ -1517,12 +1519,19 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 </button>;
               })()}
               {onBountyImpressionsUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
-                const tweetCount = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
-                return <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Fetch live X/Twitter impressions for ${tweetCount} bounty${tweetCount!==1?"s":""} with a tweet link? Pulls the analyst tweet + CQ tweet via the X API and writes the combined total to each bounty's impressions.`))return;runImpressions(filtered);}}
-                  disabled={impBatch.running||tweetCount===0}
-                  style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:impBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:impBatch.running?"wait":(tweetCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:tweetCount===0?0.5:1}}>
-                  {impBatch.running?`FETCHING ${impBatch.total}…`:`𝕏 IMPRESSIONS ${tweetCount}`}
-                </button>;
+                const linkCount = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
+                const newCount  = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim()).length;
+                const baseStyle = (active)=>({display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:impBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:impBatch.running?"wait":(active?"pointer":"not-allowed"),fontWeight:500,opacity:active?1:0.5});
+                return <>
+                  <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Fetch live X/Twitter impressions for ${newCount} new bounty${newCount!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}}
+                    disabled={impBatch.running||newCount===0} title="Fetch impressions for tweets not synced yet" style={baseStyle(!impBatch.running&&newCount>0)}>
+                    {impBatch.running?`FETCHING ${impBatch.total}…`:`𝕏 NEW ${newCount}`}
+                  </button>
+                  <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Force-refresh impressions for ALL ${linkCount} bounty${linkCount!==1?"s":""} with a tweet link? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}}
+                    disabled={impBatch.running||linkCount===0} title="Re-pull and overwrite impressions for every tweet (latest counts)" style={{...baseStyle(!impBatch.running&&linkCount>0),background:"transparent"}}>
+                    {impBatch.running?`FETCHING ${impBatch.total}…`:`↻ REFRESH ALL ${linkCount}`}
+                  </button>
+                </>;
               })()}
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
