@@ -3491,9 +3491,9 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     <stop offset="95%" stopColor="var(--dim)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
+                <CartesianGrid yAxisId="per" strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.85} vertical={false}/>
                 <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
-                <YAxis yAxisId="per" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={28} allowDecimals={false}/>
+                <YAxis yAxisId="per" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={28} allowDecimals={false} tickCount={5}/>
                 <YAxis yAxisId="cum" orientation="right" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--accent)"}} axisLine={false} tickLine={false} width={32} allowDecimals={false}/>
                 <Tooltip content={({active,payload,label})=>{
                   if(!active||!payload?.length) return null;
@@ -4271,236 +4271,277 @@ const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
   const [dateFrom, setDateFrom] = useState(earliest);
   const [dateTo,   setDateTo]   = useState(today);
 
-  // Section toggles — all on by default except full lists
-  const [inclStats,     setInclStats]     = useState(true);
-  const [inclChart,     setInclChart]     = useState(true);
-  const [inclAuthors,   setInclAuthors]   = useState(true);
-  const [inclOutlets,   setInclOutlets]   = useState(true);
-  const [inclTopics,    setInclTopics]    = useState(true);
-  const [inclTier,      setInclTier]      = useState(true);
-  const [inclLanguage,  setInclLanguage]  = useState(true);
-  const [inclDR,        setInclDR]        = useState(true);
-  const [inclAsset,     setInclAsset]     = useState(true);
-  const [inclBranding,  setInclBranding]  = useState(true);
-  const [inclImpr,      setInclImpr]      = useState(true);
-  const [inclBounties,  setInclBounties]  = useState(false);
-  const [inclCitations, setInclCitations] = useState(false);
+  const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+  const fmtNum = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
 
   const b = campaigns.filter(c=>c.date&&c.date>=dateFrom&&c.date<=dateTo);
   const c = citations.filter(x=>x.date&&x.date>=dateFrom&&x.date<=dateTo);
+  const previewImpr = b.reduce((s,x)=>s+parseNum(x.twitterImpressions)+parseNum(x.telegramImpressions),0);
 
   const generatePDF = () => {
-    const uniqueAuthors  = [...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))];
-    const uniqueOutlets  = [...new Set(c.map(x=>x.media).filter(Boolean))];
-    const uniqueAnalysts = [...new Set(b.map(x=>x.author).filter(Boolean))];
-    const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
+    const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const fmtD=iso=>{if(!iso)return"—";const [y,m,d]=iso.split("-");return`${MONTHS[+m-1]||"?"} ${+d}, ${y}`;};
+    const fmtMD=iso=>{if(!iso)return"—";const p=iso.split("-");return`${MONTHS[+p[1]-1]||"?"} ${+p[2]}`;};
+    const tierOf=x=>{const m=String(x.mediaTier||"").trim().match(/\d+/);return m?m[0]:"";};
+
     const totalTwitter  = b.reduce((s,x)=>s+parseNum(x.twitterImpressions),0);
     const totalTelegram = b.reduce((s,x)=>s+parseNum(x.telegramImpressions),0);
     const totalImpr     = totalTwitter+totalTelegram;
-    const fmtNum = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
+    const cn=esc(campaignName||"Campaign");
 
-    const authorMap={};
-    b.forEach(x=>{const ak=normKey(x.author||"—");if(!authorMap[ak])authorMap[ak]={name:x.author||"—",b:0,c:0};authorMap[ak].b++;});
-    c.forEach(x=>{const ak=normKey(x.author||"—");if(!authorMap[ak])authorMap[ak]={name:x.author||"—",b:0,c:0};authorMap[ak].c++;});
-    const topAuthors = Object.values(authorMap).sort((a,z)=>(z.b+z.c)-(a.b+a.c)).slice(0,10);
-    const outletMap={};
-    c.forEach(x=>{const mk=normKey(x.media||"—");outletMap[mk]=(outletMap[mk]||0)+1;});
-    const topOutlets = Object.entries(outletMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
-    const topicMap={};
-    c.forEach(x=>{const tk=normKey(((x.headline||x.topic)||"—").trim());topicMap[tk]=(topicMap[tk]||0)+1;});
-    const topTopics = Object.entries(topicMap).sort((a,z)=>z[1]-a[1]).slice(0,10);
+    // ── outlets (preserve original casing) ──
+    const omap={};
+    c.forEach(x=>{const m=(x.media||"").trim(); if(m) omap[m]=(omap[m]||0)+1;});
+    const outletsSorted=Object.entries(omap).sort((a,z)=>z[1]-a[1]);
+    const topOutlets=outletsSorted.slice(0,6);
+    const maxOut=topOutlets[0]?.[1]||1;
+    const uniqueOutlets=outletsSorted.length;
 
-    const tierMap={},langMap={},drMap={},assetMap={},brandMap={};
-    c.forEach(x=>{
-      if(x.mediaTier){const k=normKey(String(x.mediaTier).trim());if(k)tierMap[k]=(tierMap[k]||0)+1;}
-      if(x.language){const k=normKey(x.language.trim());if(k)langMap[k]=(langMap[k]||0)+1;}
-      if(x.directRelationship){const k=normKey(x.directRelationship.trim());if(k)drMap[k]=(drMap[k]||0)+1;}
-      if(x.asset){const k=normKey(x.asset.trim());if(k)assetMap[k]=(assetMap[k]||0)+1;}
-      if(x.branding){const k=normKey(x.branding.trim());if(k)brandMap[k]=(brandMap[k]||0)+1;}
-    });
-    const tierEntries=Object.entries(tierMap).sort((a,z)=>a[0].localeCompare(z[0]));
-    const langEntries=Object.entries(langMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
-    const drEntries=Object.entries(drMap).sort((a,z)=>z[1]-a[1]);
-    const assetEntries=Object.entries(assetMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
-    const brandEntries=Object.entries(brandMap).sort((a,z)=>z[1]-a[1]).slice(0,8);
-    // using global getTierColor
+    // ── headlines ──
+    const hMap={};
+    c.forEach(x=>{const h=((x.headline||x.topic)||"").trim();if(!h)return;const k=h.toLowerCase();if(!hMap[k])hMap[k]={label:h,count:0,outlets:{},date:x.date||""};hMap[k].count++;if(x.media){const m=x.media.trim();if(m)hMap[k].outlets[m]=(hMap[k].outlets[m]||0)+1;}if(x.date&&(!hMap[k].date||x.date<hMap[k].date))hMap[k].date=x.date;});
+    const headlines=Object.values(hMap).map(e=>({...e,outlet:Object.entries(e.outlets).sort((a,z)=>z[1]-a[1])[0]?.[0]||"—"})).sort((a,z)=>z.count-a.count);
+    const maxHl=headlines[0]?.count||1;
 
-    const dayMap={};
-    b.forEach(x=>{if(!x.date)return;if(!dayMap[x.date])dayMap[x.date]={wk:x.date,b:0,c:0};dayMap[x.date].b++;});
-    c.forEach(x=>{if(!x.date)return;if(!dayMap[x.date])dayMap[x.date]={wk:x.date,b:0,c:0};dayMap[x.date].c++;});
-    const weeks=Object.values(dayMap).sort((a,z)=>a.wk.localeCompare(z.wk));
-    const maxWk=Math.max(...weeks.map(w=>w.b+w.c),1);
-    const CW=760,BA=80,CH=110;
-    const bW=weeks.length?Math.min(40,Math.floor(CW/weeks.length)-4):30;
-    const gp=weeks.length>1?(CW-(bW*weeks.length))/(weeks.length-1):0;
-    const le=Math.max(1,Math.ceil(weeks.length/8));
-    const fmtMD=iso=>{try{const d=new Date(iso+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch{return iso;}};
-    const bars=weeks.map((w,i)=>{const x=i*(bW+gp);const bH=maxWk?(w.b/maxWk)*BA:0;const cH=maxWk?(w.c/maxWk)*BA:0;return `<rect x="${x}" y="${BA-cH}" width="${bW}" height="${cH}" fill="var(--accent)" opacity="0.75" rx="2"/><rect x="${x}" y="${BA-cH-bH}" width="${bW}" height="${bH}" fill="var(--accent)" opacity="0.85" rx="2"/>${i%le===0?`<text x="${x+bW/2}" y="${CH+12}" text-anchor="middle" font-family="monospace" font-size="8" fill="#9ca3af">${fmtMD(w.wk)}</text>`:""}`; }).join("");
-    const guides=[0,0.25,0.5,0.75,1].map(p=>{const y=BA-(p*BA);return `<line x1="0" y1="${y}" x2="${CW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/><text x="-4" y="${y+3}" text-anchor="end" font-family="monospace" font-size="7" fill="#d1d5db">${Math.round(p*maxWk)}</text>`;}).join("");
-    const chartSvg=weeks.length?`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CW} ${CH+20}" width="${CW}" height="${CH+20}" style="overflow:visible">${guides}${bars}</svg>`:`<div style="text-align:center;font-family:monospace;font-size:10px;color:#9ca3af;padding:20px">No activity in selected range</div>`;
+    // ── tiers ──
+    const tmap={};
+    c.forEach(x=>{const t=tierOf(x);if(t)tmap[t]=(tmap[t]||0)+1;});
+    const tierEntries=Object.entries(tmap).sort((a,z)=>a[0].localeCompare(z[0]));
+    const totalTierCits=tierEntries.reduce((s,[,n])=>s+n,0)||1;
+    const t12pct=Math.round(((tmap["1"]||0)+(tmap["2"]||0))/totalTierCits*100);
+    const reporters=[...new Set(c.map(x=>(x.reporter||"").trim().toLowerCase()).filter(r=>r&&r!=="publisher"))].length;
+    const pickup=b.length?(c.length/b.length).toFixed(1):"0.0";
 
-    const fmtD=iso=>{if(!iso)return"—";const [y,m,d]=iso.split("-");return`${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]||"?"} ${+d}, ${y}`;};
-    const TH=s=>`<th style="font-family:monospace;font-size:7.5px;letter-spacing:0.08em;text-transform:uppercase;color:#6b7280;padding:5px 8px;background:#f9fafb;border-bottom:1px solid #e5e7eb;text-align:left">${s}</th>`;
-    const TD=(s,extra="")=>`<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:top;${extra}">${s}</td>`;
-    const sHdr=(t,n)=>`<div style="font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding-bottom:6px;border-bottom:2px solid #e5e7eb;margin-bottom:12px">${t}${n!=null?` (${n})`:""}</div>`;
-    const bRow=(rank,name,val,maxV,col="var(--accent)")=>{const pct=(val/(maxV||1))*100;return `<tr><td style="font-family:monospace;color:#9ca3af;font-size:9px;width:18px;padding:5px 8px;border-bottom:1px solid #f3f4f6">${rank}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6"><div style="font-weight:500;margin-bottom:3px;font-size:10px">${name}</div><div style="height:3px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};opacity:0.75;border-radius:99px"></div></div></td><td style="font-family:monospace;font-weight:600;color:${col};text-align:right;padding:5px 8px;border-bottom:1px solid #f3f4f6;white-space:nowrap;font-size:10px">${val}</td></tr>`;};
+    // ── social ──
+    const posts=b.map(x=>{const tw=parseNum(x.twitterImpressions),tg=parseNum(x.telegramImpressions);return{title:x.title||"—",author:x.author||"",date:x.date||"",reach:tw+tg,tw,tg};}).filter(p=>p.reach>0).sort((a,z)=>z.reach-a.reach);
+    const maxReach=posts[0]?.reach||1;
+    const nPosts=posts.length, avgPost=nPosts?Math.round(totalImpr/nPosts):0;
+    const twPct=totalImpr?Math.round(totalTwitter/totalImpr*100):0, tgPct=totalImpr?100-twPct:0;
 
-    const numCols=inclStats?(totalImpr>0&&inclImpr?6:5):0;
-    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${campaignName} — Performance Report</title>
+    const xMark='<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
+
+    // ── cumulative weekly series for charts ──
+    const weekKey=iso=>{try{const d=new Date(iso+"T00:00:00");if(isNaN(d.getTime()))return null;const mo=new Date(d);mo.setDate(d.getDate()-((d.getDay()+6)%7));return mo.toISOString().slice(0,10);}catch{return null;}};
+    const wmap={};
+    b.forEach(x=>{const k=weekKey(x.date);if(!k)return;(wmap[k]=wmap[k]||{b:0,c:0,imp:0});wmap[k].b++;wmap[k].imp+=parseNum(x.twitterImpressions)+parseNum(x.telegramImpressions);});
+    c.forEach(x=>{const k=weekKey(x.date);if(!k)return;(wmap[k]=wmap[k]||{b:0,c:0,imp:0});wmap[k].c++;});
+    const weekKeys=Object.keys(wmap).sort();
+    const weeks=weekKeys.map(k=>wmap[k]);
+    let _cb=0,_cc=0,_ci=0;const cumB=[],cumC=[],cumI=[];
+    weeks.forEach(w=>{_cb+=w.b;_cc+=w.c;_ci+=w.imp;cumB.push(_cb);cumC.push(_cc);cumI.push(_ci);});
+    const CWp=760,CHp=150,BB=20,PL=8,GR=44,topY=12,baseY=CHp-BB,PR=CWp-GR;
+    const Xp=(i,n)=>n<=1?PL+(PR-PL)/2:PL+(i/(n-1))*(PR-PL);
+    const mkPaths=(vals,maxV)=>{if(!vals.length)return null;const n=vals.length;const Y=v=>baseY-(maxV?v/maxV:0)*(baseY-topY);const line=vals.map((v,i)=>`${i?"L":"M"}${Xp(i,n).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");return{line,area:`${line} L${PR} ${baseY} L${PL} ${baseY} Z`};};
+    const maxCum=Math.max(1,_cb,_cc),maxImpr=Math.max(1,_ci),pB=mkPaths(cumB,maxCum),pC=mkPaths(cumC,maxCum),pI=mkPaths(cumI,maxImpr);
+    const fmtAxis=v=>{const a=Math.round(v);return a>=1000000?`${(a/1000000).toFixed(a>=1e7?0:1)}M`:a>=1000?`${Math.round(a/1000)}k`:String(a);};
+    const axes=maxV=>{let out="";[0,0.25,0.5,0.75,1].forEach(p=>{const y=baseY-p*(baseY-topY);out+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${PR}" y2="${y.toFixed(1)}" stroke="#243056" stroke-width="1" stroke-dasharray="3 3"/>`;out+=`<text x="${PR+6}" y="${(y+3).toFixed(1)}" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="8" fill="#6088b5">${fmtAxis(p*maxV)}</text>`;});const n=weekKeys.length;if(n){const step=Math.max(1,Math.ceil(n/7));weekKeys.forEach((k,i)=>{if(i%step!==0&&i!==n-1)return;const x=Xp(i,n);const anchor=i===0?"start":i===n-1?"end":"middle";out+=`<text x="${x.toFixed(1)}" y="${CHp-5}" text-anchor="${anchor}" font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#5f6c91">${fmtMD(k)}</text>`;});}return out;};
+    // ── daily series for the activity chart (mirrors the on-site Performance chart) ──
+    const dmap={};
+    b.forEach(x=>{if(!x.date)return;(dmap[x.date]=dmap[x.date]||{b:0,c:0});dmap[x.date].b++;});
+    c.forEach(x=>{if(!x.date)return;(dmap[x.date]=dmap[x.date]||{b:0,c:0});dmap[x.date].c++;});
+    const dKeys=Object.keys(dmap).sort();
+    let _ab=0,_ac=0;const dRows=dKeys.map(k=>{_ab+=dmap[k].b;_ac+=dmap[k].c;return{k,b:dmap[k].b,c:dmap[k].c,cb:_ab,cc:_ac};});
+    const niceTop=v=>{const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;const nf=f<=1?1:f<=2?2:f<=5?5:10;return nf*p;};
+    const actSvg=dRows.length?(()=>{
+      const CHa=300,GLa=34,GRa=44,topA=16,baseA=CHa-24,plotL=GLa,plotR=CWp-GRa,plotW=plotR-plotL,n=dRows.length;
+      const topPer=niceTop(Math.max(1,...dRows.map(r=>Math.max(r.b,r.c)))),topCum=niceTop(Math.max(1,_ab,_ac));
+      const Xc=i=>n<=1?plotL+plotW/2:plotL+(i/(n-1))*plotW;
+      const Yp=v=>baseA-(v/topPer)*(baseA-topA),Yc=v=>baseA-(v/topCum)*(baseA-topA);
+      let grid="";for(let t=0;t<=4;t++){const p=t/4,y=baseA-p*(baseA-topA);grid+=`<line x1="${plotL}" y1="${y.toFixed(1)}" x2="${plotR}" y2="${y.toFixed(1)}" stroke="#243056" stroke-dasharray="3 3"/>`;grid+=`<text x="${plotL-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="8" fill="#5f6c91">${fmtAxis(topPer*p)}</text>`;grid+=`<text x="${plotR+6}" y="${(y+3).toFixed(1)}" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="8" fill="#6088b5">${fmtAxis(topCum*p)}</text>`;}
+      const slot=plotW/Math.max(1,n),bw=Math.max(1.1,Math.min(3.4,slot*0.34));let bars="";
+      dRows.forEach((r,i)=>{const cx=Xc(i);bars+=`<rect x="${(cx-bw-0.4).toFixed(1)}" y="${Yp(r.c).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,baseA-Yp(r.c)).toFixed(1)}" fill="#5f6c91" fill-opacity="0.34" rx="0.6"/>`;bars+=`<rect x="${(cx+0.4).toFixed(1)}" y="${Yp(r.b).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,baseA-Yp(r.b)).toFixed(1)}" fill="#6088b5" fill-opacity="0.32" rx="0.6"/>`;});
+      const lineC=dRows.map((r,i)=>`${i?"L":"M"}${Xc(i).toFixed(1)} ${Yc(r.cc).toFixed(1)}`).join(" "),lineB=dRows.map((r,i)=>`${i?"L":"M"}${Xc(i).toFixed(1)} ${Yc(r.cb).toFixed(1)}`).join(" ");
+      const areaC=`${lineC} L${plotR} ${baseA} L${plotL} ${baseA} Z`,areaB=`${lineB} L${plotR} ${baseA} L${plotL} ${baseA} Z`;
+      let xl="";const step=Math.max(1,Math.ceil(n/7));dRows.forEach((r,i)=>{if(i%step!==0&&i!==n-1)return;const x=Xc(i),anchor=i===0?"start":i===n-1?"end":"middle";xl+=`<text x="${x.toFixed(1)}" y="${CHa-7}" text-anchor="${anchor}" font-family="'JetBrains Mono',monospace" font-size="9" fill="#5f6c91">${fmtMD(r.k)}</text>`;});
+      return `<svg viewBox="0 0 ${CWp} ${CHa}" width="100%" style="display:block;overflow:visible"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6088b5" stop-opacity="0.20"/><stop offset="100%" stop-color="#6088b5" stop-opacity="0"/></linearGradient><linearGradient id="gC" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5f6c91" stop-opacity="0.16"/><stop offset="100%" stop-color="#5f6c91" stop-opacity="0"/></linearGradient></defs>${grid}${bars}<path d="${areaC}" fill="url(#gC)"/><path d="${areaB}" fill="url(#gB)"/><path d="${lineC}" fill="none" stroke="#5f6c91" stroke-width="1.6"/><path d="${lineB}" fill="none" stroke="#6088b5" stroke-width="2.2"/>${xl}</svg>`;
+    })():`<div style="text-align:center;font-family:monospace;font-size:10px;color:#5f6c91;padding:30px">No activity in selected range</div>`;
+    // ── daily impressions series (same x-buckets as the activity chart so they line up) ──
+    const imap={};
+    b.forEach(x=>{if(!x.date)return;imap[x.date]=(imap[x.date]||0)+parseNum(x.twitterImpressions)+parseNum(x.telegramImpressions);});
+    let _aimp=0;const iRows=dKeys.map(k=>{const v=imap[k]||0;_aimp+=v;return{k,v,cv:_aimp};});
+    const imprSvg=(iRows.length&&_aimp>0)?(()=>{
+      const CHa=300,GLa=34,GRa=44,topA=16,baseA=CHa-24,plotL=GLa,plotR=CWp-GRa,plotW=plotR-plotL,n=iRows.length;
+      const topPer=niceTop(Math.max(1,...iRows.map(r=>r.v))),topCum=niceTop(Math.max(1,_aimp));
+      const Xc=i=>n<=1?plotL+plotW/2:plotL+(i/(n-1))*plotW;
+      const Yp=v=>baseA-(v/topPer)*(baseA-topA),Yc=v=>baseA-(v/topCum)*(baseA-topA);
+      let grid="";for(let t=0;t<=4;t++){const p=t/4,y=baseA-p*(baseA-topA);grid+=`<line x1="${plotL}" y1="${y.toFixed(1)}" x2="${plotR}" y2="${y.toFixed(1)}" stroke="#243056" stroke-dasharray="3 3"/>`;grid+=`<text x="${plotL-6}" y="${(y+3).toFixed(1)}" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="8" fill="#5f6c91">${fmtAxis(topPer*p)}</text>`;grid+=`<text x="${plotR+6}" y="${(y+3).toFixed(1)}" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="8" fill="#6088b5">${fmtAxis(topCum*p)}</text>`;}
+      const slot=plotW/Math.max(1,n),bw=Math.max(1.4,Math.min(5,slot*0.55));let bars="";
+      iRows.forEach((r,i)=>{if(r.v<=0)return;const cx=Xc(i);bars+=`<rect x="${(cx-bw/2).toFixed(1)}" y="${Yp(r.v).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0,baseA-Yp(r.v)).toFixed(1)}" fill="#6088b5" fill-opacity="0.40" rx="0.6"/>`;});
+      const lineI=iRows.map((r,i)=>`${i?"L":"M"}${Xc(i).toFixed(1)} ${Yc(r.cv).toFixed(1)}`).join(" ");
+      const areaI=`${lineI} L${plotR} ${baseA} L${plotL} ${baseA} Z`;
+      let xl="";const step=Math.max(1,Math.ceil(n/7));iRows.forEach((r,i)=>{if(i%step!==0&&i!==n-1)return;const x=Xc(i),anchor=i===0?"start":i===n-1?"end":"middle";xl+=`<text x="${x.toFixed(1)}" y="${CHa-7}" text-anchor="${anchor}" font-family="'JetBrains Mono',monospace" font-size="9" fill="#5f6c91">${fmtMD(r.k)}</text>`;});
+      return `<svg viewBox="0 0 ${CWp} ${CHa}" width="100%" style="display:block;overflow:visible"><defs><linearGradient id="gi" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6088b5" stop-opacity="0.18"/><stop offset="100%" stop-color="#6088b5" stop-opacity="0"/></linearGradient></defs>${grid}${bars}<path d="${areaI}" fill="url(#gi)"/><path d="${lineI}" fill="none" stroke="#6088b5" stroke-width="2.2"/>${xl}</svg>`;
+    })():`<div style="text-align:center;font-family:monospace;font-size:10px;color:#5f6c91;padding:30px">No impression data</div>`;
+
+    // Hardcoded tier palette (the PDF window has no --tier-* CSS vars, so getTierColor would render transparent)
+    const PDF_TIER={"1":{c:"#6088b5",bg:"rgba(96,136,181,0.16)",bd:"rgba(96,136,181,0.36)"},"2":{c:"#7488ad",bg:"rgba(116,136,173,0.15)",bd:"rgba(116,136,173,0.32)"},"3":{c:"#8a99ab",bg:"rgba(138,153,171,0.13)",bd:"rgba(138,153,171,0.28)"},"4":{c:"#5e6b7a",bg:"rgba(94,107,122,0.14)",bd:"rgba(94,107,122,0.28)"}};
+    const gtc=t=>PDF_TIER[String(t).trim()]||{c:"#5e6b7a",bg:"rgba(94,107,122,0.12)",bd:"rgba(94,107,122,0.24)"};
+    const TP=t=>{const tc=gtc(t);return `<span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 8px;border-radius:5px;background:${tc.bg};border:1px solid ${tc.bd};color:${tc.c}">TIER ${t}</span>`;};
+    const hlRows=headlines.slice(0,6).map((h,i)=>`<div style="display:grid;grid-template-columns:20px minmax(0,1fr) 150px 110px;gap:16px;align-items:center;padding:12px 18px;border-top:${i?"1px solid #243056":"none"}"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${i===0?"#6088b5":"#5f6c91"};text-align:center">${i+1}</div><div style="min-width:0"><div style="font-size:12.5px;font-weight:500;color:#d6dcec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(h.label)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#5f6c91;margin-top:3px">First seen ${fmtMD(h.date)}</div></div><div style="font-size:12px;color:#97a3c4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(h.outlet)}</div><div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#d6dcec;text-align:right;margin-bottom:4px">${h.count}</div><div style="height:4px;border-radius:99px;background:#182142;overflow:hidden"><div style="width:${(h.count/maxHl)*100}%;height:100%;border-radius:99px;background:#6088b5;opacity:.85"></div></div></div></div>`).join("")||`<div style="padding:18px;color:#5f6c91;font-size:11px">No citations in range</div>`;
+    const outRows=topOutlets.map(([n,v],i)=>`<div style="display:grid;grid-template-columns:18px minmax(0,1fr) 46px;gap:12px;align-items:center;padding:9px 16px;border-top:${i?"1px solid #243056":"none"}"><div style="font-family:'JetBrains Mono',monospace;color:#5f6c91;font-size:9px">${i+1}</div><div><div style="font-size:11.5px;font-weight:500;color:#d6dcec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(n)}</div><div style="height:3px;border-radius:99px;background:#182142;overflow:hidden;margin-top:4px"><div style="width:${(v/maxOut)*100}%;height:100%;background:#6088b5;opacity:.7;border-radius:99px"></div></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:#6088b5;text-align:right">${v}</div></div>`).join("")||`<div style="padding:16px;color:#5f6c91;font-size:11px">No data</div>`;
+    const tierRows=tierEntries.map(([t,n])=>{const tc=gtc(t);const pct=Math.round(n/totalTierCits*100);return `<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">${TP(t)}<span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#97a3c4">${n} · ${pct}%</span></div><div style="height:7px;border-radius:99px;background:#182142;overflow:hidden"><div style="height:100%;width:${pct}%;background:${tc.c};border-radius:99px"></div></div></div>`;}).join("")||`<div style="color:#5f6c91;font-size:11px">No tier data</div>`;
+    const postRows=posts.slice(0,5).map((p,i)=>`<div style="display:grid;grid-template-columns:20px minmax(0,1fr) 90px 120px;gap:16px;align-items:center;padding:12px 18px;border-top:${i?"1px solid #243056":"none"}"><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${i===0?"#6088b5":"#5f6c91"};text-align:center">${i+1}</div><div style="min-width:0"><div style="font-size:12.5px;font-weight:500;color:#d6dcec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.title)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#5f6c91;margin-top:3px">${esc(p.author)}${p.date?" · "+fmtMD(p.date):""}</div></div><div style="text-align:center;font-size:11px;color:#97a3c4">${p.tw>=p.tg?xMark:"TG"}</div><div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#d6dcec;text-align:right;margin-bottom:4px">${fmtNum(p.reach)}</div><div style="height:4px;border-radius:99px;background:#182142;overflow:hidden"><div style="width:${(p.reach/maxReach)*100}%;height:100%;border-radius:99px;background:#6088b5;opacity:.85"></div></div></div></div>`).join("")||`<div style="padding:18px;color:#5f6c91;font-size:11px">No social posts with impressions in range</div>`;
+
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>${cn} — Performance Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#111827;background:#fff;}
-.page{padding:44px 52px;max-width:920px;margin:0 auto;}
-.hdr{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:20px;border-bottom:2px solid #111827;margin-bottom:28px;}
-.hdr h1{font-size:22px;font-weight:700;letter-spacing:-0.03em;margin-bottom:3px;}
-.sub{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;}
-.hdr-r{text-align:right;font-family:monospace;font-size:9px;color:#6b7280;line-height:1.9;}
-.stats{display:grid;grid-template-columns:repeat(${numCols||5},1fr);gap:10px;margin-bottom:24px;}
-.stat{background:#f5f6f9;border-left:3px solid #1a3a5c;padding:10px 12px;border-radius:4px;}
-.stat .lbl{font-family:monospace;font-size:7px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;margin-bottom:4px;}
-.stat .val{font-size:20px;font-weight:700;letter-spacing:-0.03em;color:#111827;line-height:1;}
-.chart-wrap{background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:16px 16px 6px;margin-bottom:24px;overflow:hidden;}
-.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.chart-title{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;}
-.legend{display:flex;gap:14px;}
-.leg-item{display:flex;align-items:center;gap:5px;font-family:monospace;font-size:8px;color:#6b7280;}
-.leg-dot{width:8px;height:8px;border-radius:2px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.panel{border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;}
-.ph{font-family:monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:#6b7280;font-weight:600;padding:8px 10px;background:#f9fafb;border-bottom:1px solid #e5e7eb;}
-.panel table{width:100%;border-collapse:collapse;font-size:10px;}
-.section{margin-bottom:28px;}
-.footer{padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-family:monospace;font-size:8.5px;color:#9ca3af;margin-top:28px;}
-table.full{width:100%;border-collapse:collapse;font-size:9px;}
-table.full tr:nth-child(even) td{background:#fafafa;}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{padding:28px 36px;}}
-</style></head><body><div class="page">
+html,body{background:#0a0f1e;}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:11px;-webkit-font-smoothing:antialiased;}
+.num{font-family:'JetBrains Mono',monospace;}
+.lbl{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#5f6c91;font-weight:600;}
+.page{width:860px;min-height:1180px;margin:0 auto;background:#0a0f1e;display:flex;flex-direction:column;}
+.pad{padding:40px 48px;flex:1;}
+.cover{background:#070b16;color:#fff;padding:38px 48px 32px;position:relative;overflow:hidden;border-bottom:1px solid #243056;}
+.cover::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(120,150,240,.08) 1px,transparent 0);background-size:22px 22px;}
+.crow{position:relative;display:flex;justify-content:space-between;align-items:flex-start;}
+.brand{display:flex;align-items:center;gap:10px;}
+.cover h1{font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:26px;position:relative;color:#fff;}
+.kick{position:relative;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#7e93c4;font-weight:600;}
+.meta{position:relative;text-align:right;font-size:9.5px;color:#8493b5;line-height:1.9;}
+.meta b{color:#fff;font-weight:600;}
+.accentbar{height:3px;background:#6088b5;}
+.phead{display:flex;justify-content:space-between;align-items:center;padding:18px 48px;border-bottom:1px solid #243056;background:#070b16;}
+.pl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#7e93c4;font-weight:600;}
+.summary{font-size:13px;line-height:1.65;color:#97a3c4;margin-bottom:26px;}
+.summary b{color:#d6dcec;font-weight:600;}
+.ovr{font-size:12.5px;line-height:1.7;color:#97a3c4;margin-bottom:26px;}
+.sechd{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#5f6c91;font-weight:600;margin-bottom:12px;}
+.divhd{display:flex;align-items:center;gap:12px;margin:0 0 18px;}
+.divhd .t{font-size:17px;font-weight:700;letter-spacing:-.02em;color:#d6dcec;white-space:nowrap;}
+.divhd .ln{flex:1;height:1px;background:#243056;}
+.divhd .dot{width:7px;height:7px;border-radius:99px;background:#6088b5;flex-shrink:0;}
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:30px;}
+.track{border:1px solid #243056;border-radius:8px;overflow:hidden;background:#111733;}
+.th{display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid #243056;background:#182142;}
+.tn{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:#6088b5;}
+.tt{font-size:13px;font-weight:700;color:#d6dcec;}
+.td{font-size:11.5px;line-height:1.6;color:#97a3c4;padding:14px 16px;}
+.kpis{display:flex;border:1px solid #243056;border-radius:8px;overflow:hidden;background:#111733;}
+.kpi{flex:1;padding:16px 18px;border-left:1px solid #243056;}
+.kpi:first-child{border-left:none;}
+.kpi .v{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:9px;color:#d6dcec;}
+.kpi .s{font-size:10px;color:#5f6c91;margin-top:5px;}
+.substat{display:flex;border:1px solid #243056;border-radius:8px;overflow:hidden;margin-bottom:14px;background:#111733;}
+.substat .c2{flex:1;padding:13px 16px;border-left:1px solid #243056;}
+.substat .c2:first-child{border-left:none;}
+.substat .c2 .v{font-size:22px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-top:8px;color:#d6dcec;}
+.substat .c2 .s{font-size:9.5px;color:#5f6c91;margin-top:4px;}
+.chartcard{border:1px solid #243056;border-radius:8px;padding:18px 20px 10px;background:#111733;}
+.chartcard .topr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.leg{display:flex;gap:14px;}
+.leg span{display:flex;align-items:center;gap:6px;font-size:9px;color:#5f6c91;}
+.leg i{width:14px;height:2px;border-radius:2px;display:inline-block;}
+.tc{border:1px solid #243056;border-radius:8px;overflow:hidden;background:#111733;}
+.thead{display:grid;gap:16px;padding:11px 18px;background:#141d33;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.panel{border:1px solid #243056;border-radius:8px;overflow:hidden;background:#111733;}
+.ph2{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#5f6c91;font-weight:600;padding:11px 16px;border-bottom:1px solid #243056;background:#182142;}
+.bar{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;background:#182142;}
+.footer{display:flex;justify-content:space-between;padding:16px 48px;border-top:1px solid #243056;font-size:9px;color:#5f6c91;}
+@page{size:A4;margin:0;}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}html,body{background:#0a0f1e;}.page{width:210mm;height:297mm;min-height:0;margin:0;overflow:hidden;page-break-after:always;break-after:page;}.page:last-child{page-break-after:auto;break-after:auto;}}
+</style></head><body>
 
-<div class="hdr">
-  <div><h1>${campaignName}</h1><div class="sub">Campaign Performance Report</div></div>
-  <div class="hdr-r"><div>Period: ${fmtD(dateFrom)} – ${fmtD(dateTo)}</div><div>Generated: ${fmtD(today)}</div><div>CryptoQuant Bounty Tracker</div></div>
+<div class="page">
+  <div class="cover">
+    <div class="crow">
+      <div class="brand"><div style="line-height:1.1"><div style="font-size:13px;font-weight:700">CryptoQuant</div><div style="font-size:8px;letter-spacing:.16em;color:#9fb3d6">CAMPAIGN INTELLIGENCE</div></div></div>
+      <div class="meta"><div>Period&nbsp; <b>${fmtD(dateFrom)} — ${fmtD(dateTo)}</b></div><div>Generated&nbsp; <b>${fmtD(today)}</b></div><div>Prepared for&nbsp; <b>${cn}</b></div></div>
+    </div>
+    <div class="kick" style="margin-top:24px">Performance Summary</div>
+    <h1>${cn}</h1>
+  </div>
+  <div class="accentbar"></div>
+  <div class="pad" style="display:flex;flex-direction:column">
+    <div class="sechd" style="color:#6088b5">Program Overview</div>
+    <p class="ovr">CryptoQuant's marketing program is analyst-led, turning proprietary on-chain data into research and earned media. We publish a steady cadence of data-driven content on a client's ecosystem, amplify it across CryptoQuant's owned channels (X and Telegram), and seed it to crypto and financial media — producing consistent third-party citations that build credibility and shape narratives.</p>
+    <div class="sechd">Two content tracks</div>
+    <div class="tracks">
+      <div class="track"><div class="th"><span class="tn">01</span><span class="tt">CryptoQuant Insights</span></div><div class="td">Official, in-house research published under the CryptoQuant brand. Flagship on-chain data and analysis that carries the full authority and recognition of CryptoQuant's data platform — the institutional voice of the program.</div></div>
+      <div class="track"><div class="th"><span class="tn">02</span><span class="tt">Analyst Content</span></div><div class="td">Independent research authored by analysts within CryptoQuant's network. Expands volume, velocity, and range of voices — each piece amplified across both the analyst's and CryptoQuant's channels for compounding reach.</div></div>
+    </div>
+    <div class="divhd"><span class="dot"></span><span class="t">Program Summary</span><span class="ln"></span></div>
+    <div class="kpis" style="margin-bottom:16px">
+      <div class="kpi"><div class="lbl">Bounties</div><div class="v num">${b.length.toLocaleString()}</div><div class="s">Research posts published</div></div>
+      <div class="kpi"><div class="lbl">Citations</div><div class="v num">${c.length.toLocaleString()}</div><div class="s">Earned media coverage</div></div>
+      <div class="kpi"><div class="lbl">Impressions</div><div class="v num">${fmtNum(totalImpr)}</div><div class="s">Combined social reach</div></div>
+    </div>
+    <div class="sechd" style="margin-top:8px">Activity over period</div>
+    <div class="chartcard" style="flex:1;display:flex;flex-direction:column;justify-content:center"><div class="topr"><span class="lbl">Bounties &amp; citations · per day + running total</span><div class="leg"><span><i style="background:#6088b5"></i>Bounties</span><span><i style="background:#5f6c91"></i>Citations</span><span style="opacity:.55">bars = per day · lines = running total</span></div></div>${actSvg}</div>
+  </div>
+  <div class="footer"><span>CryptoQuant Bounty Program · ${cn}</span><span class="num">Overview · Page 1 of 3</span></div>
 </div>
 
-${inclStats?`<div class="stats">
-  <div class="stat"><div class="lbl">Bounties</div><div class="val">${b.length}</div></div>
-  <div class="stat"><div class="lbl">Citations</div><div class="val">${c.length}</div></div>
-  <div class="stat"><div class="lbl">Unique Analysts</div><div class="val">${uniqueAnalysts.length}</div></div>
-  <div class="stat"><div class="lbl">Authors</div><div class="val">${uniqueAuthors.length}</div></div>
-  <div class="stat"><div class="lbl">Media Outlets</div><div class="val">${uniqueOutlets.length}</div></div>
-  ${totalImpr>0&&inclImpr?`<div class="stat"><div class="lbl">Total Impressions</div><div class="val">${fmtNum(totalImpr)}</div></div>`:""}
-</div>`:""}
-
-${inclChart?`<div class="chart-wrap">
-  <div class="chart-hdr">
-    <div class="chart-title">Daily Activity</div>
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#1a3a5c;opacity:0.85"></div>Bounties</div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--accent);opacity:0.75"></div>Citations</div>
+<div class="page">
+  <div class="phead"><span class="pl">${cn} · Performance Summary</span><span class="pl">Traditional Media</span></div>
+  <div class="pad">
+    <div class="divhd"><span class="dot"></span><span class="t">Traditional Media</span><span class="ln"></span></div>
+    <p class="summary">Earned third-party coverage across crypto and financial publications — <b>${c.length.toLocaleString()} citations</b> from <b>${uniqueOutlets} outlets</b>, with <b>${t12pct}%</b> landing in Tier 1 and Tier 2 media.</p>
+    <div class="substat">
+      <div class="c2"><div class="lbl">Citations</div><div class="v num">${c.length.toLocaleString()}</div><div class="s">Earned coverage</div></div>
+      <div class="c2"><div class="lbl">Outlets</div><div class="v num">${uniqueOutlets}</div><div class="s">Publications</div></div>
+      <div class="c2"><div class="lbl">Tier 1–2</div><div class="v num">${t12pct}%</div><div class="s">Of coverage</div></div>
+      <div class="c2"><div class="lbl">Pickup</div><div class="v num">${pickup}×</div><div class="s">Cites / bounty</div></div>
+    </div>
+    <div class="sechd" style="margin-top:24px">Top headlines · by citations</div>
+    <div class="tc" style="margin-bottom:24px"><div class="thead" style="grid-template-columns:20px minmax(0,1fr) 150px 110px"><span class="lbl" style="text-align:center">#</span><span class="lbl">Headline</span><span class="lbl">Top Outlet</span><span class="lbl" style="text-align:right">Citations</span></div>${hlRows}</div>
+    <div class="grid2">
+      <div class="panel"><div class="ph2">Top Media Outlets</div>${outRows}</div>
+      <div class="panel" style="display:flex;flex-direction:column"><div class="ph2">Coverage by Media Tier</div><div style="padding:18px 16px;flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:14px">${tierRows}</div></div>
     </div>
   </div>
-  ${chartSvg}
-</div>`:""}
-
-${(inclAuthors&&topAuthors.length)||(inclOutlets&&topOutlets.length)||(inclTopics&&topTopics.length)?`<div class="grid3">
-  ${inclAuthors&&topAuthors.length?`<div class="panel"><div class="ph">Top Authors</div><table><tbody>${topAuthors.map((a,i)=>bRow(i+1,a.name,a.b+a.c,(topAuthors[0].b+topAuthors[0].c)||1)).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclOutlets&&topOutlets.length?`<div class="panel"><div class="ph">Top Media Outlets</div><table><tbody>${topOutlets.map(([n,v],i)=>bRow(i+1,n,v,topOutlets[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclTopics&&topTopics.length?`<div class="panel"><div class="ph">Top Headlines</div><table><tbody>${topTopics.map(([t,v],i)=>bRow(i+1,t,v,topTopics[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
-</div>`:""}
-
-${(inclTier&&tierEntries.length)||(inclLanguage&&langEntries.length)||(inclDR&&drEntries.length)?`<div class="grid3">
-  ${inclTier&&tierEntries.length?`<div class="panel"><div class="ph">Media Tier Breakdown</div><table><tbody>${tierEntries.map(([tier,n])=>{const tc=getTierColor(tier);const pct=Math.round((n/c.length)*100);return`<tr><td style="padding:7px 10px;border-bottom:1px solid #f3f4f6"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px"><span style="font-family:monospace;font-weight:600;font-size:10px;padding:2px 8px;border-radius:4px;background:${tc.bg};border:1px solid ${tc.border};color:${tc.color}">Tier ${tier}</span><span style="font-family:monospace;font-size:10px;color:#374151">${n} (${pct}%)</span></div><div style="height:4px;background:#e5e7eb;border-radius:99px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${tc.color};border-radius:99px"></div></div></td></tr>`;}).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclLanguage&&langEntries.length?`<div class="panel"><div class="ph">Language Breakdown</div><table><tbody>${langEntries.map(([l,v],i)=>bRow(i+1,l,v,langEntries[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclDR&&drEntries.length?`<div class="panel"><div class="ph">Direct Relationship</div><table><tbody>${drEntries.map(([d,v],i)=>bRow(i+1,d,v,drEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
-</div>`:""}
-
-${(inclAsset&&assetEntries.length)||(inclBranding&&brandEntries.length)?`<div class="grid2">
-  ${inclAsset&&assetEntries.length?`<div class="panel"><div class="ph">Top Assets</div><table><tbody>${assetEntries.map(([a,v],i)=>bRow(i+1,a,v,assetEntries[0][1])).join("")}</tbody></table></div>`:"<div></div>"}
-  ${inclBranding&&brandEntries.length?`<div class="panel"><div class="ph">Branding Mentions</div><table><tbody>${brandEntries.map(([a,v],i)=>bRow(i+1,a,v,brandEntries[0][1],"var(--accent)")).join("")}</tbody></table></div>`:"<div></div>"}
-</div>`:""}
-
-${inclImpr&&totalImpr>0?`<div class="grid2" style="margin-bottom:24px">
-  <div class="stat"><div class="lbl">Twitter Impressions</div><div class="val">${fmtNum(totalTwitter)}</div></div>
-  <div class="stat"><div class="lbl">Telegram Impressions</div><div class="val">${fmtNum(totalTelegram)}</div></div>
-</div>`:""}
-
-<div class="footer">
-  <span>CryptoQuant Bounty Program · ${campaignName}</span>
-  <span>Generated ${new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})}</span>
+  <div class="footer"><span>CryptoQuant Bounty Program · ${cn}</span><span class="num">Traditional Media · Page 2 of 3</span></div>
 </div>
 
-${inclBounties&&b.length?`<div class="section" style="margin-top:36px">
-  ${sHdr("All Bounties",b.length)}
-  <table class="full"><thead><tr>${["Date","Title","Author","Category","Asset","Twitter Impr","Telegram Impr","Links"].map(TH).join("")}</tr></thead>
-  <tbody>${[...b].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`<tr style="${i%2===0?"":"background:#fafafa"}">
-    ${TD(x.date||"—","font-family:monospace;font-size:8px;color:#6b7280;white-space:nowrap")}
-    ${TD(`<span style="font-weight:500">${(x.title||"—").slice(0,80)}${x.title&&x.title.length>80?"…":""}</span>`)}
-    ${TD(x.author||"—")}
-    ${TD(x.category||"—")}
-    ${TD(x.asset||"—")}
-    ${TD(x.twitterImpressions?Number(String(x.twitterImpressions).replace(/,/g,"")).toLocaleString():"—","text-align:right;font-family:monospace;font-size:9px")}
-    ${TD(x.telegramImpressions?Number(String(x.telegramImpressions).replace(/,/g,"")).toLocaleString():"—","text-align:right;font-family:monospace;font-size:9px")}
-    ${TD([x.cqLink?`<a href="${x.cqLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none;margin-right:4px">QT↗</a>`:"",x.cqTwitterLink?`<a href="${x.cqTwitterLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none">X↗</a>`:""].filter(Boolean).join("")||"—")}
-  </tr>`).join("")}</tbody></table>
-</div>`:""}
+<div class="page">
+  <div class="phead"><span class="pl">${cn} · Performance Summary</span><span class="pl">Social Media</span></div>
+  <div class="pad">
+    <div class="divhd"><span class="dot"></span><span class="t">Social Media</span><span class="ln"></span></div>
+    <p class="summary">Owned-channel amplification across X and Telegram — <b>${fmtNum(totalImpr)} impressions</b> from <b>${nPosts} posts</b>, averaging <b>${fmtNum(avgPost)} impressions per post</b>.</p>
+    <div class="substat">
+      <div class="c2"><div class="lbl">Total Impressions</div><div class="v num">${fmtNum(totalImpr)}</div><div class="s">Twitter + Telegram combined</div></div>
+      <div class="c2"><div class="lbl">Posts</div><div class="v num">${nPosts}</div><div class="s">With recorded reach</div></div>
+      <div class="c2"><div class="lbl">Avg / Post</div><div class="v num">${fmtNum(avgPost)}</div><div class="s">Impressions per post</div></div>
+    </div>
+    <div class="sechd" style="margin-top:24px">Social activity · impressions per day &amp; running total</div>
+    <div class="chartcard" style="margin-bottom:24px"><div class="topr"><span class="lbl">Impressions · per day + running total</span><div class="leg"><span><i style="background:#6088b5"></i>Impressions</span><span style="opacity:.55">bars = per day · line = running total</span></div></div>${imprSvg}</div>
+    <div class="sechd">Top social posts · by reach</div>
+    <div class="tc"><div class="thead" style="grid-template-columns:20px minmax(0,1fr) 90px 120px"><span class="lbl" style="text-align:center">#</span><span class="lbl">Post</span><span class="lbl" style="text-align:center">Channel</span><span class="lbl" style="text-align:right">Impressions</span></div>${postRows}</div>
+  </div>
+  <div class="footer"><span>CryptoQuant Bounty Program · ${cn}</span><span class="num">Social Media · Page 3 of 3</span></div>
+</div>
 
-${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
-  ${sHdr("All Media Citations",c.length)}
-  <table class="full"><thead><tr>${["Date","Outlet","Reporter","Headline / Topic","Tier","Lang","Direct Rel","Asset","Branding","Link"].map(TH).join("")}</tr></thead>
-  <tbody>${[...c].sort((a,z)=>(z.date||"").localeCompare(a.date||"")).map((x,i)=>`<tr style="${i%2===0?"":"background:#fafafa"}">
-    ${TD(x.date||"—","font-family:monospace;font-size:8px;color:#6b7280;white-space:nowrap")}
-    ${TD(`<span style="font-weight:500">${x.media||"—"}</span>`)}
-    ${TD(x.reporter||"—")}
-    ${TD(`${x.headline?`<div style="font-weight:500">${x.headline.slice(0,60)+(x.headline.length>60?"…":"")}</div>`:""}${x.topic?`<div style="font-size:8px;color:#6b7280;margin-top:1px">${x.topic}</div>`:""}`||"—")}
-    ${TD(x.mediaTier||"—","font-family:monospace;text-align:center")}
-    ${TD(x.language||"—")}
-    ${TD(x.directRelationship||"—")}
-    ${TD(x.asset||"—")}
-    ${TD(x.branding||"—")}
-    ${TD(x.articleLink?`<a href="${x.articleLink}" style="color:#1a3a5c;font-size:8px;font-family:monospace;text-decoration:none">↗</a>`:"—")}
-  </tr>`).join("")}</tbody></table>
-</div>`:""}
-
-</div></body></html>`;
+</body></html>`;
 
     const w=window.open("","_blank","width=1100,height=900");
     w.document.write(html);
     w.document.close();
-    w.onload=()=>w.print();
+    w.onload=()=>setTimeout(()=>w.print(),250);
   };
 
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
-
-        {/* Header */}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>Download Report</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{campaignName}</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{campaignName} · 3-page performance summary</div>
           </div>
           <button onClick={onClose} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
         </div>
-
-        {/* Body */}
         <div style={{padding:"20px 24px",overflowY:"auto",maxHeight:"70vh"}}>
-          {/* Date range */}
           <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Date Range</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-            <Field label="From">
-              <input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
-            </Field>
-            <Field label="To">
-              <input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/>
-            </Field>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:18}}>
+            <Field label="From"><input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/></Field>
+            <Field label="To"><input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} style={{...iStyle,padding:"9px 12px",fontSize:12}}/></Field>
           </div>
-
-          {/* Live preview counts */}
-          <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+          <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:18}}>
             {[
-              {label:"Bounties",  value:b.length,  c:"var(--accent)"},
-              {label:"Citations", value:c.length,  c:"var(--accent)"},
-              {label:"Authors",   value:[...new Set([...b.map(x=>x.author),...c.map(x=>x.author)].filter(Boolean))].length, c:"var(--accent)"},
+              {label:"Bounties",    value:b.length.toLocaleString()},
+              {label:"Citations",   value:c.length.toLocaleString()},
+              {label:"Impressions", value:fmtNum(previewImpr)},
             ].map(s=>(
               <div key={s.label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:7,padding:"9px 12px"}}>
                 <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:3}}>{s.label}</div>
@@ -4508,47 +4549,10 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
               </div>
             ))}
           </div>
-
-          {/* Section checkboxes */}
-          {(()=>{
-            const Check = ({label, checked, onChange, sub}) => (
-              <label style={{display:"flex",alignItems:"flex-start",gap:9,cursor:"pointer",padding:"8px 0",borderBottom:"1px solid var(--border)"}}>
-                <input type="checkbox" checked={checked} onChange={e=>onChange(e.target.checked)}
-                  style={{width:14,height:14,cursor:"pointer",accentColor:"var(--accent)",marginTop:2,flexShrink:0}}/>
-                <div>
-                  <div style={{fontSize:12,color:"var(--text)",fontWeight:500}}>{label}</div>
-                  {sub&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:1}}>{sub}</div>}
-                </div>
-              </label>
-            );
-            return (
-              <div>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginBottom:6}}>Summary</div>
-                <Check label="Stat cards" sub="Bounties, Citations, Authors, Outlets, Impressions" checked={inclStats} onChange={setInclStats}/>
-                <Check label="Weekly activity chart" checked={inclChart} onChange={setInclChart}/>
-                {inclStats&&<Check label="Impression breakdown" sub="Twitter + Telegram split (if data exists)" checked={inclImpr} onChange={setInclImpr}/>}
-
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Leaderboards</div>
-                <Check label="Top Authors" checked={inclAuthors} onChange={setInclAuthors}/>
-                <Check label="Top Media Outlets" checked={inclOutlets} onChange={setInclOutlets}/>
-                <Check label="Top Headlines" checked={inclTopics} onChange={setInclTopics}/>
-
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Citation Breakdowns</div>
-                <Check label="Media Tier Breakdown" checked={inclTier} onChange={setInclTier}/>
-                <Check label="Language Breakdown" checked={inclLanguage} onChange={setInclLanguage}/>
-                <Check label="Direct Relationship" checked={inclDR} onChange={setInclDR}/>
-                <Check label="Top Assets" checked={inclAsset} onChange={setInclAsset}/>
-                <Check label="Branding Mentions" checked={inclBranding} onChange={setInclBranding}/>
-
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.12em",color:"var(--dim)",textTransform:"uppercase",marginTop:12,marginBottom:6}}>Full Data Tables (appended at end)</div>
-                <Check label={`All bounties (${b.length})`} sub="Date, Title, Author, Category, Asset, Impressions, Links" checked={inclBounties} onChange={setInclBounties}/>
-                <Check label={`All media citations (${c.length})`} sub="Date, Outlet, Reporter, Topic, Tier, Language, Direct Rel, Asset, Branding, Link" checked={inclCitations} onChange={setInclCitations}/>
-              </div>
-            );
-          })()}
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--muted)",lineHeight:1.7,padding:"12px 14px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8}}>
+            Generates a 3-page summary — <b style={{color:"var(--text)"}}>Overview</b>, <b style={{color:"var(--text)"}}>Traditional Media</b>, and <b style={{color:"var(--text)"}}>Social Media</b> — opening in a new tab ready to print or save as PDF. Tip: in the print dialog, enable <b style={{color:"var(--text)"}}>Background graphics</b>.
+          </div>
         </div>
-
-        {/* Footer */}
         <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",gap:10,justifyContent:"flex-end"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
           <button onClick={generatePDF}
@@ -4558,12 +4562,10 @@ ${inclCitations&&c.length?`<div class="section" style="margin-top:36px">
             ↓ GENERATE PDF
           </button>
         </div>
-
       </div>
     </div>
   );
 };
-
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGNS PANEL (Admin only)
 // ─────────────────────────────────────────────────────────
