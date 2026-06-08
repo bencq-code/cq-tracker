@@ -1548,17 +1548,20 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               {(()=>{
                 const isAdmin = currentUser.role==="admin"&&contentMode==="all";
                 const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
-                const linkCount  = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
-                const newCount   = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim()).length;
+                const tweetsIn = (arr)=>arr.reduce((n,b)=>n+(b.authorTwitterLink?1:0)+(b.cqTwitterLink?1:0),0); // count tweets, not rows
+                const newRows  = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim());
+                const allRows  = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink);
+                const newTweets = tweetsIn(newRows);
+                const allTweets = tweetsIn(allRows);
                 const busy = sumBatch.running||impBatch.running;
                 const items = [
                   canAdd && {label:"＋ Add entry", title:"Add a new bounty", onClick:()=>{setEdit(null);setShowForm(true);}},
                   isAdmin && onBountySummaryUpdate && {label:sumBatch.running?`Summarizing ${sumBatch.processed}/${sumBatch.total}…`:`📝 Summarize bounties (${unsumCount})`, running:sumBatch.running, disabled:busy||unsumCount===0, title:"Generate AI summaries for bounties without one",
                     onClick:()=>{if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}},
-                  isAdmin && onBountyImpressionsUpdate && {label:impBatch.running?`Fetching ${impBatch.total}…`:`𝕏 Fetch new impressions (${newCount})`, running:impBatch.running, disabled:busy||newCount===0, title:"Fetch impressions for tweets not synced yet",
-                    onClick:()=>{if(!window.confirm(`Fetch live X/Twitter impressions for ${newCount} new bounty${newCount!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}},
-                  isAdmin && onBountyImpressionsUpdate && {label:`↻ Refresh all impressions (${linkCount})`, disabled:busy||linkCount===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
-                    onClick:()=>{if(!window.confirm(`Force-refresh impressions for ALL ${linkCount} bounty${linkCount!==1?"s":""} with a tweet link? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}},
+                  isAdmin && onBountyImpressionsUpdate && {label:impBatch.running?`Fetching ${impBatch.total}…`:`𝕏 Fetch new impressions (${newTweets})`, running:impBatch.running, disabled:busy||newTweets===0, title:"Fetch impressions for tweets not synced yet",
+                    onClick:()=>{if(!window.confirm(`Fetch live X/Twitter impressions for ${newTweets} tweet${newTweets!==1?"s":""} across ${newRows.length} new bounty${newRows.length!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}},
+                  isAdmin && onBountyImpressionsUpdate && {label:`↻ Refresh all impressions (${allTweets})`, disabled:busy||allTweets===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
+                    onClick:()=>{if(!window.confirm(`Force-refresh impressions for ALL ${allTweets} tweet${allTweets!==1?"s":""} across ${allRows.length} bounty${allRows.length!==1?"s":""}? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}},
                   isAdmin && activeCampaigns.length>0 && {label:"🗑 Delete all bounties", danger:true, disabled:busy, title:"Delete every bounty in this campaign",
                     onClick:()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}},
                 ].filter(Boolean);
