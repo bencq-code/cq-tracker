@@ -3015,6 +3015,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           <div style={{fontSize:18,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>{dateRangeLabel}</div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          {/* Custom date inputs — sit left of the arrows, next to the Custom button */}
+          {mode==="custom" && (
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
+              <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
+            </div>
+          )}
           {/* Week navigator — arrows drive weekly mode */}
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <button onClick={()=>{if(mode!=="weekly"){setMode("weekly");setManuallyNavigated(true);}else{goBack();}}}
@@ -3030,7 +3038,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           {/* Mode selector */}
           <div style={{display:"flex",gap:4}}>
             {[["custom","Custom"],["all","All"]].map(([val,label])=>(
-              <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}
+              <button key={val} onClick={()=>{setMode(val);setDrill(null);if(val==="custom"&&!customFrom){const allDates=[...campaignsRaw.map(c=>c.date),...citationsRaw.map(c=>c.date)].filter(Boolean).sort();const latest=allDates[allDates.length-1];if(latest){const fromD=getMondayOf(new Date(latest+"T00:00:00"));fromD.setDate(fromD.getDate()-7);setCustomFrom(toLocalDateStr(fromD));if(!customTo)setCustomTo(latest);}else{const d=new Date(todayMonday);d.setDate(d.getDate()-7);setCustomFrom(toLocalDateStr(d));if(!customTo)setCustomTo(toLocalDateStr(new Date()));}}}}
                 style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${mode===val?"rgba(26,58,92,0.25)":"var(--border)"}`,background:mode===val?"color-mix(in srgb,var(--accent) 8%,transparent)":"transparent",color:mode===val?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:mode===val?700:400,transition:"all .15s"}}>
                 {label}
               </button>
@@ -3044,14 +3052,6 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
               <span style={{fontSize:11}}>↓</span> Export
             </button>
-          )}
-          {/* Custom date inputs */}
-          {mode==="custom" && (
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <input type="date" value={customFrom} onChange={e=>{setCustomFrom(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>→</span>
-              <input type="date" value={customTo} onChange={e=>{setCustomTo(e.target.value);setDrill(null);}} style={{...iStyle,padding:"6px 10px",fontSize:11,width:140}}/>
-            </div>
           )}
         </div>
       </div>
