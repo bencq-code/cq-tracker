@@ -1101,7 +1101,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
-const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onBountyImpressionsUpdate, onCitedBountyUpdate}) => {
+const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onBountyImpressionsUpdate, onBountyTgUpdate, onCitedBountyUpdate}) => {
   const bountyById = useMemo(()=>Object.fromEntries((campaigns||[]).map(b=>[b.id,b])),[campaigns]);
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
@@ -1141,6 +1141,33 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       setImpBatch({running:false,total:targets.length,saved:data.saved||0,skipped:data.skipped||0,lastMsg:""});
     } catch (e) {
       setImpBatch({running:false,total:targets.length,saved:0,skipped:0,lastMsg:e.message});
+    }
+  };
+  const [tgBatch,setTgBatch] = useState({running:false,total:0,saved:0,skipped:0,lastMsg:""});
+  const runTgImpressions = async (scope, {force=false}={}) => {
+    // force=false → only bounties with no Telegram-views value yet; force=true → re-scrape all.
+    const withLink = scope.filter(b => b.authorTelegramLink || b.telegramLink);
+    const targets = force ? withLink : withLink.filter(b => !String(b.telegramImpressions||"").trim());
+    if (!targets.length) {
+      setTgBatch({running:false,total:0,saved:0,skipped:0,lastMsg:force?"No bounties have a Telegram link to refresh.":"All Telegram posts already have views — nothing new to fetch."});
+      return;
+    }
+    setTgBatch({running:true,total:targets.length,saved:0,skipped:0,lastMsg:""});
+    try {
+      const r = await fetch("/api/telegram-impressions", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ bountyIds: targets.map(b=>b.id) }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+      for (const u of (data.updated || [])) {
+        if (!u.skipped && u.total!=null && onBountyTgUpdate) {
+          await onBountyTgUpdate(u.bountyId, String(u.total), true);
+        }
+      }
+      setTgBatch({running:false,total:targets.length,saved:data.saved||0,skipped:data.skipped||0,lastMsg:""});
+    } catch (e) {
+      setTgBatch({running:false,total:targets.length,saved:0,skipped:0,lastMsg:e.message});
     }
   };
 
@@ -1553,7 +1580,12 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const allRows  = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink);
                 const newTweets = tweetsIn(newRows);
                 const allTweets = tweetsIn(allRows);
-                const busy = sumBatch.running||impBatch.running;
+                const tgIn = (arr)=>arr.reduce((n,b)=>n+(b.authorTelegramLink?1:0)+(b.telegramLink?1:0),0); // count posts, not rows
+                const newTgRows = filtered.filter(b=>(b.authorTelegramLink||b.telegramLink)&&!String(b.telegramImpressions||"").trim());
+                const allTgRows = filtered.filter(b=>b.authorTelegramLink||b.telegramLink);
+                const newTgPosts = tgIn(newTgRows);
+                const allTgPosts = tgIn(allTgRows);
+                const busy = sumBatch.running||impBatch.running||tgBatch.running;
                 const items = [
                   canAdd && {label:"＋ Add entry", title:"Add a new bounty", onClick:()=>{setEdit(null);setShowForm(true);}},
                   isAdmin && onBountySummaryUpdate && {label:sumBatch.running?`Summarizing ${sumBatch.processed}/${sumBatch.total}…`:`📝 Summarize bounties (${unsumCount})`, running:sumBatch.running, disabled:busy||unsumCount===0, title:"Generate AI summaries for bounties without one",
@@ -1562,6 +1594,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     onClick:()=>{if(!window.confirm(`Fetch live X/Twitter impressions for ${newTweets} tweet${newTweets!==1?"s":""} across ${newRows.length} new bounty${newRows.length!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}},
                   isAdmin && onBountyImpressionsUpdate && {label:`↻ Refresh all impressions (${allTweets})`, disabled:busy||allTweets===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
                     onClick:()=>{if(!window.confirm(`Force-refresh impressions for ALL ${allTweets} tweet${allTweets!==1?"s":""} across ${allRows.length} bounty${allRows.length!==1?"s":""}? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}},
+                  isAdmin && onBountyTgUpdate && {label:tgBatch.running?`Fetching ${tgBatch.total}…`:`📣 Fetch new TG views (${newTgPosts})`, running:tgBatch.running, disabled:busy||newTgPosts===0, title:"Fetch Telegram post views not synced yet",
+                    onClick:()=>{if(!window.confirm(`Fetch Telegram views for ${newTgPosts} post${newTgPosts!==1?"s":""} across ${newTgRows.length} new bounty${newTgRows.length!==1?"s":""} (no views recorded yet)? Scrapes public channel view counts and writes the combined total. Already-fetched bounties are skipped.`))return;runTgImpressions(filtered,{force:false});}},
+                  isAdmin && onBountyTgUpdate && {label:`↻ Refresh all TG views (${allTgPosts})`, disabled:busy||allTgPosts===0, title:"Re-scrape and overwrite Telegram views for every post",
+                    onClick:()=>{if(!window.confirm(`Force-refresh Telegram views for ALL ${allTgPosts} post${allTgPosts!==1?"s":""} across ${allTgRows.length} bounty${allTgRows.length!==1?"s":""}? Re-scrapes every public post and OVERWRITES existing numbers.`))return;runTgImpressions(filtered,{force:true});}},
                   isAdmin && activeCampaigns.length>0 && {label:"🗑 Delete all bounties", danger:true, disabled:busy, title:"Delete every bounty in this campaign",
                     onClick:()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}},
                 ].filter(Boolean);
@@ -1600,6 +1636,19 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 </span>
                 {!impBatch.running && (impBatch.saved>0||impBatch.lastMsg) && (
                   <button onClick={()=>setImpBatch({running:false,total:0,saved:0,skipped:0,lastMsg:""})}
+                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
+                )}
+              </div>
+            )}
+            {(tgBatch.running||tgBatch.saved>0||tgBatch.lastMsg)&&(
+              <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
+                  {tgBatch.running
+                    ? `Fetching Telegram views for ${tgBatch.total} bounties…`
+                    : <>{`Telegram views done · `}<b style={{color:"var(--accent)"}}>{tgBatch.saved} updated</b> · {tgBatch.skipped} skipped{tgBatch.lastMsg && ` · ${tgBatch.lastMsg}`}</>}
+                </span>
+                {!tgBatch.running && (tgBatch.saved>0||tgBatch.lastMsg) && (
+                  <button onClick={()=>setTgBatch({running:false,total:0,saved:0,skipped:0,lastMsg:""})}
                     style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer",marginLeft:"auto"}}>dismiss</button>
                 )}
               </div>
@@ -1657,6 +1706,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const editable=canEdit(c);
                 const imprN=Number(String(c.twitterImpressions||"").replace(/,/g,""));
                 const imprTxt=c.twitterImpressions&&!isNaN(imprN)?imprN.toLocaleString():"—";
+                const tgN=Number(String(c.telegramImpressions||"").replace(/,/g,""));
+                const tgTxt=c.telegramImpressions&&!isNaN(tgN)?tgN.toLocaleString():"—";
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
                     style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
@@ -1675,6 +1726,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ TG↗</a>}
                         {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}>𝕏 {imprTxt}</span>}
+                        {tgTxt!=="—"&&<span title={`${tgTxt} Telegram views`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}>📣 {tgTxt}</span>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
@@ -5560,6 +5612,10 @@ export default function App() {
     setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,twitterImpressions:value||""}:b));
     if(!silent) showToast("Impressions updated ✓");
   };
+  const handleBountyTgUpdate=async(bountyId,value,silent=false)=>{
+    setCampaigns(prev=>prev.map(b=>b.id===bountyId?{...b,telegramImpressions:value||""}:b));
+    if(!silent) showToast("Telegram views updated ✓");
+  };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
   const activeClient = programs.find(c=>c.id===activeCid)||null;
@@ -5766,7 +5822,7 @@ export default function App() {
 
         {/* CONTENT */}
         {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?()=>setShowPdfModal(true):null}/>}
-        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
+        {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onBountyTgUpdate={handleBountyTgUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid} allBounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
