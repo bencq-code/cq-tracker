@@ -345,6 +345,9 @@ const Icons = {
   Analytics:()=><Ic d={<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>}/>,
   Sun:   ()=><Ic d={<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></>}/>,
   Moon:  ()=><Ic d={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}/>,
+  // Brand logos (fill-based, inherit text color). Inline-friendly via `s` size prop.
+  X:        ({s=11,style}={})=><svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" style={{display:"inline-block",verticalAlign:"-1.5px",...style}}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
+  Telegram: ({s=11,style}={})=><svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" style={{display:"inline-block",verticalAlign:"-1.5px",...style}}><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>,
 };
 
 // Shared UI
@@ -1590,13 +1593,13 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   canAdd && {label:"＋ Add entry", title:"Add a new bounty", onClick:()=>{setEdit(null);setShowForm(true);}},
                   isAdmin && onBountySummaryUpdate && {label:sumBatch.running?`Summarizing ${sumBatch.processed}/${sumBatch.total}…`:`📝 Summarize bounties (${unsumCount})`, running:sumBatch.running, disabled:busy||unsumCount===0, title:"Generate AI summaries for bounties without one",
                     onClick:()=>{if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}},
-                  isAdmin && onBountyImpressionsUpdate && {label:impBatch.running?`Fetching ${impBatch.total}…`:`𝕏 Fetch new impressions (${newTweets})`, running:impBatch.running, disabled:busy||newTweets===0, title:"Fetch impressions for tweets not synced yet",
+                  isAdmin && onBountyImpressionsUpdate && {label:impBatch.running?`Fetching ${impBatch.total}…`:<><Icons.X s={11}/> Fetch new impressions ({newTweets})</>, running:impBatch.running, disabled:busy||newTweets===0, title:"Fetch impressions for tweets not synced yet",
                     onClick:()=>{if(!window.confirm(`Fetch live X/Twitter impressions for ${newTweets} tweet${newTweets!==1?"s":""} across ${newRows.length} new bounty${newRows.length!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}},
-                  isAdmin && onBountyImpressionsUpdate && {label:`↻ Refresh all X impressions (${allTweets})`, disabled:busy||allTweets===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
+                  isAdmin && onBountyImpressionsUpdate && {label:<>↻ Refresh all <Icons.X s={11}/> impressions ({allTweets})</>, disabled:busy||allTweets===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
                     onClick:()=>{if(!window.confirm(`Force-refresh impressions for ALL ${allTweets} tweet${allTweets!==1?"s":""} across ${allRows.length} bounty${allRows.length!==1?"s":""}? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}},
-                  isAdmin && onBountyTgUpdate && {label:tgBatch.running?`Fetching ${tgBatch.total}…`:`📣 Fetch new TG views (${newTgPosts})`, running:tgBatch.running, disabled:busy||newTgPosts===0, title:"Fetch Telegram post views not synced yet",
+                  isAdmin && onBountyTgUpdate && {label:tgBatch.running?`Fetching ${tgBatch.total}…`:<><Icons.Telegram s={11}/> Fetch new Telegram views ({newTgPosts})</>, running:tgBatch.running, disabled:busy||newTgPosts===0, title:"Fetch Telegram post views not synced yet",
                     onClick:()=>{if(!window.confirm(`Fetch Telegram views for ${newTgPosts} post${newTgPosts!==1?"s":""} across ${newTgRows.length} new bounty${newTgRows.length!==1?"s":""} (no views recorded yet)? Scrapes public channel view counts and writes the combined total. Already-fetched bounties are skipped.`))return;runTgImpressions(filtered,{force:false});}},
-                  isAdmin && onBountyTgUpdate && {label:`↻ Refresh all TG views (${allTgPosts})`, disabled:busy||allTgPosts===0, title:"Re-scrape and overwrite Telegram views for every post",
+                  isAdmin && onBountyTgUpdate && {label:<>↻ Refresh all <Icons.Telegram s={11}/> views ({allTgPosts})</>, disabled:busy||allTgPosts===0, title:"Re-scrape and overwrite Telegram views for every post",
                     onClick:()=>{if(!window.confirm(`Force-refresh Telegram views for ALL ${allTgPosts} post${allTgPosts!==1?"s":""} across ${allTgRows.length} bounty${allTgRows.length!==1?"s":""}? Re-scrapes every public post and OVERWRITES existing numbers.`))return;runTgImpressions(filtered,{force:true});}},
                   isAdmin && activeCampaigns.length>0 && {label:"🗑 Delete all bounties", danger:true, disabled:busy, title:"Delete every bounty in this campaign",
                     onClick:()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}},
@@ -1725,8 +1728,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.authorTelegramLink&&<a href={c.authorTelegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author TG↗</a>}
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ TG↗</a>}
-                        {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}>𝕏 {imprTxt}</span>}
-                        {tgTxt!=="—"&&<span title={`${tgTxt} Telegram views`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}>📣 {tgTxt}</span>}
+                        {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{display:"inline-flex",alignItems:"center",gap:3,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}><Icons.X s={9}/>{imprTxt}</span>}
+                        {tgTxt!=="—"&&<span title={`${tgTxt} Telegram views`} style={{display:"inline-flex",alignItems:"center",gap:3,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}><Icons.Telegram s={9}/>{tgTxt}</span>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
@@ -2790,6 +2793,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
   const [customTo,   setCustomTo]   = useState("");
   const [drill, setDrill] = useState(null);
   const [drillExpanded, setDrillExpanded] = useState(false);
+  const [topOpen, setTopOpen] = useState(false);
 
   const getMondayOf = (date) => {
     const d = new Date(date);
@@ -2875,14 +2879,15 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
 
   const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
     const bucketMap = {};
+    const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
     const addTo = (iso, key) => {
       if(!iso) return;
       const bkey = granularity === "daily" ? iso : getWeekKey(iso);
       if(!bkey) return;
-      if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0};
+      if(!bucketMap[bkey]) bucketMap[bkey] = {period:bkey, bounties:0, citations:0, reach:0};
       bucketMap[bkey][key]++;
     };
-    campaigns.forEach(c => addTo(c.date, "bounties"));
+    campaigns.forEach(c => { addTo(c.date, "bounties"); if(c.date){ const bk = granularity==="daily"?c.date:getWeekKey(c.date); if(bk&&bucketMap[bk]) bucketMap[bk].reach += pNum(c.twitterImpressions)+pNum(c.telegramImpressions); } });
     citations.forEach(c => addTo(c.date, "citations"));
 
     const weekMap = {};
@@ -2892,14 +2897,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
     const allWeeks = Object.values(weekMap).sort((a,b)=>a.week.localeCompare(b.week));
     const allBuckets = Object.values(bucketMap).sort((a,b)=>a.period.localeCompare(b.period));
 
-    let cumB = 0, cumC = 0;
+    let cumB = 0, cumC = 0, cumR = 0;
     const chartData = allBuckets.map(w => {
-      cumB += w.bounties; cumC += w.citations;
+      cumB += w.bounties; cumC += w.citations; cumR += (w.reach||0);
       try {
         const d = new Date(w.period+"T00:00:00");
         const label = isNaN(d.getTime()) ? w.period : d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-        return { ...w, label, cumBounties: cumB, cumCitations: cumC };
-      } catch { return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC }; }
+        return { ...w, label, cumBounties: cumB, cumCitations: cumC, cumReach: cumR };
+      } catch { return { ...w, label: w.period, cumBounties: cumB, cumCitations: cumC, cumReach: cumR }; }
     });
 
     const uniqueAuthors = [...new Set([...campaigns.map(c=>c.author),...citations.map(c=>c.author)].filter(Boolean))];
@@ -2919,6 +2924,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
   },[campaigns, citations, granularity]);
 
   const fmtNum = n => n>=1000000 ? `${(n/1000000).toFixed(1)}M` : n>=1000 ? `${(n/1000).toFixed(0)}k` : n.toString();
+  const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
 
   const SUMMARY = [
     {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)", drillKey:"bounties"},
@@ -3144,40 +3150,118 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
               </div>
             ))}
           </div>
-          {/* Social breakdown — X vs Telegram */}
+          {/* Social — combined reach, channel mix & top content */}
           {(totalTwitter>0||totalTelegram>0)&&(()=>{
             const totalSocial=totalTwitter+totalTelegram;
             const twPct=totalSocial?Math.round(totalTwitter/totalSocial*100):0;
             const tgPct=100-twPct;
-            const avgTw=tweetCount?Math.round(totalTwitter/tweetCount):0;
-            const avgTg=tgPostCount?Math.round(totalTelegram/tgPostCount):0;
-            const X_C="var(--accent)", TG_C="#229ED9";
-            const Card=({c,icon,name,total,totalLabel,posts,avg,pct})=>(
-              <div style={{flex:1,minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"16px 18px",boxShadow:"var(--shadow-sm)",borderLeft:`3px solid ${c}`}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                  <span style={{fontSize:14}}>{icon}</span>
-                  <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase",color:"var(--muted)"}}>{name}</span>
-                  <span style={{marginLeft:"auto",fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:c}}>{pct}%</span>
-                </div>
-                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:26,fontWeight:700,color:"var(--text)",lineHeight:1,letterSpacing:"-0.03em"}}>{fmtNum(total)}</div>
-                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:5}}>{totalLabel}</div>
-                <div style={{display:"flex",gap:20,marginTop:14,paddingTop:12,borderTop:"1px solid var(--border)"}}>
-                  <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:15,fontWeight:600,color:"var(--text)"}}>{posts}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>posts</div></div>
-                  <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:15,fontWeight:600,color:"var(--text)"}}>{fmtNum(avg)}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>avg / post</div></div>
-                </div>
-              </div>
-            );
+            const postsWithReach=tweetCount+tgPostCount;
+            const avgPost=postsWithReach?Math.round(totalSocial/postsWithReach):0;
+            // top content by combined reach
+            const topPosts=[...campaigns]
+              .map(c=>({...c, reach:parseNum(c.twitterImpressions)+parseNum(c.telegramImpressions)}))
+              .filter(c=>c.reach>0)
+              .sort((a,b)=>b.reach-a.reach);
+            const maxReach=topPosts[0]?.reach||1;
             return (
               <div style={{marginBottom:28,animation:"fadeUp .5s ease both"}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social Breakdown</div>
-                <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12}}>
-                  {Card({c:X_C,icon:"𝕏",name:"X / Twitter",total:totalTwitter,totalLabel:"Impressions",posts:tweetCount,avg:avgTw,pct:twPct})}
-                  {Card({c:TG_C,icon:"📣",name:"Telegram",total:totalTelegram,totalLabel:"Post views",posts:tgPostCount,avg:avgTg,pct:tgPct})}
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social</div>
+                <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12,alignItems:"stretch"}}>
+                  {/* cumulative reach chart */}
+                  <div style={{flex:"1.7 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+                      <div style={{width:14,height:2,background:"var(--accent)",borderRadius:2}}/>
+                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Cumulative reach</span>
+                    </div>
+                    <ResponsiveContainer width="100%" height={170}>
+                      <ComposedChart data={chartData} margin={{top:6,right:8,left:0,bottom:0}}>
+                        <defs>
+                          <linearGradient id="gReach" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.22}/>
+                            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.01}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
+                        <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(chartData.length/(granularity==="daily"?10:8))-1)}/>
+                        <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={38} tickFormatter={fmtNum}/>
+                        <Tooltip content={({active,payload,label})=>{
+                          if(!active||!payload?.length) return null;
+                          return (
+                            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
+                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
+                              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>Reach: {fmtNum(payload[0].value)}</div>
+                            </div>
+                          );
+                        }}/>
+                        <Area type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" dot={false} activeDot={{r:4}}/>
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* combined total impressions */}
+                  <div style={{flex:"1 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)",display:"flex",flexDirection:"column"}}>
+                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Total Impressions</div>
+                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:34,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:12,letterSpacing:"-0.03em"}}>{fmtNum(totalSocial)}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6}}>Twitter + Telegram combined</div>
+                    <div style={{display:"flex",gap:24,marginTop:16,paddingTop:14,borderTop:"1px solid var(--border)"}}>
+                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{postsWithReach}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>posts</div></div>
+                      <div><div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)"}}>{fmtNum(avgPost)}</div><div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3}}>avg / post</div></div>
+                    </div>
+                    <div style={{marginTop:"auto",paddingTop:16}}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Channel mix</span>
+                        <span style={{display:"flex",gap:12,fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>
+                          <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {twPct}%</span><span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {tgPct}%</span>
+                        </span>
+                      </div>
+                      <div style={{display:"flex",height:5,borderRadius:99,overflow:"hidden",background:"var(--surface2)",gap:1.5}}>
+                        <div style={{width:`${twPct}%`,background:"var(--accent)"}}/>
+                        <div style={{width:`${tgPct}%`,background:"var(--dim)",opacity:.7}}/>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div style={{display:"flex",height:8,borderRadius:5,overflow:"hidden",border:"1px solid var(--border)"}} title={`X ${twPct}% · Telegram ${tgPct}%`}>
-                  <div style={{width:`${twPct}%`,background:X_C}}/>
-                  <div style={{width:`${tgPct}%`,background:TG_C}}/>
-                </div>
+                {/* collapsible top content by reach */}
+                {topPosts.length>0 && (
+                  <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
+                    <div onClick={()=>setTopOpen(v=>!v)} role="button" aria-expanded={topOpen}
+                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,padding:"14px 18px",cursor:"pointer",transition:"background .13s",background:topOpen?"color-mix(in srgb,var(--accent) 6%,transparent)":"transparent"}}
+                      onMouseEnter={e=>{if(!topOpen)e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)";}}
+                      onMouseLeave={e=>{if(!topOpen)e.currentTarget.style.background="transparent";}}>
+                      <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}>
+                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>Top Content · by reach</span>
+                        {!topOpen&&topPosts[0]&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>#1 <span style={{color:"var(--text)"}}>{topPosts[0].title}</span> · <span style={{color:"var(--accent)",fontWeight:600}}>{fmtNum(topPosts[0].reach)}</span></span>}
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{topPosts.length} posts</span>
+                        <span style={{color:"var(--dim)",fontSize:11,transform:topOpen?"rotate(180deg)":"none",transition:"transform .2s"}}>▾</span>
+                      </div>
+                    </div>
+                    {topOpen&&topPosts.slice(0,10).map((b,i)=>{
+                      const tw=parseNum(b.twitterImpressions), tg=parseNum(b.telegramImpressions);
+                      return (
+                        <div key={b.id||b.title} style={{display:"grid",gridTemplateColumns:"26px minmax(0,1fr) 150px 116px",alignItems:"center",gap:16,padding:"12px 18px",borderTop:"1px solid var(--border)"}}>
+                          <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
+                          <div style={{minWidth:0}}>
+                            <div title={b.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{b.title}</div>
+                            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{b.author} · {b.date}</div>
+                          </div>
+                          <div style={{minWidth:0}}>
+                            <div style={{height:5,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginBottom:5}}>
+                              <div style={{width:`${(b.reach/maxReach)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:1-i*0.07}}/>
+                            </div>
+                            <div style={{display:"flex",gap:10,fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)"}}>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {fmtNum(tw)}</span><span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {fmtNum(tg)}</span>
+                            </div>
+                          </div>
+                          <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8}}>
+                            <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:17,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em"}}>{fmtNum(b.reach)}</div>
+                            {b.cqLink&&<a href={b.cqLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })()}
