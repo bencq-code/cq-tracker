@@ -1594,7 +1594,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Author",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
+          {["Date","Title & Links","Author",""].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1612,6 +1612,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const ac=getAuthorColor(c.author);
                 const dp=fmtDate(c.date).split(", ");
                 const editable=canEdit(c);
+                const imprN=Number(String(c.twitterImpressions||"").replace(/,/g,""));
+                const imprTxt=c.twitterImpressions&&!isNaN(imprN)?imprN.toLocaleString():"—";
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
                     style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
@@ -1629,6 +1631,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.authorTelegramLink&&<a href={c.authorTelegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author TG↗</a>}
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ TG↗</a>}
+                        {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}>𝕏 {imprTxt}</span>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
