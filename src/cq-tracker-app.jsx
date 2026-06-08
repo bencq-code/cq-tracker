@@ -3100,8 +3100,8 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.12}/>
-                    <stop offset="95%" stopColor="var(--accent)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--dim)" stopOpacity={0.12}/>
+                    <stop offset="95%" stopColor="var(--dim)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--grid)" vertical={false}/>
@@ -3125,6 +3125,8 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                   );
                 }}/>
                 {[
+                  <Area key="ac" yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="none" fill="url(#gC)"/>,
+                  <Area key="ab" yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="none" fill="url(#gB)"/>,
                   <Bar key="bc" yAxisId="per" dataKey="citations" fill="var(--dim)" fillOpacity={0.34} radius={[2,2,0,0]}/>,
                   <Bar key="bb" yAxisId="per" dataKey="bounties" fill="var(--accent)" fillOpacity={0.30} radius={[2,2,0,0]}/>,
                   <Line key="cc" yAxisId="cum" type="monotone" dataKey="cumCitations" stroke="var(--dim)" strokeWidth={1.8} dot={false} activeDot={{r:4}}/>,
