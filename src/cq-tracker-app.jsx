@@ -947,15 +947,16 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
             <InfoBlock label="Twitter Impressions" value={entry.twitterImpressions}/>
             <InfoBlock label="Telegram Impressions" value={entry.telegramImpressions}/>
           </div>
-          {(entry.cqLink||entry.analyticsLink||entry.authorTwitterLink||entry.cqTwitterLink||entry.telegramLink)&&(
+          {(entry.cqLink||entry.analyticsLink||entry.authorTwitterLink||entry.authorTelegramLink||entry.cqTwitterLink||entry.telegramLink)&&(
             <div style={{marginBottom:16}}>
               <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Links</div>
               <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                 <LinkBtn label="Quicktake" url={entry.cqLink}/>
                 <LinkBtn label="Analytics" url={entry.analyticsLink}/>
                 <LinkBtn label="Author X" url={entry.authorTwitterLink}/>
+                <LinkBtn label="Author TG" url={entry.authorTelegramLink}/>
                 <LinkBtn label="CQ X" url={entry.cqTwitterLink}/>
-                <LinkBtn label="Telegram" url={entry.telegramLink}/>
+                <LinkBtn label="CQ TG" url={entry.telegramLink}/>
               </div>
             </div>
           )}
@@ -1625,8 +1626,9 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Quicktake↗</a>}
                         {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Analytics↗</a>}
                         {c.authorTwitterLink&&<a href={c.authorTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author X↗</a>}
+                        {c.authorTelegramLink&&<a href={c.authorTelegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author TG↗</a>}
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
-                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Telegram↗</a>}
+                        {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ TG↗</a>}
                       </div>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
@@ -4452,9 +4454,20 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
           return await r.text();
         }
       };
-      const {data:existingB} = await supabase.from("bounties").select("cq_link,sheet_row_no").eq("campaign_id",program.id);
-      const {data:existingM} = await supabase.from("citations").select("article_link,sheet_row_no").eq("campaign_id",program.id);
-      const exB = existingB||[], exM = existingM||[];
+      // Supabase caps a single select at 1000 rows — paginate so dedup sees ALL
+      // existing rows (otherwise campaigns with >1000 media rows re-sync forever).
+      const fetchAllRows = async (table, cols) => {
+        const out=[], size=1000;
+        for(let from=0;;from+=size){
+          const {data,error} = await supabase.from(table).select(cols).eq("campaign_id",program.id).range(from,from+size-1);
+          if(error) throw error;
+          out.push(...(data||[]));
+          if(!data||data.length<size) break;
+        }
+        return out;
+      };
+      const exB = await fetchAllRows("bounties","cq_link,sheet_row_no");
+      const exM = await fetchAllRows("citations","article_link,sheet_row_no");
       const safe = (v) => (v==null?"":String(v)).trim();
       let badRows=0;
       if(program.sheetBounties){
@@ -4467,8 +4480,8 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
             const title=safe(r["title"]);
             const rowNo=safe(r["no"]||r["#"]);
             if(!rowNo&&!title&&!link) continue;
-            const inNew=newBounties.some(b=>rowNo?b.sheetRowNo===rowNo:(link&&b.cqLink===link));
-            const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(link&&exB.some(b=>b.cq_link===link));
+            const inNew=rowNo?newBounties.some(b=>b.sheetRowNo===rowNo):(!!link&&newBounties.some(b=>b.cqLink===link));
+            const inDB=rowNo?exB.some(b=>b.sheet_row_no===rowNo):(!!link&&exB.some(b=>b.cq_link===link));
             if(inNew||inDB){skipped++;continue;}
             newBounties.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),author:norm(r["author"]),title,cqLink:link,analyticsLink:safe(r["analytics link"]||r["cq analytics link"]),authorTwitterLink:safe(r["author twitter/x"]||r["analyst twitter/x post"]),authorTelegramLink:safe(r["author telegram"]||r["analyst telegram"]),cqTwitterLink:safe(r["cq twitter/x"]||r["twitter/x link"]),telegramLink:safe(r["cq telegram link"]||r["telegram link"]),category:titleCase(safe(r["category"])),asset:titleCase(safe(r["asset"])),twitterImpressions:safe(r["twitter impressions"]||r["cq twitter/x impressions"]),telegramImpressions:safe(r["telegram impressions"]),sheetRowNo:rowNo,createdBy:"sheet_sync"});
           }catch(rowErr){badRows++;console.warn("Skipped bad bounty row:",rowErr,r);}
@@ -4484,8 +4497,8 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
             const media=safe(r["media outlet"]||r["media_outlet"]||r["media"]);
             const rowNo2=safe(r["no"]||r["#"]);
             if(!rowNo2&&!media) continue;
-            const inNewM=newMedia.some(m=>rowNo2?m.sheetRowNo===rowNo2:(link&&m.articleLink===link));
-            const inDBM=rowNo2?exM.some(m=>m.sheet_row_no===rowNo2):(link&&exM.some(m=>m.article_link===link));
+            const inNewM=rowNo2?newMedia.some(m=>m.sheetRowNo===rowNo2):(!!link&&newMedia.some(m=>m.articleLink===link));
+            const inDBM=rowNo2?exM.some(m=>m.sheet_row_no===rowNo2):(!!link&&exM.some(m=>m.article_link===link));
             if(inNewM||inDBM){skipped++;continue;}
             newMedia.push({id:uid(),campaignId:program.id,date:normalizeDate(r["date"]),media:titleCase(media),reporter:titleCase(safe(r["reporter"])),author:norm(r["author"]),topic:titleCase(safe(r["topic"])),articleLink:link,headline:safe(r["headline"]),mediaTier:safe(r["media tier"]),directRelationship:titleCase(safe(r["direct relationship"])),language:titleCase(safe(r["language"])),asset:titleCase(safe(r["asset"])),branding:titleCase(safe(r["branding"])),sheetRowNo:rowNo2,createdBy:"sheet_sync"});
           }catch(rowErr){badRows++;console.warn("Skipped bad media row:",rowErr,r);}
