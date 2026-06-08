@@ -347,7 +347,7 @@ const Icons = {
   Moon:  ()=><Ic d={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>}/>,
   // Brand logos (fill-based, inherit text color). Inline-friendly via `s` size prop.
   X:        ({s=11,style}={})=><svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" style={{display:"inline-block",verticalAlign:"-1.5px",...style}}><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
-  Telegram: ({s=11,style}={})=><svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" style={{display:"inline-block",verticalAlign:"-1.5px",...style}}><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>,
+  Telegram: ({s=11,style}={})=><svg width={s} height={s} viewBox="2.6 3.5 18.8 17" fill="currentColor" style={{display:"inline-block",verticalAlign:"-1.5px",...style}}><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>,
 };
 
 // Shared UI
@@ -3238,6 +3238,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                     </div>
                     {topOpen&&topPosts.slice(0,10).map((b,i)=>{
                       const tw=parseNum(b.twitterImpressions), tg=parseNum(b.telegramImpressions);
+                      const xUrl=b.cqTwitterLink||b.authorTwitterLink, tgUrl=b.telegramLink||b.authorTelegramLink;
                       return (
                         <div key={b.id||b.title} style={{display:"grid",gridTemplateColumns:"26px minmax(0,1fr) 150px 116px",alignItems:"center",gap:16,padding:"12px 18px",borderTop:"1px solid var(--border)"}}>
                           <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
@@ -3250,7 +3251,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
                               <div style={{width:`${(b.reach/maxReach)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:1-i*0.07}}/>
                             </div>
                             <div style={{display:"flex",gap:10,fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)"}}>
-                              <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {fmtNum(tw)}</span><span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {fmtNum(tg)}</span>
+                              {tw>0&&(xUrl
+                                ? <a href={xUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open X post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.X s={10}/> {fmtNum(tw)}</a>
+                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.X s={10}/> {fmtNum(tw)}</span>)}
+                              {tg>0&&(tgUrl
+                                ? <a href={tgUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title="Open Telegram post" style={{display:"inline-flex",alignItems:"center",gap:3,color:"inherit",textDecoration:"none"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="inherit"}><Icons.Telegram s={10}/> {fmtNum(tg)}</a>
+                                : <span style={{display:"inline-flex",alignItems:"center",gap:3}}><Icons.Telegram s={10}/> {fmtNum(tg)}</span>)}
                             </div>
                           </div>
                           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:8}}>
