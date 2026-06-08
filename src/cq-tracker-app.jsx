@@ -376,6 +376,42 @@ const RowBtn = ({onClick,title,hb,hc,hbg,children}) => (
   </button>
 );
 
+// Groups admin/batch actions into a single dropdown. items: [{label, onClick, danger, disabled, title, running}]
+const AdminMenu = ({items=[]}) => {
+  const [open,setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(()=>{
+    if(!open) return;
+    const h = (e)=>{ if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const k = (e)=>{ if(e.key==="Escape") setOpen(false); };
+    window.addEventListener("mousedown",h); window.addEventListener("keydown",k);
+    return ()=>{ window.removeEventListener("mousedown",h); window.removeEventListener("keydown",k); };
+  },[open]);
+  const live = items.filter(Boolean);
+  if(!live.length) return null;
+  const busy = live.some(it=>it.running);
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <button onClick={()=>setOpen(v=>!v)}
+        style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:`1px solid ${open?"rgba(26,58,92,0.3)":"var(--border)"}`,background:open||busy?"color-mix(in srgb,var(--accent) 8%,transparent)":"var(--surface)",color:open||busy?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:500,transition:"all .15s"}}>
+        ⚙ Admin <span style={{fontSize:8,opacity:.7,transform:open?"rotate(180deg)":"none",transition:"transform .15s"}}>▾</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,minWidth:240,zIndex:60,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,boxShadow:"0 10px 30px rgba(0,0,0,0.35)",padding:6,display:"flex",flexDirection:"column",gap:2}}>
+          {live.map((it,idx)=>(
+            <button key={idx} disabled={it.disabled} title={it.title||""} onClick={()=>{if(it.disabled)return;setOpen(false);it.onClick();}}
+              style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 11px",borderRadius:7,border:"none",background:"transparent",color:it.disabled?"var(--dim)":(it.danger?"var(--red)":"var(--text)"),cursor:it.disabled?"not-allowed":"pointer",opacity:it.disabled?0.55:1,whiteSpace:"nowrap"}}
+              onMouseEnter={e=>{if(!it.disabled)e.currentTarget.style.background=it.danger?"rgba(220,38,38,0.08)":"color-mix(in srgb,var(--accent) 8%,transparent)";}}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+              <span style={{flex:1}}>{it.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const StatCard = ({label,value,sub,c}) => (
   <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"16px 20px",position:"relative",boxShadow:"var(--shadow-sm)"}}>
     <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
@@ -1497,7 +1533,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       {(()=>{
         const hasFilters = search||filterAuthor!=="all"||filterDateFrom||filterDateTo;
         return (
-          <div style={{marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
+          <div style={{marginBottom:16,position:"relative",zIndex:20,animation:"fadeUp .5s ease .08s both"}}>
             <div className="cq-filter-bar" style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{position:"relative",flex:1,maxWidth:320}}>
                 <div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"var(--dim)",pointerEvents:"none"}}><Icons.Search/></div>
@@ -1509,31 +1545,26 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
-              {currentUser.role==="admin"&&contentMode==="all"&&activeCampaigns.length>0&&<button onClick={()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
-              {onBountySummaryUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
+              {(()=>{
+                const isAdmin = currentUser.role==="admin"&&contentMode==="all";
                 const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
-                return <button onClick={()=>{if(sumBatch.running)return;if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}}
-                  disabled={sumBatch.running||unsumCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:sumBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:sumBatch.running?"wait":(unsumCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unsumCount===0?0.5:1}}>
-                  {sumBatch.running?`SUMMARIZING ${sumBatch.processed}/${sumBatch.total}…`:`📝 SUMMARIZE ${unsumCount} BOUNTIES`}
-                </button>;
+                const linkCount  = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
+                const newCount   = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim()).length;
+                const busy = sumBatch.running||impBatch.running;
+                const items = [
+                  canAdd && {label:"＋ Add entry", title:"Add a new bounty", onClick:()=>{setEdit(null);setShowForm(true);}},
+                  isAdmin && onBountySummaryUpdate && {label:sumBatch.running?`Summarizing ${sumBatch.processed}/${sumBatch.total}…`:`📝 Summarize bounties (${unsumCount})`, running:sumBatch.running, disabled:busy||unsumCount===0, title:"Generate AI summaries for bounties without one",
+                    onClick:()=>{if(!window.confirm(`Generate summaries for ${unsumCount} bounty${unsumCount!==1?"s":""}? Uses RSS (free) with ScrapingBee fallback (~10 credits each). Est: ~$${(unsumCount*0.001).toFixed(2)} on Haiku.`))return;runSummarize(filtered);}},
+                  isAdmin && onBountyImpressionsUpdate && {label:impBatch.running?`Fetching ${impBatch.total}…`:`𝕏 Fetch new impressions (${newCount})`, running:impBatch.running, disabled:busy||newCount===0, title:"Fetch impressions for tweets not synced yet",
+                    onClick:()=>{if(!window.confirm(`Fetch live X/Twitter impressions for ${newCount} new bounty${newCount!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}},
+                  isAdmin && onBountyImpressionsUpdate && {label:`↻ Refresh all impressions (${linkCount})`, disabled:busy||linkCount===0, title:"Re-pull and overwrite impressions for every tweet (latest counts)",
+                    onClick:()=>{if(!window.confirm(`Force-refresh impressions for ALL ${linkCount} bounty${linkCount!==1?"s":""} with a tweet link? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}},
+                  isAdmin && activeCampaigns.length>0 && {label:"🗑 Delete all bounties", danger:true, disabled:busy, title:"Delete every bounty in this campaign",
+                    onClick:()=>{const cid=activeCampaigns[0]?.campaignId;if(cid&&window.confirm(`Delete all bounties for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}},
+                ].filter(Boolean);
+                if(!items.length) return null;
+                return <div style={{marginLeft:"auto"}}><AdminMenu items={items}/></div>;
               })()}
-              {onBountyImpressionsUpdate && currentUser.role==="admin" && contentMode==="all" && (()=>{
-                const linkCount = filtered.filter(b=>b.authorTwitterLink||b.cqTwitterLink).length;
-                const newCount  = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim()).length;
-                const baseStyle = (active)=>({display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:impBatch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:impBatch.running?"wait":(active?"pointer":"not-allowed"),fontWeight:500,opacity:active?1:0.5});
-                return <>
-                  <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Fetch live X/Twitter impressions for ${newCount} new bounty${newCount!==1?"s":""} (no impressions recorded yet)? Pulls the analyst + CQ tweet via the X API and writes the combined total. Already-fetched bounties are skipped.`))return;runImpressions(filtered,{force:false});}}
-                    disabled={impBatch.running||newCount===0} title="Fetch impressions for tweets not synced yet" style={baseStyle(!impBatch.running&&newCount>0)}>
-                    {impBatch.running?`FETCHING ${impBatch.total}…`:`𝕏 NEW ${newCount}`}
-                  </button>
-                  <button onClick={()=>{if(impBatch.running)return;if(!window.confirm(`Force-refresh impressions for ALL ${linkCount} bounty${linkCount!==1?"s":""} with a tweet link? This re-pulls every tweet via the X API and OVERWRITES existing numbers with the latest counts.`))return;runImpressions(filtered,{force:true});}}
-                    disabled={impBatch.running||linkCount===0} title="Re-pull and overwrite impressions for every tweet (latest counts)" style={{...baseStyle(!impBatch.running&&linkCount>0),background:"transparent"}}>
-                    {impBatch.running?`FETCHING ${impBatch.total}…`:`↻ REFRESH ALL ${linkCount}`}
-                  </button>
-                </>;
-              })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onBountySummaryUpdate&&currentUser.role==="admin"&&contentMode==="all"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD ENTRY</button>}
             </div>
             {(sumBatch.running||sumBatch.processed>0||sumBatch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
@@ -2130,7 +2161,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const medias=useMemo(()=>[...new Set(citations.map(c=>c.media).filter(Boolean))],[citations]);
   const authors=useMemo(()=>[...new Set(citations.map(c=>c.author).filter(Boolean))],[citations]);
   const tiers=useMemo(()=>[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort(),[citations]);
-  const COLS="108px 15% 11% 11% 1fr 64px 72px 54px";
+  const COLS="108px 15% 11% 11% 1fr 72px 54px";
   return (
     <>
       {/* Media activity charts */}
@@ -2291,7 +2322,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
       {(()=>{
         const hasFilters = search||filterAuthor!=="all"||filterMedia!=="all"||filterTier!=="all"||filterDateFrom||filterDateTo;
         return (
-          <div style={{marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
+          <div style={{marginBottom:16,position:"relative",zIndex:20,animation:"fadeUp .5s ease .08s both"}}>
             <div className="cq-filter-bar" style={{display:"flex",alignItems:"center",gap:8}}>
               <div style={{position:"relative",flex:1,maxWidth:320}}>
                 <div style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"var(--dim)",pointerEvents:"none"}}><Icons.Search/></div>
@@ -2303,16 +2334,19 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
               </button>
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
-              {currentUser.role==="admin"&&citations.length>0&&<button onClick={()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}} style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid rgba(220,38,38,0.25)",background:"rgba(220,38,38,0.06)",color:"var(--red)",cursor:"pointer",fontWeight:500}}><Icons.Trash/> DELETE ALL</button>}
-              {onCitedBountyUpdate && currentUser.role==="admin" && (()=>{
+              {(()=>{
+                const isAdmin = currentUser.role==="admin";
                 const unlinkedCount = filtered.filter(c=>!c.citedBountyId && c.articleLink).length;
-                return <button onClick={()=>{if(batch.running)return;if(!window.confirm(`Run bounty match on ${unlinkedCount} unlinked citation${unlinkedCount!==1?"s":""}? Only high-confidence matches will be auto-saved.`))return;runAutoMatch(filtered);}}
-                  disabled={batch.running||unlinkedCount===0}
-                  style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",background:batch.running?"rgba(15,118,110,0.04)":"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:batch.running?"wait":(unlinkedCount===0?"not-allowed":"pointer"),fontWeight:500,opacity:unlinkedCount===0?0.5:1}}>
-                  {batch.running?`MATCHING ${batch.processed}/${batch.total}…`:`🔗 AUTO-MATCH ${unlinkedCount} UNLINKED`}
-                </button>;
+                const items = [
+                  canAdd && {label:"＋ Add citation", title:"Add a new media citation", onClick:()=>{setEdit(null);setShowForm(true);}},
+                  isAdmin && onCitedBountyUpdate && {label:batch.running?`Matching ${batch.processed}/${batch.total}…`:`🔗 Auto-match unlinked (${unlinkedCount})`, running:batch.running, disabled:batch.running||unlinkedCount===0, title:"Auto-link citations to bounties (high-confidence only)",
+                    onClick:()=>{if(!window.confirm(`Run bounty match on ${unlinkedCount} unlinked citation${unlinkedCount!==1?"s":""}? Only high-confidence matches will be auto-saved.`))return;runAutoMatch(filtered);}},
+                  isAdmin && citations.length>0 && {label:"🗑 Delete all citations", danger:true, disabled:batch.running, title:"Delete every citation in this campaign",
+                    onClick:()=>{const cid=citations[0]?.campaignId;if(cid&&window.confirm(`Delete all citations for this campaign? This cannot be undone.`)){onDeleteAll&&onDeleteAll(cid);}}},
+                ].filter(Boolean);
+                if(!items.length) return null;
+                return <div style={{marginLeft:"auto"}}><AdminMenu items={items}/></div>;
               })()}
-              {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginLeft:onCitedBountyUpdate&&currentUser.role==="admin"?0:"auto",display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}><Icons.Plus/> ADD CITATION</button>}
             </div>
             {(batch.running||batch.processed>0||batch.lastMsg)&&(
               <div style={{marginTop:10,padding:"10px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
@@ -2387,7 +2421,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Media","Reporter","Author","Topic","Bounty","Link",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -2425,11 +2459,6 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                             {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
                             {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>{c.language}</span>}
                           </div>
-                        </div>
-                        <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                          {(()=>{const cb = c.citedBountyId && bountyById[c.citedBountyId]; return cb && cb.cqLink
-                            ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
-                            : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>;})()}
                         </div>
                         <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                           {c.articleLink
