@@ -4744,7 +4744,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
       <button onClick={doSync} disabled={syncing}
         style={darkMode
           ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
-          : {display:"flex",alignItems:"center",gap:5,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
+          : {display:"flex",alignItems:"center",gap:5,height:28,boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"0 12px",borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
         }>
         {syncing?<><Icons.Spin/>Syncing…</>:"⟳ Sync Sheet"}
       </button>
@@ -4760,13 +4760,14 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
 
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
+      <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:16,flexWrap:"wrap",marginBottom:22}}>
         <div>
-          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// bounty management</div>
-          <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>Campaigns</h2>
+          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.14em",fontWeight:600,marginBottom:7}}>Admin</div>
+          <h2 style={{fontSize:23,fontWeight:600,letterSpacing:"-0.025em",color:"var(--text)"}}>Campaigns</h2>
+          <div style={{fontSize:13,color:"var(--dim)",marginTop:5}}>Create campaigns, track output, and archive completed programs.</div>
         </div>
-        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",fontWeight:500}}>
-          <Icons.Plus/> NEW CAMPAIGN
+        <button onClick={()=>{setEdit(null);setShowForm(true)}} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:12,fontWeight:600,padding:"9px 15px",borderRadius:7,border:"1px solid var(--accent)",background:"var(--accent)",color:"#fff",cursor:"pointer"}}>
+          <Icons.Plus/> New campaign
         </button>
       </div>
       {!programs.length ? (
@@ -4786,43 +4787,41 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
           const isLast = i === total - 1;
           return (
             <div onClick={()=>{if(onSelectCampaign) onSelectCampaign(cl.id)}}
-              style={{display:"grid",gridTemplateColumns:"3px 1fr auto",alignItems:"center",borderBottom:isLast?"none":"1px solid var(--border)",cursor:"pointer",transition:"background .12s"}}
-              onMouseEnter={e=>e.currentTarget.style.background="var(--surface2)"}
+              style={{display:"grid",gridTemplateColumns:"auto minmax(0,1fr) 64px 64px 300px 18px",alignItems:"center",gap:16,padding:"13px 18px",borderTop:i?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .12s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)"}
               onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-              {/* colour stripe */}
-              <div style={{alignSelf:"stretch",background:cl.status==="completed"?"#94a3b8":cl.color}}/>
-              {/* main content */}
-              <div style={{display:"flex",alignItems:"center",gap:14,padding:"13px 20px",minWidth:0}}>
-                <div style={{width:8,height:8,borderRadius:"50%",background:cl.status==="completed"?"#94a3b8":cl.color,flexShrink:0}}/>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:13,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</div>
-                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
-                </div>
-                <div style={{display:"flex",gap:16,alignItems:"center",flexShrink:0}}>
-                  <div style={{textAlign:"right"}}>
-                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{campCount}</div>
-                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Bounties</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:"var(--text)"}}>{citeCount}</div>
-                    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em"}}>Citations</div>
-                  </div>
-                </div>
+              {/* color identity swatch */}
+              <span style={{width:10,height:10,borderRadius:3,background:cl.status==="completed"?"var(--dim)":cl.color,flexShrink:0}}/>
+              {/* name */}
+              <div style={{minWidth:0}}>
+                <div style={{fontSize:13.5,fontWeight:600,color:cl.status==="completed"?"var(--muted)":"var(--text)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:2}}>Created {new Date(cl.createdAt).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
+              </div>
+              {/* counts */}
+              <div style={{textAlign:"right"}}>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:14,fontWeight:700,color:"var(--text)"}}>{campCount}</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em",marginTop:2}}>Bounties</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:14,fontWeight:700,color:"var(--text)"}}>{citeCount}</div>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.07em",marginTop:2}}>Citations</div>
               </div>
               {/* actions */}
-              <div style={{display:"flex",alignItems:"center",gap:4,paddingRight:14}} onClick={e=>e.stopPropagation()}>
-                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 7px",borderRadius:5,border:"1px solid rgba(26,58,92,0.18)",background:"rgba(26,58,92,0.05)",color:"var(--accent)",textDecoration:"none"}}>Sheet↗</a>}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:6}} onClick={e=>e.stopPropagation()}>
+                {cl.sheetLink&&<a href={cl.sheetLink} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:3,height:28,boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"0 10px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--muted)",textDecoration:"none",whiteSpace:"nowrap"}}>Sheet↗</a>}
                 {(cl.sheetBounties||cl.sheetMedia)&&<DrillSync program={cl} drillCamps={campaigns.filter(c=>c.campaignId===cl.id)} drillCites={citations.filter(c=>c.campaignId===cl.id)} setCampaigns={setCampaigns} setCitations={setCitations}/>}
                 <span onClick={e=>{e.stopPropagation();onSave({...cl,status:cl.status==="completed"?"active":"completed"},cl)}}
-                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,cursor:"pointer",
-                  background:cl.status==="completed"?"var(--surface2)":"rgba(22,101,52,0.07)",
-                  border:cl.status==="completed"?"1px solid var(--border)":"1px solid rgba(22,101,52,0.2)",
-                  color:cl.status==="completed"?"var(--muted)":"#166634"}}>
+                  style={{display:"inline-flex",alignItems:"center",height:28,boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"0 10px",borderRadius:6,cursor:"pointer",whiteSpace:"nowrap",
+                  background:cl.status==="completed"?"var(--surface2)":"color-mix(in srgb,var(--positive) 10%,transparent)",
+                  border:cl.status==="completed"?"1px solid var(--border)":"1px solid color-mix(in srgb,var(--positive) 28%,transparent)",
+                  color:cl.status==="completed"?"var(--muted)":"var(--positive)"}}>
                   {cl.status==="completed"?"Completed":"Active"}
                 </span>
                 <RowBtn onClick={()=>{setEdit(cl);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>
                 <RowBtn onClick={()=>setConfId(cl.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>
               </div>
+              {/* drill arrow */}
+              <span style={{display:"flex",justifyContent:"center",color:"var(--dim)"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
             </div>
           );
         };
@@ -4842,21 +4841,6 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
               </button>
               {open&&(
                 <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 3px rgba(0,0,0,0.04)"}}>
-                  {/* Column headers */}
-                  <div style={{display:"grid",gridTemplateColumns:"3px 1fr auto",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-                    <div/>
-                    <div style={{padding:"7px 20px",display:"flex",gap:14,alignItems:"center"}}>
-                      <div style={{width:8,flexShrink:0}}/>
-                      <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",flex:1}}>Campaign</span>
-                      <div style={{display:"flex",gap:16}}>
-                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Bounties</span>
-                        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",width:48,textAlign:"right"}}>Citations</span>
-                      </div>
-                    </div>
-                    <div style={{paddingRight:14,display:"flex",alignItems:"center"}}>
-                      <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>Actions</span>
-                    </div>
-                  </div>
                   {items.map((cl,i)=><CampaignRow key={cl.id} cl={cl} i={i} total={items.length}/>)}
                 </div>
               )}
@@ -4866,7 +4850,29 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
 
         return (
           <div>
-            <Section label="Active" items={activeCampaigns} accent="#166634" accentBg="rgba(22,101,52,0.07)" accentBorder="rgba(22,101,52,0.2)" defaultOpen={true}/>
+            {/* summary strip */}
+            {(()=>{
+              const totB = campaigns.length;
+              const totC = citations.length;
+              const stats = [
+                {label:"Campaigns", value:programs.length, sub:`${activeCampaigns.length} active`},
+                {label:"Active", value:activeCampaigns.length, sub:"In flight"},
+                {label:"Total Bounties", value:totB.toLocaleString(), sub:"Across campaigns"},
+                {label:"Total Citations", value:totC.toLocaleString(), sub:"Earned coverage"},
+              ];
+              return (
+                <div style={{display:"flex",alignItems:"stretch",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"var(--shadow-sm)",marginBottom:24,overflow:"hidden"}}>
+                  {stats.map((s,i)=>(
+                    <div key={i} style={{flex:1,minWidth:0,padding:"15px 20px",borderLeft:i?"1px solid var(--border)":"none"}}>
+                      <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.label}</div>
+                      <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:27,fontWeight:700,color:"var(--text)",lineHeight:1,marginTop:10,letterSpacing:"-0.03em"}}>{s.value}</div>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,whiteSpace:"nowrap"}}>{s.sub}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            <Section label="Active" items={activeCampaigns} accent="var(--positive)" accentBg="color-mix(in srgb,var(--positive) 10%,transparent)" accentBorder="color-mix(in srgb,var(--positive) 28%,transparent)" defaultOpen={true}/>
             <Section label="Completed" items={completedCampaigns} accent="var(--muted)" accentBg="var(--surface2)" accentBorder="var(--border)" defaultOpen={false}/>
           </div>
         );
