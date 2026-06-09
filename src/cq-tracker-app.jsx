@@ -3124,7 +3124,7 @@ const LeaderboardsSection = ({leaderData, citations, campaigns, fmtNum, parseNum
 
 };
 
-const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientName, color, onExport}) => {
+const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport}) => {
   // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
   const [mode, setMode] = useState("all");
   const [granularity, setGranularity] = useState("daily");
@@ -3445,7 +3445,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
       {chartData.length === 0 ? (
         <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
           <div style={{fontSize:28,marginBottom:10,opacity:.25}}>⬡</div>
-          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>{dataLoading&&campaignsRaw.length===0&&citationsRaw.length===0?"Loading data…":"No data in selected range"}</div>
         </div>
       ) : (
         <>
@@ -5549,6 +5549,7 @@ export default function App() {
   const [campaigns,setCampaigns] = useState([]);   // bounties entries
   const [citations,setCitations] = useState([]);   // media citation entries
   const [loading,setLoading]     = useState(true);
+  const [dataLoading,setDataLoading] = useState(true); // phase-2 (bounties/citations) still in flight
   const [saving,setSaving]       = useState(false);
   const [toast,setToast]         = useState(null);
   const [tab,setTab]             = useState("performance");
@@ -5736,7 +5737,7 @@ export default function App() {
         } else {
           setCitations(loadedCits);
         }
-      } catch {}
+      } catch {} finally { setDataLoading(false); }
     })();
   },[]);
 
@@ -6063,7 +6064,7 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null}/>}
+        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} dataLoading={dataLoading} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onBountyTgUpdate={handleBountyTgUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
