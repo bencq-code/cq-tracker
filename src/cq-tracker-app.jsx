@@ -4521,6 +4521,28 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
     w.onload=()=>setTimeout(()=>w.print(),250);
   };
 
+  // ── raw-data export → one Excel workbook with two tabs (Bounties / Citations) ──
+  const safeName = s => (s||"export").replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"");
+  const downloadFile = (name, text, mime) => {
+    const blob = new Blob([text], {type:mime||"text/plain;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  };
+  const downloadCSV = () => {
+    const xmlEsc = v => { const s = v==null?"":String(v); return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); };
+    const bCols = [["Date","date"],["Author","author"],["Title","title"],["Category","category"],["Asset","asset"],["Twitter Impressions","twitterImpressions"],["Telegram Impressions","telegramImpressions"],["CQ Link","cqLink"],["CQ Twitter","cqTwitterLink"],["Author Twitter","authorTwitterLink"],["Telegram Link","telegramLink"],["Author Telegram","authorTelegramLink"],["Analytics Link","analyticsLink"],["Summary","summary"]];
+    const cCols = [["Date","date"],["Media","media"],["Reporter","reporter"],["Author","author"],["Topic","topic"],["Headline","headline"],["Media Tier","mediaTier"],["Language","language"],["Asset","asset"],["Branding","branding"],["Direct Relationship","directRelationship"],["Article Link","articleLink"]];
+    const sheet = (name, cols, rows) => {
+      const head = `<Row>${cols.map(co=>`<Cell ss:StyleID="hdr"><Data ss:Type="String">${xmlEsc(co[0])}</Data></Cell>`).join("")}</Row>`;
+      const body = rows.map(r=>`<Row>${cols.map(co=>`<Cell><Data ss:Type="String">${xmlEsc(r[co[1]])}</Data></Cell>`).join("")}</Row>`).join("");
+      return `<Worksheet ss:Name="${xmlEsc(name)}"><Table>${head}${body}</Table></Worksheet>`;
+    };
+    const xml = `<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles><Style ss:ID="hdr"><Font ss:Bold="1"/></Style></Styles>${sheet("Bounties",bCols,b)}${sheet("Citations",cCols,c)}</Workbook>`;
+    downloadFile(`${safeName(campaignName)}_raw_${dateFrom}_to_${dateTo}.xls`, xml, "application/vnd.ms-excel");
+  };
+
   return (
     <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
@@ -4550,17 +4572,25 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
             ))}
           </div>
           <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--muted)",lineHeight:1.7,padding:"12px 14px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8}}>
-            Generates a 3-page summary — <b style={{color:"var(--text)"}}>Overview</b>, <b style={{color:"var(--text)"}}>Traditional Media</b>, and <b style={{color:"var(--text)"}}>Social Media</b> — opening in a new tab ready to print or save as PDF. Tip: in the print dialog, enable <b style={{color:"var(--text)"}}>Background graphics</b>.
+            Generates a 3-page summary — <b style={{color:"var(--text)"}}>Overview</b>, <b style={{color:"var(--text)"}}>Traditional Media</b>, and <b style={{color:"var(--text)"}}>Social Media</b> — opening in a new tab ready to print or save as PDF. Tip: in the print dialog, enable <b style={{color:"var(--text)"}}>Background graphics</b>. Or export the raw data as an <b style={{color:"var(--text)"}}>Excel workbook with Bounties &amp; Citations tabs</b> for the selected range.
           </div>
         </div>
-        <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",gap:10,justifyContent:"flex-end"}}>
+        <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",gap:10,justifyContent:"space-between",alignItems:"center",flexWrap:"wrap"}}>
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>CANCEL</button>
-          <button onClick={generatePDF}
-            style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"var(--accent)",color:"#fff",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:7,letterSpacing:"0.04em"}}
-            onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 82%,#000)"}
-            onMouseLeave={e=>e.currentTarget.style.background="var(--accent)"}>
-            ↓ GENERATE PDF
-          </button>
+          <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+            <button onClick={downloadCSV} title="Export raw data as an Excel workbook (Bounties + Citations tabs)"
+              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 16px",borderRadius:8,border:"1px solid var(--border2)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",display:"flex",alignItems:"center",gap:6,letterSpacing:"0.04em"}}
+              onMouseEnter={e=>e.currentTarget.style.borderColor="var(--accent)"}
+              onMouseLeave={e=>e.currentTarget.style.borderColor="var(--border2)"}>
+              ↓ EXPORT DATA
+            </button>
+            <button onClick={generatePDF}
+              style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 20px",borderRadius:8,border:"none",background:"var(--accent)",color:"#fff",cursor:"pointer",fontWeight:600,display:"flex",alignItems:"center",gap:7,letterSpacing:"0.04em"}}
+              onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 82%,#000)"}
+              onMouseLeave={e=>e.currentTarget.style.background="var(--accent)"}>
+              ↓ GENERATE PDF
+            </button>
+          </div>
         </div>
       </div>
     </div>
