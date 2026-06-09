@@ -3432,7 +3432,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, clientN
           </div>
           {/* Export (PDF report) */}
           {onExport && (
-            <button onClick={onExport} title="Export PDF report"
+            <button onClick={()=>onExport(effectiveFrom, effectiveTo)} title="Export PDF report"
               style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
               onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
@@ -4264,12 +4264,12 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
 // ─────────────────────────────────────────────────────────
 //  PDF REPORT MODAL
 // ─────────────────────────────────────────────────────────
-const PdfReportModal = ({campaigns, citations, campaignName, onClose}) => {
+const PdfReportModal = ({campaigns, citations, campaignName, initialFrom, initialTo, onClose}) => {
   const today = new Date().toISOString().slice(0,10);
   const earliest = [...campaigns.map(c=>c.date),...citations.map(c=>c.date)].filter(Boolean).sort()[0] || today;
 
-  const [dateFrom, setDateFrom] = useState(earliest);
-  const [dateTo,   setDateTo]   = useState(today);
+  const [dateFrom, setDateFrom] = useState(initialFrom || earliest);
+  const [dateTo,   setDateTo]   = useState(initialTo || today);
 
   const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
   const fmtNum = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
@@ -5518,6 +5518,7 @@ export default function App() {
   const [tab,setTab]             = useState("performance");
   const [clientActiveCid,setClientActiveCid] = useState(null);
   const [showPdfModal,setShowPdfModal] = useState(false);
+  const [exportRange,setExportRange] = useState(null);
   const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
   const [sidebarOpen,setSidebarOpen] = useState(false);
   const [authorView,setAuthorView] = useState(null); // active author detail name
@@ -5904,7 +5905,7 @@ export default function App() {
     <>
       <style>{css}</style>
       {toast&&<Toast msg={toast.msg} type={toast.type}/>}
-      {showPdfModal&&effectiveClient&&<PdfReportModal campaigns={scopedCampaigns} citations={scopedCitations} campaignName={effectiveClient.name} onClose={()=>setShowPdfModal(false)}/>}
+      {showPdfModal&&effectiveClient&&<PdfReportModal campaigns={scopedCampaigns} citations={scopedCitations} campaignName={effectiveClient.name} initialFrom={exportRange?.from} initialTo={exportRange?.to} onClose={()=>setShowPdfModal(false)}/>}
 
       {/* LAYOUT */}
       <div style={{display:"flex",minHeight:"100vh"}}>
@@ -6026,7 +6027,7 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?()=>setShowPdfModal(true):null}/>}
+        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onBountyTgUpdate={handleBountyTgUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
