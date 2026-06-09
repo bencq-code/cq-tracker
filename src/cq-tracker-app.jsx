@@ -4317,6 +4317,8 @@ const PdfReportModal = ({campaigns, citations, campaignName, initialFrom, initia
     const posts=b.map(x=>{const tw=parseNum(x.twitterImpressions),tg=parseNum(x.telegramImpressions);return{title:x.title||"—",author:x.author||"",date:x.date||"",reach:tw+tg,tw,tg};}).filter(p=>p.reach>0).sort((a,z)=>z.reach-a.reach);
     const maxReach=posts[0]?.reach||1;
     const nPosts=posts.length, avgPost=nPosts?Math.round(totalImpr/nPosts):0;
+    // peak post reach — the best single post (posts[] is sorted desc), a strong honest headline number
+    const peakPost=posts[0]?.reach||0;
     const twPct=totalImpr?Math.round(totalTwitter/totalImpr*100):0, tgPct=totalImpr?100-twPct:0;
 
     const xMark='<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
@@ -4499,11 +4501,11 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
   <div class="phead"><span class="pl">${cn} · Performance Summary</span><span class="pl">Social Media</span></div>
   <div class="pad">
     <div class="divhd"><span class="dot"></span><span class="t">Social Media</span><span class="ln"></span></div>
-    <p class="summary">Owned-channel amplification across X and Telegram — <b>${fmtNum(totalImpr)} impressions</b> from <b>${nPosts} posts</b>, averaging <b>${fmtNum(avgPost)} impressions per post</b>.</p>
+    <p class="summary">Owned-channel amplification across X and Telegram — <b>${fmtNum(totalImpr)} impressions</b> from <b>${nPosts} posts</b>, led by a top post reaching <b>${fmtNum(peakPost)} impressions</b>.</p>
     <div class="substat">
       <div class="c2"><div class="lbl">Total Impressions</div><div class="v num">${fmtNum(totalImpr)}</div><div class="s">Twitter + Telegram combined</div></div>
       <div class="c2"><div class="lbl">Posts</div><div class="v num">${nPosts}</div><div class="s">With recorded reach</div></div>
-      <div class="c2"><div class="lbl">Avg / Post</div><div class="v num">${fmtNum(avgPost)}</div><div class="s">Impressions per post</div></div>
+      <div class="c2"><div class="lbl">Top Post</div><div class="v num">${fmtNum(peakPost)}</div><div class="s">Best single post</div></div>
     </div>
     <div class="sechd" style="margin-top:24px">Social activity · impressions per day &amp; running total</div>
     <div class="chartcard" style="margin-bottom:24px"><div class="topr"><span class="lbl">Impressions · per day + running total</span><div class="leg"><span><i style="background:#6088b5"></i>Impressions</span><span style="opacity:.55">bars = per day · line = running total</span></div></div>${imprSvg}</div>
@@ -4516,9 +4518,13 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
 </body></html>`;
 
     const w=window.open("","_blank","width=1100,height=900");
-    w.document.write(html);
+    if(!w){ alert("Please allow pop-ups for this site to open the report."); return; }
+    // The report prints ITSELF from inside its own document — calling w.print() from
+    // this (opener) tab blocks the opener's event loop while the print dialog is open,
+    // which is what froze the modal/Cancel button.
+    const printScript = `<script>(function(){function P(){try{window.focus();window.print();}catch(e){}}if(document.readyState==='complete'){setTimeout(P,300);}else{window.addEventListener('load',function(){setTimeout(P,300);});}})();<\/script>`;
+    w.document.write(html.replace("</body>", printScript+"</body>"));
     w.document.close();
-    w.onload=()=>setTimeout(()=>w.print(),250);
   };
 
   // ── raw-data export → one Excel workbook with two tabs (Bounties / Citations) ──
