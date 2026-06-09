@@ -4715,6 +4715,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
 const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations, darkMode}) => {
   const [syncing,setSyncing] = useState(false);
   const [result,setResult]   = useState(null);
+  const [phase,setPhase]     = useState("");
   const isSyncing = useRef(false);
   const norm = s => (s||'').trim().toLowerCase();
   const normalizeDate = (d) => {
@@ -4824,9 +4825,40 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
       }
       if(newBounties.length){await db.batchInsertBounties(newBounties);setCampaigns(prev=>[...newBounties,...prev]);added+=newBounties.length;}
       if(newMedia.length){await db.batchInsertCitations(newMedia);setCitations(prev=>[...newMedia,...prev]);added+=newMedia.length;}
-      setResult(`✓ ${added} added, ${skipped} skipped`+(badRows?`, ${badRows} bad row${badRows>1?"s":""} skipped`:""));
+
+      // Fetch live X + Telegram impressions for the freshly-synced bounties (endpoints persist to DB).
+      let imprMsg = "";
+      const isLocalEnv = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      if(newBounties.length && !isLocalEnv){
+        const twIds = newBounties.filter(b=>b.authorTwitterLink||b.cqTwitterLink).map(b=>b.id);
+        const tgIds = newBounties.filter(b=>b.authorTelegramLink||b.telegramLink).map(b=>b.id);
+        if(twIds.length || tgIds.length){
+          setPhase("Fetching impressions…");
+          const updates = {}; // bountyId -> {twitterImpressions?, telegramImpressions?}
+          try {
+            if(twIds.length){
+              const r = await fetch("/api/twitter-impressions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({bountyIds:twIds})});
+              const d = await r.json().catch(()=>({}));
+              if(r.ok) for(const u of (d.updated||[])) if(!u.skipped && u.total!=null) (updates[u.bountyId]=updates[u.bountyId]||{}).twitterImpressions=String(u.total);
+            }
+            if(tgIds.length){
+              const r = await fetch("/api/telegram-impressions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({bountyIds:tgIds})});
+              const d = await r.json().catch(()=>({}));
+              if(r.ok) for(const u of (d.updated||[])) if(!u.skipped && u.total!=null) (updates[u.bountyId]=updates[u.bountyId]||{}).telegramImpressions=String(u.total);
+            }
+            const nUpd = Object.keys(updates).length;
+            if(nUpd){
+              setCampaigns(prev=>prev.map(b=>updates[b.id]?{...b,...updates[b.id]}:b));
+              imprMsg = `, impressions for ${nUpd}`;
+            }
+          } catch(e){ imprMsg = `, impressions fetch failed`; }
+          setPhase("");
+        }
+      }
+      setResult(`✓ ${added} added, ${skipped} skipped`+(badRows?`, ${badRows} bad row${badRows>1?"s":""} skipped`:"")+imprMsg);
     } catch(err){ setResult(`Error: ${err.message}`); }
     setSyncing(false);
+    setPhase("");
     isSyncing.current = false;
   };
   return (
@@ -4836,7 +4868,7 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
           ? {display:"flex",alignItems:"center",justifyContent:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 14px",borderRadius:8,border:"1px solid rgba(255,255,255,0.15)",background:"rgba(255,255,255,0.08)",color:"#ffffff",cursor:"pointer",transition:"all .15s",width:"100%",letterSpacing:"0.04em"}
           : {display:"flex",alignItems:"center",gap:5,height:28,boxSizing:"border-box",fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"0 12px",borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 7%,transparent)",color:"var(--accent)",cursor:"pointer",transition:"all .15s"}
         }>
-        {syncing?<><Icons.Spin/>Syncing…</>:"⟳ Sync Sheet"}
+        {syncing?<><Icons.Spin/>{phase||"Syncing…"}</>:"⟳ Sync Sheet"}
       </button>
       {result&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:darkMode?10:9,color:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.9)":"rgba(252,165,165,0.9)"):(result.startsWith("✓")?"#166534":"var(--red)"),textAlign:darkMode?"center":"left",padding:darkMode?"4px 8px":"0",background:darkMode?(result.startsWith("✓")?"rgba(134,239,172,0.08)":"rgba(252,165,165,0.08)"):"transparent",borderRadius:darkMode?6:0,border:darkMode?`1px solid ${result.startsWith("✓")?"rgba(134,239,172,0.2)":"rgba(252,165,165,0.2)"}`:"none"}}>{result}</span>}
     </div>
