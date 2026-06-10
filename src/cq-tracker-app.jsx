@@ -165,6 +165,7 @@ const css = `
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes shimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid var(--accent-glow); outline-offset:1px; border-radius:var(--r-md); }
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
   --bg:#f4f6fc;
@@ -206,45 +207,45 @@ const css = `
   /* Modal size tokens */
   --modal-sm:380px; --modal-md:480px; --modal-lg:680px;
   /* Radius scale */
-  --r-sm:4px; --r-md:6px; --r-lg:8px; --r-xl:10px;
+  --r-sm:4px; --r-md:8px; --r-lg:10px; --r-xl:12px;
 }
 [data-theme="dark"] {
-  --bg:#0a0f1e;
-  --surface:#111733;
-  --surface2:#182142;
-  --surface3:#1f2a52;
-  --border:#243056;
-  --border2:#344a7a;
-  --text:#d6dcec;
-  --muted:#97a3c4;
-  --dim:#5f6c91;
-  --accent:#6088b5;
+  --bg:#0B1120;
+  --surface:#121A2E;
+  --surface2:#1A2440;
+  --surface3:#223054;
+  --border:#27334F;
+  --border2:#3A4A70;
+  --text:#E6EBF5;
+  --muted:#A8B3CE;
+  --dim:#7E8AAA;
+  --accent:#7CA7E0;
   --accent-light:#162133;
-  --positive:#4ade80;
+  --positive:#52D78C;
   --negative:#f87171;
   --green:#4ade80;
   --red:#f87171;
   --yellow:#fbbf24;
   --orange:#fb923c;
   --purple:#a78bfa;
-  --tag:#6088b5;
-  --row-tint:rgba(96,136,181,0.05);
-  --row-tint-strong:rgba(96,136,181,0.09);
-  --row-tint-weak:rgba(96,136,181,0.03);
-  --accent-glow:rgba(96,136,181,0.20);
+  --tag:#7CA7E0;
+  --row-tint:rgba(124,167,224,0.05);
+  --row-tint-strong:rgba(124,167,224,0.09);
+  --row-tint-weak:rgba(124,167,224,0.03);
+  --accent-glow:rgba(124,167,224,0.22);
   --grid:rgba(255,255,255,0.06);
   --shadow-sm:0 1px 3px rgba(0,0,0,0.4);
   --shadow-md:0 4px 14px rgba(0,0,0,0.45);
   --shadow-lg:0 12px 32px rgba(0,0,0,0.55);
   --input-shadow:inset 0 1px 3px rgba(0,0,0,0.3);
   /* Tier colors — single-hue ramp (dark) */
-  --tier-1:#6088b5; --tier-1-bg:rgba(96,136,181,0.12);  --tier-1-border:rgba(96,136,181,0.30);
+  --tier-1:#7CA7E0; --tier-1-bg:rgba(124,167,224,0.12);  --tier-1-border:rgba(124,167,224,0.30);
   --tier-2:#7488ad; --tier-2-bg:rgba(116,136,173,0.11); --tier-2-border:rgba(116,136,173,0.26);
   --tier-3:#8a99ab; --tier-3-bg:rgba(138,153,171,0.08); --tier-3-border:rgba(138,153,171,0.22);
   --tier-4:#5e6b7a; --tier-4-bg:rgba(94,107,122,0.10);  --tier-4-border:rgba(94,107,122,0.24);
   --tier-default:#5e6b7a; --tier-default-bg:rgba(94,107,122,0.08); --tier-default-border:rgba(94,107,122,0.20);
   /* Categorical chart colors (dark) */
-  --chart-1:#6088b5; --chart-2:#7aa6ee; --chart-3:#4f9b94; --chart-4:#8a99ab; --chart-5:#5e6b7a; --chart-6:#d2a05a;
+  --chart-1:#7CA7E0; --chart-2:#7aa6ee; --chart-3:#4f9b94; --chart-4:#8a99ab; --chart-5:#5e6b7a; --chart-6:#d2a05a;
   color-scheme:dark;
 }
 body { background:var(--bg); color:var(--text); font-family:'Hanken Grotesk',system-ui,sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
@@ -259,8 +260,6 @@ button { font-family:'Hanken Grotesk',system-ui,sans-serif; letter-spacing:-0.01
 input:focus,textarea:focus,select:focus { border-color:var(--accent) !important; outline:3px solid var(--accent-glow) !important; outline-offset:0 !important; }
 tr:hover td { background:var(--row-tint-strong) !important; transition:background .12s; }
 .row-hover:hover { background:var(--row-tint-strong) !important; }
-tbody tr:nth-child(even) td { background:var(--row-tint-weak); }
-tbody tr:nth-child(even):hover td { background:var(--row-tint-strong) !important; }
 .cq-empty-dash { color:var(--dim); opacity:0.45; }
 h1,h2,h3,h4 { letter-spacing:-0.02em; }
 /* Dark mode: soften inline light-grays so cards don't wash out */
@@ -415,13 +414,21 @@ const AdminMenu = ({items=[]}) => {
   );
 };
 
-const StatCard = ({label,value,sub,c}) => (
+const StatCard = ({label,value,sub,c,delta}) => {
+  // delta: a number (percent change vs prior window) → green/red chip beside the value. null/undefined = hidden.
+  const hasDelta = delta!=null && isFinite(delta);
+  const up = hasDelta && delta>=0;
+  return (
   <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"16px 20px",position:"relative",boxShadow:"var(--shadow-sm)"}}>
-    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
-    <div className="tabular" style={{fontSize:28,fontWeight:700,letterSpacing:"-0.03em",color:"var(--text)",lineHeight:1}}>{value}</div>
+    <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10.5,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
+    <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+      <div className="tabular" style={{fontSize:28,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{value}</div>
+      {hasDelta && <span className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,fontWeight:600,padding:"2px 7px",borderRadius:99,whiteSpace:"nowrap",background:up?"color-mix(in srgb,var(--positive) 12%,transparent)":"color-mix(in srgb,var(--negative) 12%,transparent)",color:up?"var(--positive)":"var(--negative)"}}>{up?"▲":"▼"} {Math.abs(delta)}%</span>}
+    </div>
     <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:6,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{sub}</div>
   </div>
-);
+  );
+};
 
 // ─────────────────────────────────────────────────────────
 //  LOGIN SCREEN
