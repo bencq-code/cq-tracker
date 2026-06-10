@@ -1312,7 +1312,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       {/* Stat cards */}
       {contentMode!=="all" && (
         <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
-          <StatCard label="Bounties" value={activeCampaigns.length} sub="Posts published" c="var(--accent)"/>
+          <StatCard label="Bounties" value={activeCampaigns.length} sub="Bounties published" c="var(--accent)"/>
           <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="var(--accent)"/>
           <StatCard label="Media Outlets" value={cqResearchData?.uniqueOutlets.length||0} sub="Unique publications" c="var(--accent)"/>
         </div>
@@ -2619,7 +2619,7 @@ const CQResearchTab = ({campaigns, citations}) => {
       <PageHeader label="// cq research" title="CQ Research"/>
 
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-        <StatCard label="Bounties" value={bounties.length} sub="Posts published" c="var(--accent)"/>
+        <StatCard label="Bounties" value={bounties.length} sub="Bounties published" c="var(--accent)"/>
         <StatCard label="Media Citations" value={cits.length} sub="Total coverage" c="var(--accent)"/>
         <StatCard label="Media Outlets" value={uniqueOutlets.length} sub="Unique publications" c="var(--accent)"/>
       </div>
@@ -3273,7 +3273,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
   const parseNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
 
   const SUMMARY = [
-    {label:"Bounties",          value:totalBounties,           sub:"Posts published",       c:"var(--accent)", drillKey:"bounties"},
+    {label:"Bounties",          value:totalBounties,           sub:"Bounties published",       c:"var(--accent)", drillKey:"bounties"},
     {label:"Media Citations",   value:totalCitations,          sub:"Total coverage",         c:"var(--accent)",      drillKey:"citations"},
     {label:"Authors",           value:uniqueAuthors.length,    sub:"Unique contributors",    c:"var(--accent)"},
     {label:"Media Outlets",     value:uniqueOutlets.length,    sub:"Unique publications",    c:"var(--accent)"},
@@ -3559,15 +3559,19 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
               .filter(c=>c.reach>0)
               .sort((a,b)=>b.reach-a.reach);
             const maxReach=topPosts[0]?.reach||1;
+            // §12 density rule: ≤14 publish buckets → dots on the curve; >14 → baseline "rug" of ticks.
+            const reachPublishCount=chartData.filter(d=>(d.bounties||0)>0).length;
+            const reachDense=reachPublishCount>14;
+            const reachMaxB=Math.max(1,...chartData.map(d=>d.bounties||0));
             return (
               <div style={{marginBottom:28,animation:"fadeUp .5s ease both"}}>
                 <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:12}}>Social</div>
                 <div className="cq-chart-row" style={{display:"flex",gap:14,marginBottom:12,alignItems:"stretch"}}>
                   {/* cumulative reach chart */}
                   <div style={{flex:"1.7 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
-                      <div style={{width:14,height:2,background:"var(--accent)",borderRadius:2}}/>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>Cumulative reach</span>
+                    <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14,flexWrap:"wrap"}}>
+                      <span style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11.5,color:"var(--muted)"}}><span style={{width:14,height:2,background:"var(--accent)",borderRadius:2,display:"inline-block"}}/>Cumulative reach</span>
+                      <span style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11.5,color:"var(--muted)"}}>{reachDense?<span style={{width:2.5,height:12,background:"var(--accent)",borderRadius:1,display:"inline-block"}}/>:<span style={{width:8,height:8,background:"var(--accent)",borderRadius:99,border:"1.5px solid var(--surface)",display:"inline-block"}}/>}Bounty published</span>
                     </div>
                     <ResponsiveContainer width="100%" height={170}>
                       <ComposedChart data={chartData} margin={{top:6,right:8,left:0,bottom:0}}>
@@ -3582,14 +3586,17 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
                         <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={38} tickFormatter={fmtNum}/>
                         <Tooltip content={({active,payload,label})=>{
                           if(!active||!payload?.length) return null;
+                          const bk=payload[0]?.payload?.bounties||0;
                           return (
                             <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"0 4px 16px rgba(0,0,0,0.1)"}}>
                               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:6}}>{label}</div>
                               <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--text)"}}>Reach: {fmtNum(payload[0].value)}</div>
+                              {bk>0&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:"var(--accent)",marginTop:3}}>{bk} bount{bk!==1?"ies":"y"} published</div>}
                             </div>
                           );
                         }}/>
-                        <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" dot={false} activeDot={{r:4}}/>
+                        <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" activeDot={{r:4}} dot={(p)=>{const bk=p.payload?.bounties||0; if(reachDense||bk<=0) return <g key={`rd-${p.index}`}/>; return <circle key={`rd-${p.index}`} cx={p.cx} cy={p.cy} r={bk>1?4.2:3.2} fill="var(--accent)" stroke="var(--surface)" strokeWidth={1.6}/>;}}/>
+                        <Line isAnimationActive={false} dataKey={()=>0} stroke="none" legendType="none" activeDot={false} dot={(p)=>{const bk=p.payload?.bounties||0; if(!reachDense||bk<=0) return <g key={`rg-${p.index}`}/>; const t=bk/reachMaxB; const h=6+t*13; const op=0.45+t*0.5; return <line key={`rg-${p.index}`} x1={p.cx} y1={p.cy} x2={p.cx} y2={p.cy-h} stroke="var(--accent)" strokeOpacity={op} strokeWidth={2} strokeLinecap="round"/>;}}/>
                       </ComposedChart>
                     </ResponsiveContainer>
                   </div>
@@ -4006,7 +4013,7 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
       {/* Stat cards with WoW delta */}
       <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:20}}>
         {[
-          {label:"Bounties",      curr:weekBounties.length,  prev:mode==="weekly"?prevBounties.length:null,  sub:"Posts published",   c:"var(--accent)", key:"bounties"},
+          {label:"Bounties",      curr:weekBounties.length,  prev:mode==="weekly"?prevBounties.length:null,  sub:"Bounties published",   c:"var(--accent)", key:"bounties"},
           {label:"Citations",     curr:weekCitations.length, prev:mode==="weekly"?prevCitations.length:null, sub:"Media mentions",    c:"var(--accent)",       key:"citations"},
           {label:"Active Authors",curr:authorsSet.size,      prev:null,                 sub:"Contributors",      c:"var(--accent)", key:null},
           {label:"Media Outlets", curr:outletsSet.size,      prev:null,                 sub:"Unique publications",c:"var(--accent)",      key:null},
@@ -5021,7 +5028,7 @@ const MyCreationsTab = ({myBounties, myCitations, onSaveCamp, onDeleteCamp, onSa
     <div style={{animation:"fadeUp .4s ease both"}}>
       <div style={{marginBottom:20}}>
         <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>// my contributions</div>
-        <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>My Creations</h2>
+        <h2 style={{fontSize:22,fontWeight:600,letterSpacing:"-0.02em",color:"var(--text)"}}>My Submissions</h2>
       </div>
       <div style={{display:"flex",gap:4,marginBottom:20,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:9,padding:4,width:"fit-content",boxShadow:"inset 0 1px 2px rgba(0,0,0,0.04)"}}>
         {[{id:"bounties",label:"Bounties",count:myBounties.length},{id:"citations",label:"Media Citations",count:myCitations.length}].map(t=>{
@@ -5193,7 +5200,7 @@ const AuthorsTab = ({campaigns, citations}) => {
         <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:18}}>
           {[
             {label:"Contributors",   val:authors.length,            sub:"Active in campaign",  c:"var(--accent)"},
-            {label:"Total Bounties", val:totalBounties,             sub:"Posts published",     c:"var(--accent)"},
+            {label:"Total Bounties", val:totalBounties,             sub:"Bounties published",     c:"var(--accent)"},
             {label:"Citations",      val:totalCitations,            sub:"Media mentions",      c:"var(--accent)"},
             {label:"Avg per Author", val:avgPerAuthor,              sub:`${mostActive?.name||"—"} leads`, c:"var(--accent)"},
           ].map((s,i)=>(
@@ -5838,18 +5845,18 @@ export default function App() {
       const updated={...entry,id:existing.id,createdBy:existing.createdBy};
       await db.upsertBounty(updated);
       setCampaigns(campaigns.map(c=>c.id===existing.id?updated:c));
-      showToast("Entry updated ✓");
+      showToast("Bounty updated ✓");
     } else {
       const newEntry={...entry,id:uid(),createdBy:user?.id,createdAt:Date.now()};
       await db.upsertBounty(newEntry);
       setCampaigns([newEntry,...campaigns]);
-      showToast("Entry added ✓");
+      showToast("Bounty added ✓");
     }
   };
   const handleDeleteCamp=async(id)=>{
     await db.deleteBounty(id);
     setCampaigns(campaigns.filter(c=>c.id!==id));
-    showToast("Entry deleted");
+    showToast("Bounty deleted");
   };
   const handleDeleteAllCamp=async(campaignId)=>{
     await db.deleteAllBounties(campaignId);
@@ -5936,6 +5943,18 @@ export default function App() {
     return activeCid ? citations.filter(c=>c.campaignId===activeCid) : [];
   },[citations,user,activeCid,clientAllowedIds,clientActiveCid]);
 
+  // Footer counts — only the campaigns this account can access (admins see all).
+  const footerStats = useMemo(()=>{
+    if(!user) return {campaigns:0,bounties:0,citations:0};
+    const ids = user.role==="admin" ? programs.map(p=>p.id) : (user.allowedCampaigns||[]).filter(id=>programs.some(p=>p.id===id));
+    const idSet = new Set(ids);
+    return {
+      campaigns: ids.length,
+      bounties: campaigns.filter(c=>idSet.has(c.campaignId)).length,
+      citations: citations.filter(c=>idSet.has(c.campaignId)).length,
+    };
+  },[user,programs,campaigns,citations]);
+
   const handleLogin = (u) => { setUser(u); try{localStorage.setItem("cq_session",u.id);}catch{} };
   const handleLogout = () => { setUser(null); try{localStorage.removeItem("cq_session");}catch{} };
 
@@ -5967,10 +5986,10 @@ export default function App() {
 
   const TABS = [
     {id:"performance", label:"Performance",       icon:<Icons.Analytics/>, accent:"var(--accent)", count:""},
-    {id:"campaign",    label:"Content",           icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
+    {id:"campaign",    label:"Bounties",          icon:<Icons.Chart/>,     accent:"var(--accent)", count:scopedCampaigns.length},
     {id:"media",       label:"Media Citations",  icon:<Icons.News/>,      accent:"var(--accent)", count:scopedCitations.length},
     {id:"authors",     label:"Authors",          icon:<Icons.Users/>,     accent:"var(--accent)", count:scopedAuthorsCount},
-    ...(user.role==="author"?[{id:"mine", label:"My Creations", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
+    ...(user.role==="author"?[{id:"mine", label:"My Submissions", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
     ...(user.role==="admin"?[
       {id:"campaigns_mgmt", label:"Campaigns",     icon:<Icons.Brief/>,     accent:"var(--accent)", count:programs.length},
       {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
@@ -6118,7 +6137,7 @@ export default function App() {
       <footer className="cq-footer" style={{borderTop:"1px solid var(--border)",padding:"14px 36px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>
-          {programs.length} campaign{programs.length!==1?"s":""} · {campaigns.length} entries · {citations.length} citations · <span style={{color:"var(--green)"}}>synced</span>
+          {footerStats.campaigns} campaign{footerStats.campaigns!==1?"s":""} · {footerStats.bounties} bounties · {footerStats.citations} citations · <span style={{color:"var(--green)"}}>synced</span>
         </div>
       </footer>
     </>
