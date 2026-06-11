@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import ReactDOM from "react-dom";
-import { ComposedChart, AreaChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { db, supabase } from "./db.js";
+
+// Recharts is the largest vendor chunk (~110KB gz) — load it lazily so first
+// paint isn't blocked on it. Charts render a shimmer skeleton until it arrives.
+let ComposedChart, AreaChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend;
+let __rcLoaded = false, __rcPromise = null;
+const loadRecharts = () => __rcPromise || (__rcPromise = import("recharts").then(m => {
+  ({ ComposedChart, AreaChart, Area, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } = m);
+  __rcLoaded = true;
+}));
+const useRecharts = () => {
+  const [ready, setReady] = useState(__rcLoaded);
+  useEffect(() => { if (!ready) loadRecharts().then(() => setReady(true)); }, [ready]);
+  return ready;
+};
 
 const Portal = ({children}) => ReactDOM.createPortal(children, document.body);
 
@@ -180,48 +193,7 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--acc
 button:focus-visible, a:focus-visible, [role="button"]:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid var(--accent-glow); outline-offset:1px; border-radius:var(--r-md); }
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
-  --bg:#f4f6fc;
-  --surface:#ffffff;
-  --surface2:#eef1fb;
-  --surface3:#e4e9f7;
-  --border:#dfe4f2;
-  --border2:#c8d2e8;
-  --text:#0c1124;
-  --muted:#444c6a;
-  --dim:#7e87a6;
-  --accent:#42648f;
-  --accent-light:#eef2f9;
-  --purple:#4f46e5;
-  --green:#15803d;
-  --red:#b42318;
-  --yellow:#a16207;
-  --orange:#b45309;
-  --positive:#15803d;
-  --negative:#b42318;
-  --tag:#42648f;
-  --row-tint:rgba(66,100,143,0.03);
-  --row-tint-strong:rgba(66,100,143,0.055);
-  --row-tint-weak:rgba(66,100,143,0.015);
-  --accent-glow:rgba(66,100,143,0.14);
-  --grid:rgba(16,24,40,0.06);
-  --shadow-sm:0 1px 3px rgba(16,24,40,0.05);
-  --shadow-md:0 2px 8px rgba(16,24,40,0.07);
-  --shadow-lg:0 8px 24px rgba(16,24,40,0.10);
-  --input-shadow:inset 0 1px 3px rgba(16,24,40,0.04);
-  /* Tier colors — single-hue ramp off accent (Tier 1 strong → Tier 4 muted) */
-  --tier-1:#42648f; --tier-1-bg:rgba(66,100,143,0.09);   --tier-1-border:rgba(66,100,143,0.28);
-  --tier-2:#577299; --tier-2-bg:rgba(87,114,153,0.09);  --tier-2-border:rgba(87,114,153,0.26);
-  --tier-3:#6b7685; --tier-3-bg:rgba(107,118,133,0.08); --tier-3-border:rgba(107,118,133,0.22);
-  --tier-4:#8b94a1; --tier-4-bg:rgba(139,148,161,0.07); --tier-4-border:rgba(139,148,161,0.20);
-  --tier-default:#8b94a1; --tier-default-bg:rgba(139,148,161,0.06); --tier-default-border:rgba(139,148,161,0.18);
-  /* Categorical chart colors — tints of accent + one warm anchor */
-  --chart-1:#42648f; --chart-2:#5b8bd4; --chart-3:#3f7d78; --chart-4:#6b7685; --chart-5:#8b94a1; --chart-6:#b08440;
-  /* Modal size tokens */
-  --modal-sm:380px; --modal-md:480px; --modal-lg:680px;
-  /* Radius scale */
-  --r-sm:4px; --r-md:8px; --r-lg:10px; --r-xl:12px;
-}
-[data-theme="dark"] {
+  /* Dark theme tokens — the light theme was removed (app is dark-only) */
   --bg:#0B1120;
   --surface:#121A2E;
   --surface2:#1A2440;
@@ -250,15 +222,19 @@ button:focus-visible, a:focus-visible, [role="button"]:focus-visible, input:focu
   --shadow-md:0 4px 14px rgba(0,0,0,0.45);
   --shadow-lg:0 12px 32px rgba(0,0,0,0.55);
   --input-shadow:inset 0 1px 3px rgba(0,0,0,0.3);
-  /* Tier colors — single-hue ramp (dark) */
+  /* Tier colors — single-hue ramp */
   --tier-1:#7CA7E0; --tier-1-bg:rgba(124,167,224,0.12);  --tier-1-border:rgba(124,167,224,0.30);
   --tier-2:#7488ad; --tier-2-bg:rgba(116,136,173,0.11); --tier-2-border:rgba(116,136,173,0.26);
   --tier-3:#8a99ab; --tier-3-bg:rgba(138,153,171,0.08); --tier-3-border:rgba(138,153,171,0.22);
   --tier-4:#5e6b7a; --tier-4-bg:rgba(94,107,122,0.10);  --tier-4-border:rgba(94,107,122,0.24);
   --tier-default:#5e6b7a; --tier-default-bg:rgba(94,107,122,0.08); --tier-default-border:rgba(94,107,122,0.20);
-  /* Categorical chart colors (dark) */
+  /* Categorical chart colors */
   --chart-1:#7CA7E0; --chart-2:#7aa6ee; --chart-3:#4f9b94; --chart-4:#8a99ab; --chart-5:#5e6b7a; --chart-6:#d2a05a;
   color-scheme:dark;
+  /* Modal size tokens */
+  --modal-sm:380px; --modal-md:480px; --modal-lg:680px;
+  /* Radius scale */
+  --r-sm:4px; --r-md:8px; --r-lg:10px; --r-xl:12px;
 }
 body { background:var(--bg); color:var(--text); font-family:'Hanken Grotesk',system-ui,sans-serif; min-height:100vh; font-size:14px; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; letter-spacing:-0.01em; }
 .tabular { font-variant-numeric: tabular-nums; }
@@ -1124,6 +1100,7 @@ const BountyDetailModal = ({entry, onEdit, onDelete, onClose, canEdit:isEditable
 //  CAMPAIGN TABLE
 // ─────────────────────────────────────────────────────────
 const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onBountyImpressionsUpdate, onBountyTgUpdate, onCitedBountyUpdate}) => {
+  const rcReady = useRecharts();
   const bountyById = useMemo(()=>Object.fromEntries((campaigns||[]).map(b=>[b.id,b])),[campaigns]);
   const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
@@ -1262,7 +1239,17 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     return matchQ && matchA && matchFrom && matchTo;
   }),[activeCampaigns,search,filterAuthor,filterDateFrom,filterDateTo]);
 
-  const sortedFiltered = useMemo(()=>[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[filtered]);
+  const [sortKey,setSortKey] = useState("date");
+  const [sortDir,setSortDir] = useState("desc");
+  const toggleSort = (key)=>{ if(sortKey===key){ setSortDir(d=>d==="asc"?"desc":"asc"); } else { setSortKey(key); setSortDir(key==="title"||key==="author"?"asc":"desc"); } setPage(1); };
+  const sortedFiltered = useMemo(()=>{
+    const pn=v=>{if(!v)return 0;const s=String(v).replace(/,/g,"").trim();if(/k$/i.test(s))return Math.round(parseFloat(s)*1000);if(/m$/i.test(s))return Math.round(parseFloat(s)*1e6);return parseInt(s)||0;};
+    const val=c=> sortKey==="impressions" ? pn(c.twitterImpressions)+pn(c.telegramImpressions)
+      : sortKey==="title" ? (c.title||"").toLowerCase()
+      : sortKey==="author" ? (c.author||"").toLowerCase()
+      : (c.date||"");
+    return [...filtered].sort((a,b)=>{const va=val(a),vb=val(b);const cmp=typeof va==="number"?va-vb:String(va).localeCompare(String(vb));return sortDir==="asc"?cmp:-cmp;});
+  },[filtered,sortKey,sortDir]);
   const paged = useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE),[sortedFiltered,page]);
   const authors = useMemo(()=>[...new Set(activeCampaigns.map(c=>c.author).filter(Boolean))],[activeCampaigns]);
   const withTw=activeCampaigns.filter(c=>c.twitterLink).length;
@@ -1499,6 +1486,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                   <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Posting Activity</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
+                {!rcReady?<div className="cq-skel" style={{width:"100%",height:100,borderRadius:8}}/>:
                 <ResponsiveContainer width="100%" height={100}>
                   <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
                     <defs>
@@ -1518,7 +1506,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                     ):null}/>
                     <Area isAnimationActive={false} type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gbChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer>}
               </div>
               <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
                 <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>Top Authors</div>
@@ -1698,7 +1686,14 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
         <div style={{display:"grid",gridTemplateColumns:"84px 1fr 124px 64px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Impressions","Author"].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",textAlign:(h==="Author"||h==="Impressions")?"center":"left"}}>{h}</div>)}
+          {[{l:"Date",k:"date"},{l:"Title & Links",k:"title"},{l:"Impressions",k:"impressions"},{l:"Author",k:"author"}].map((h,hi)=>(
+            <div key={hi} onClick={()=>toggleSort(h.k)} title={`Sort by ${h.l}`}
+              style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:sortKey===h.k?"var(--accent)":"var(--muted)",textTransform:"uppercase",textAlign:(h.l==="Author"||h.l==="Impressions")?"center":"left",cursor:"pointer",userSelect:"none",transition:"color .15s"}}
+              onMouseEnter={e=>{if(sortKey!==h.k)e.currentTarget.style.color="var(--text)"}}
+              onMouseLeave={e=>{if(sortKey!==h.k)e.currentTarget.style.color="var(--muted)"}}>
+              {h.l}{sortKey===h.k&&<span style={{marginLeft:4,fontSize:8}}>{sortDir==="asc"?"▲":"▼"}</span>}
+            </div>
+          ))}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -2146,6 +2141,7 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
 };
 
 const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,bounties,onCitedBountyUpdate}) => {
+  const rcReady = useRecharts();
   const bountyById = useMemo(()=>Object.fromEntries((bounties||[]).map(b=>[b.id,b])),[bounties]);
   const [batch,setBatch] = useState({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:""});
   const [search,setSearch]=useState("");
@@ -2229,7 +2225,17 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
     const matchLink=filterLink==="all"||(filterLink==="linked"?!!c.citedBountyId:!c.citedBountyId);
     return matchQ&&matchA&&matchM&&matchT&&matchFrom&&matchTo&&matchLink;
   }),[citations,search,filterAuthor,filterMedia,filterTier,filterDateFrom,filterDateTo,filterLink]);
-  const sortedFiltered=useMemo(()=>[...filtered].sort((a,b)=>(b.date||"").localeCompare(a.date||"")),[filtered]);
+  const [sortKey,setSortKey]=useState("date");
+  const [sortDir,setSortDir]=useState("desc");
+  const toggleSort=(key)=>{ if(sortKey===key){ setSortDir(d=>d==="asc"?"desc":"asc"); } else { setSortKey(key); setSortDir(key==="date"?"desc":"asc"); } setPage(1); };
+  const sortedFiltered=useMemo(()=>{
+    const val=c=> sortKey==="tier" ? (parseInt((String(c.mediaTier||"").match(/\d/)||[])[0]||"9",10))
+      : sortKey==="headline" ? (c.headline||c.topic||"").toLowerCase()
+      : sortKey==="media" ? (c.media||"").toLowerCase()
+      : sortKey==="author" ? (c.author||"").toLowerCase()
+      : (c.date||"");
+    return [...filtered].sort((a,b)=>{const va=val(a),vb=val(b);const cmp=typeof va==="number"?va-vb:String(va).localeCompare(String(vb));return sortDir==="asc"?cmp:-cmp;});
+  },[filtered,sortKey,sortDir]);
   const paged=useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),[sortedFiltered,page]);
   const medias=useMemo(()=>[...new Set(citations.map(c=>c.media).filter(Boolean))],[citations]);
   const authors=useMemo(()=>[...new Set(citations.map(c=>c.author).filter(Boolean))],[citations]);
@@ -2295,6 +2301,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                   <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{gran==="daily"?"Daily":"Weekly"} Coverage</div>
                   <GranularityToggle value={gran} onChange={setGran}/>
                 </div>
+                {!rcReady?<div className="cq-skel" style={{width:"100%",height:100,borderRadius:8}}/>:
                 <ResponsiveContainer width="100%" height={100}>
                   <AreaChart data={chartData} margin={{top:2,right:4,left:-28,bottom:0}}>
                     <defs>
@@ -2314,7 +2321,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     ):null}/>
                     <Area isAnimationActive={false} type="monotone" dataKey="count" stroke="var(--accent)" strokeWidth={2} fill="url(#gcChart)" dot={false} activeDot={{r:3,fill:"var(--accent)"}}/>
                   </AreaChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer>}
               </div>
               {tierEntries.length > 0 && (
                 <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"16px 20px",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.04)"}}>
@@ -2503,7 +2510,14 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Headline","Media","Tier","Author"].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap",textAlign:h==="Author"?"center":"left"}}>{h}</div>)}
+              {[{l:"Date",k:"date"},{l:"Headline",k:"headline"},{l:"Media",k:"media"},{l:"Tier",k:"tier"},{l:"Author",k:"author"}].map((h,hi)=>(
+                <div key={hi} onClick={()=>toggleSort(h.k)} title={`Sort by ${h.l}`}
+                  style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:sortKey===h.k?"var(--accent)":"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap",textAlign:h.l==="Author"?"center":"left",cursor:"pointer",userSelect:"none",transition:"color .15s"}}
+                  onMouseEnter={e=>{if(sortKey!==h.k)e.currentTarget.style.color="var(--text)"}}
+                  onMouseLeave={e=>{if(sortKey!==h.k)e.currentTarget.style.color="var(--muted)"}}>
+                  {h.l}{sortKey===h.k&&<span style={{marginLeft:4,fontSize:8}}>{sortDir==="asc"?"▲":"▼"}</span>}
+                </div>
+              ))}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -3145,7 +3159,8 @@ const LeaderboardsSection = ({leaderData, citations, campaigns, fmtNum, parseNum
 
 };
 
-const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport}) => {
+const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport, onShare}) => {
+  const rcReady = useRecharts();
   // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
   const [mode, setMode] = useState("all");
   const [granularity, setGranularity] = useState("daily");
@@ -3463,6 +3478,14 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
             ))}
           </div>
           {/* Export (PDF report) */}
+          {onShare && (
+            <button onClick={onShare} title="Copy a live read-only report link for this campaign"
+              style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
+              <span style={{fontSize:11}}>⤴</span> Share
+            </button>
+          )}
           {onExport && (
             <button onClick={()=>onExport(effectiveFrom, effectiveTo)} title="Export PDF report"
               style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
@@ -3535,6 +3558,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
                 </div>
               </div>
             </div>
+            {!rcReady?<div className="cq-skel" style={{width:"100%",height:260,borderRadius:10}}/>:
             <ResponsiveContainer width="100%" height={260}>
               <ComposedChart data={chartData} margin={{top:8,right:12,left:0,bottom:0}}>
                 <defs>
@@ -3576,7 +3600,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
                   <Line key="cb" isAnimationActive={false} yAxisId="cum" type="monotone" dataKey="cumBounties" stroke="var(--accent)" strokeWidth={2.4} dot={false} activeDot={{r:4}}/>,
                 ]}
               </ComposedChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer>}
           </div>
 
           {/* Stat strip — summary readout under the chart */}
@@ -3622,6 +3646,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
                       <span style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11.5,color:"var(--muted)"}}><span style={{width:14,height:2,background:"var(--accent)",borderRadius:2,display:"inline-block"}}/>Cumulative reach</span>
                       <span style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11.5,color:"var(--muted)"}}>{reachDense?<span style={{width:2.5,height:12,background:"var(--accent)",borderRadius:1,display:"inline-block"}}/>:<span style={{width:8,height:8,background:"var(--accent)",borderRadius:99,border:"1.5px solid var(--surface)",display:"inline-block"}}/>}Bounty published</span>
                     </div>
+                    {!rcReady?<div className="cq-skel" style={{width:"100%",height:170,borderRadius:10}}/>:
                     <ResponsiveContainer width="100%" height={170}>
                       <ComposedChart data={chartData} margin={{top:6,right:8,left:0,bottom:0}}>
                         <defs>
@@ -3647,7 +3672,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
                         <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gReach)" activeDot={{r:4}} dot={(p)=>{const bk=p.payload?.bounties||0; if(reachDense||bk<=0) return <g key={`rd-${p.index}`}/>; return <circle key={`rd-${p.index}`} cx={p.cx} cy={p.cy} r={bk>1?4.2:3.2} fill="var(--accent)" stroke="var(--surface)" strokeWidth={1.6}/>;}}/>
                         <Line isAnimationActive={false} dataKey={()=>0} stroke="none" legendType="none" activeDot={false} dot={(p)=>{const bk=p.payload?.bounties||0; if(!reachDense||bk<=0) return <g key={`rg-${p.index}`}/>; const t=bk/reachMaxB; const h=6+t*13; const op=0.45+t*0.5; return <line key={`rg-${p.index}`} x1={p.cx} y1={p.cy} x2={p.cx} y2={p.cy-h} stroke="var(--accent)" strokeOpacity={op} strokeWidth={2} strokeLinecap="round"/>;}}/>
                       </ComposedChart>
-                    </ResponsiveContainer>
+                    </ResponsiveContainer>}
                   </div>
                   {/* combined total impressions */}
                   <div style={{flex:"1 1 0",minWidth:0,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",boxShadow:"var(--shadow-sm)",display:"flex",flexDirection:"column"}}>
@@ -5631,6 +5656,219 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
 };
 
 // ─────────────────────────────────────────────────────────
+//  SHARE REPORT — public read-only live report at #/r/<token>
+//  Token → campaignId mapping lives in the `flags` table (key "share_<token>").
+// ─────────────────────────────────────────────────────────
+const ShareReportPage = ({token}) => {
+  const rcReady = useRecharts();
+  const [status,setStatus] = useState("loading"); // loading | notfound | ready
+  const [program,setProgram] = useState(null);
+  const [bounties,setBounties] = useState([]);
+  const [citations,setCitations] = useState([]);
+  useEffect(()=>{ document.documentElement.dataset.theme = "dark"; },[]);
+  useEffect(()=>{(async()=>{
+    try{
+      const {data:flag} = await supabase.from("flags").select("value").eq("key",`share_${token}`).maybeSingle();
+      const cid = flag?.value;
+      if(!cid || cid==="1"){ setStatus("notfound"); return; }
+      const {data:prog} = await supabase.from("campaigns").select("id,name,color").eq("id",cid).maybeSingle();
+      if(!prog){ setStatus("notfound"); return; }
+      const fetchAllRows = async(table,cols)=>{ const out=[],size=1000; for(let from=0;;from+=size){ const {data,error}=await supabase.from(table).select(cols).eq("campaign_id",cid).range(from,from+size-1); if(error)throw error; out.push(...(data||[])); if(!data||data.length<size)break; } return out; };
+      const [bs,cs] = await Promise.all([
+        fetchAllRows("bounties","date,title,author,twitter_impressions,telegram_impressions,cq_link"),
+        fetchAllRows("citations","date,media,headline,topic,article_link,media_tier"),
+      ]);
+      setProgram(prog); setBounties(bs); setCitations(cs); setStatus("ready");
+    }catch{ setStatus("notfound"); }
+  })();},[token]);
+
+  const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1e6); return parseInt(s)||0; };
+  const fNum = n => n>=1e6?`${(n/1e6).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
+  const fmtD = iso => { if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
+
+  const R = useMemo(()=>{
+    if(status!=="ready") return null;
+    const totalImpr = bounties.reduce((s,b)=>s+pNum(b.twitter_impressions)+pNum(b.telegram_impressions),0);
+    const outlets = new Set(citations.map(c=>(c.media||"").trim().toLowerCase()).filter(Boolean)).size;
+    const tmap = {};
+    citations.forEach(c=>{ const t=(String(c.media_tier||"").match(/\d/)||[])[0]; if(t) tmap[t]=(tmap[t]||0)+1; });
+    const tierEntries = Object.entries(tmap).sort((a,b)=>a[0].localeCompare(b[0]));
+    const totalTier = tierEntries.reduce((s,[,n])=>s+n,0)||1;
+    const t12 = Math.round(((tmap["1"]||0)+(tmap["2"]||0))/totalTier*100);
+    const allDates = [...bounties.map(b=>b.date),...citations.map(c=>c.date)].filter(Boolean).sort();
+    const period = allDates.length ? `${fmtD(allDates[0])} — ${fmtD(allDates[allDates.length-1])}` : "—";
+    // weekly cumulative reach series
+    const wk = iso => { try{ const d=new Date(iso+"T00:00:00"); if(isNaN(d.getTime()))return null; const mo=new Date(d); mo.setDate(d.getDate()-((d.getDay()+6)%7)); return mo.toISOString().slice(0,10); }catch{ return null; } };
+    const wmap = {};
+    bounties.forEach(b=>{ const k=wk(b.date); if(!k) return; wmap[k]=(wmap[k]||0)+pNum(b.twitter_impressions)+pNum(b.telegram_impressions); });
+    let cum=0;
+    const reachData = Object.keys(wmap).sort().map(k=>{ cum+=wmap[k]; const d=new Date(k+"T00:00:00"); return {label:isNaN(d.getTime())?k:d.toLocaleDateString("en-US",{month:"short",day:"numeric"}), cumReach:cum}; });
+    const topCoverage = citations.filter(c=>c.headline||c.topic)
+      .sort((a,b)=>{ const ta=(String(a.media_tier||"").match(/\d/)||["9"])[0], tb=(String(b.media_tier||"").match(/\d/)||["9"])[0]; return ta!==tb ? ta.localeCompare(tb) : (b.date||"").localeCompare(a.date||""); })
+      .slice(0,6);
+    const topPosts = bounties.map(b=>({...b, reach:pNum(b.twitter_impressions)+pNum(b.telegram_impressions)})).filter(b=>b.reach>0).sort((a,b)=>b.reach-a.reach).slice(0,5);
+    const maxPost = topPosts[0]?.reach||1;
+    return {totalImpr, outlets, tierEntries, totalTier, t12, period, reachData, topCoverage, topPosts, maxPost};
+  },[status,bounties,citations]);
+
+  const lbl = {fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600};
+  const card = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",boxShadow:"var(--shadow-sm)"};
+
+  if(status==="notfound") return (
+    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
+      <div style={{...card,padding:"40px 48px",textAlign:"center",maxWidth:420}}>
+        <div style={{fontSize:30,opacity:.25,marginBottom:14}}>⬡</div>
+        <div style={{fontSize:16,fontWeight:650,color:"var(--text)",marginBottom:8}}>Report not found</div>
+        <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.6}}>This share link is invalid or has been revoked. Ask your CryptoQuant contact for a fresh link.</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:"var(--bg)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif"}}>
+      <div style={{maxWidth:980,margin:"0 auto",padding:"0 24px 60px"}}>
+        {/* Top bar */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"22px 0",borderBottom:"1px solid var(--border)",marginBottom:32}}>
+          <div style={{lineHeight:1.15}}>
+            <div style={{fontSize:14,fontWeight:700,color:"var(--text)"}}>CryptoQuant</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",letterSpacing:"0.08em"}}>BOUNTY TRACKER</div>
+          </div>
+          <span style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:99,border:"1px solid color-mix(in srgb,var(--positive) 30%,transparent)",background:"color-mix(in srgb,var(--positive) 9%,transparent)",color:"var(--positive)",letterSpacing:"0.06em"}}>
+            <span style={{width:7,height:7,borderRadius:99,background:"var(--positive)",animation:"pulse 2s ease infinite"}}/>LIVE REPORT
+          </span>
+        </div>
+
+        {status==="loading" ? (
+          <div>
+            <div className="cq-skel" style={{width:280,height:30,marginBottom:10}}/>
+            <div className="cq-skel" style={{width:200,height:12,marginBottom:28}}/>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
+              {[0,1,2,3,4].map(i=><div key={i} style={{...card,padding:"16px 20px",display:"flex",flexDirection:"column",gap:10}}><div className="cq-skel" style={{width:"60%",height:9}}/><div className="cq-skel" style={{width:64,height:26}}/></div>)}
+            </div>
+            <div className="cq-skel" style={{width:"100%",height:260,borderRadius:10}}/>
+          </div>
+        ) : (
+          <>
+            {/* Hero */}
+            <div style={{marginBottom:28}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
+                {program.color&&<span style={{width:10,height:10,borderRadius:99,background:program.color}}/>}
+                <h1 style={{fontSize:27,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)"}}>{program.name}</h1>
+              </div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,color:"var(--dim)"}}>Campaign performance · {R.period}</div>
+            </div>
+            {/* Hero numbers */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
+              {[
+                {l:"Bounties",v:bounties.length.toLocaleString(),s:"Research published"},
+                {l:"Citations",v:citations.length.toLocaleString(),s:"Earned media pickups"},
+                {l:"Impressions",v:fNum(R.totalImpr),s:"Combined social reach"},
+                {l:"Outlets",v:R.outlets,s:"Unique publications"},
+                {l:"Tier 1–2",v:`${R.t12}%`,s:"Of tiered coverage"},
+              ].map((s,i)=>(
+                <div key={i} style={{...card,padding:"16px 20px"}}>
+                  <div style={{...lbl,marginBottom:8}}>{s.l}</div>
+                  <div className="tabular" style={{fontSize:27,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{s.v}</div>
+                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:6}}>{s.s}</div>
+                </div>
+              ))}
+            </div>
+            {/* Reach curve */}
+            <div style={{...card,padding:"18px 22px",marginBottom:24}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+                <span style={lbl}>Cumulative reach</span>
+                <span style={{display:"flex",alignItems:"center",gap:6,fontSize:11.5,color:"var(--muted)"}}><span style={{width:14,height:2,background:"var(--accent)",borderRadius:2,display:"inline-block"}}/>Impressions · running total</span>
+              </div>
+              {(!rcReady||!R.reachData.length)
+                ? <div className="cq-skel" style={{width:"100%",height:240,borderRadius:10}}/>
+                : <ResponsiveContainer width="100%" height={240}>
+                    <AreaChart data={R.reachData} margin={{top:6,right:8,left:0,bottom:0}}>
+                      <defs><linearGradient id="gShare" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.22}/><stop offset="100%" stopColor="var(--accent)" stopOpacity={0.01}/></linearGradient></defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.85} vertical={false}/>
+                      <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(R.reachData.length/8)-1)}/>
+                      <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={42} tickFormatter={fNum}/>
+                      <Tooltip content={({active,payload,label})=>active&&payload?.length?(
+                        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"var(--shadow-md)"}}>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:5}}>{label}</div>
+                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--text)"}}>Reach: {fNum(payload[0].value)}</div>
+                        </div>):null}/>
+                      <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gShare)" dot={false} activeDot={{r:4}}/>
+                    </AreaChart>
+                  </ResponsiveContainer>}
+            </div>
+            {/* Coverage + tiers */}
+            <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1.6fr 1fr",gap:14,marginBottom:24}}>
+              <div style={{...card,overflow:"hidden"}}>
+                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Top coverage</div>
+                {R.topCoverage.length===0 && <div style={{padding:18,fontSize:12,color:"var(--dim)"}}>No citations yet</div>}
+                {R.topCoverage.map((c,i)=>{
+                  const tn=(String(c.media_tier||"").match(/\d/)||[])[0];
+                  const tc=tn?getTierColor(tn):null;
+                  const headline=c.headline||c.topic;
+                  return (
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
+                      <div style={{minWidth:0,flex:1}}>
+                        {c.article_link
+                          ? <a href={c.article_link} target="_blank" rel="noreferrer" style={{display:"block",fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";}} onMouseLeave={e=>{e.currentTarget.style.color="color-mix(in srgb,var(--text) 72%,var(--muted))";}}>{headline} <span style={{fontSize:10,color:"var(--accent)"}}>↗</span></a>
+                          : <div style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{headline}</div>}
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:3}}>{c.media}{c.date?` · ${fmtD(c.date)}`:""}</div>
+                      </div>
+                      {tc&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 7px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap",flexShrink:0}}>Tier {tn}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{...card,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Coverage by tier</div>
+                <div style={{padding:"16px 18px",display:"flex",flexDirection:"column",gap:14,flex:1,justifyContent:"space-around"}}>
+                  {R.tierEntries.length===0 && <div style={{fontSize:12,color:"var(--dim)"}}>No tier data</div>}
+                  {R.tierEntries.map(([t,n])=>{
+                    const tc=getTierColor(t); const pct=Math.round(n/R.totalTier*100);
+                    return (
+                      <div key={t}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>TIER {t}</span>
+                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{n} · {pct}%</span>
+                        </div>
+                        <div style={{height:7,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99}}/></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            {/* Top social posts */}
+            {R.topPosts.length>0&&(
+              <div style={{...card,overflow:"hidden",marginBottom:24}}>
+                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Top social posts · by reach</div>
+                {R.topPosts.map((p,i)=>(
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"22px minmax(0,1fr) 130px",gap:14,alignItems:"center",padding:"11px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
+                    <div style={{minWidth:0}}>
+                      <div style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title||"—"}</div>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:3}}>{p.author}{p.date?` · ${fmtD(p.date)}`:""}</div>
+                    </div>
+                    <div>
+                      <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12.5,fontWeight:700,color:"var(--text)",textAlign:"right",marginBottom:4}}>{fNum(p.reach)}</div>
+                      <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}><div style={{width:`${(p.reach/R.maxPost)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:.85}}/></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* Footer */}
+            <div style={{display:"flex",justifyContent:"space-between",paddingTop:18,borderTop:"1px solid var(--border)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>
+              <span>CryptoQuant Bounty Program · {program.name}</span>
+              <span>Live data · updates automatically</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────
 //  ROOT APP
 // ─────────────────────────────────────────────────────────
 export default function App() {
@@ -6044,6 +6282,10 @@ export default function App() {
   };
   const handleLogout = () => { setUser(null); try{localStorage.removeItem("cq_session");}catch{} };
 
+  // Public share route — renders the live read-only report, no login required.
+  const shareToken = (window.location.hash.match(/^#\/r\/([A-Za-z0-9]{10,})/)||[])[1]||null;
+  if(shareToken) return (<><style>{css}</style><ShareReportPage token={shareToken}/></>);
+
   if(!user && !loading) return (<><style>{css}</style><LoginScreen onLogin={handleLogin}/></>);
 
   if(loading) return (
@@ -6064,6 +6306,24 @@ export default function App() {
     ? (clientActiveCid && (user.allowedCampaigns||[]).includes(clientActiveCid) ? clientActiveCid : allowedClientCampaigns[0]?.id || null)
     : activeCid;
   const effectiveClient = programs.find(c=>c.id===effectiveCid)||null;
+
+  // Mint (or reuse) a share token for the active campaign and copy the live-report link.
+  const handleShare = async () => {
+    if(!effectiveClient) return;
+    try{
+      const {data:existing} = await supabase.from("flags").select("key").like("key","share_%").eq("value",effectiveClient.id).limit(1);
+      let token = existing?.[0]?.key?.replace(/^share_/,"") || null;
+      if(!token){
+        const bytes = new Uint8Array(12); crypto.getRandomValues(bytes);
+        token = Array.from(bytes, b=>b.toString(16).padStart(2,"0")).join("");
+        const {error} = await supabase.from("flags").upsert({key:`share_${token}`, value:effectiveClient.id},{onConflict:"key"});
+        if(error) throw error;
+      }
+      const url = `${window.location.origin}${window.location.pathname}#/r/${token}`;
+      await navigator.clipboard.writeText(url);
+      showToast("Share link copied ✓");
+    }catch(e){ showToast("Could not create share link","error"); }
+  };
 
   const myAuthorName = (user.displayName||user.username).toLowerCase();
   const myBounties   = scopedCampaigns.filter(c=>(c.author||"").toLowerCase()===myAuthorName);
@@ -6226,7 +6486,7 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} dataLoading={dataLoading} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null}/>}
+        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} dataLoading={dataLoading} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null} onShare={user.role==="admin"&&effectiveClient?handleShare:null}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onBountyTgUpdate={handleBountyTgUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
