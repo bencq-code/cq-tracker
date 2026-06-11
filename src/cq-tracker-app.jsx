@@ -150,7 +150,7 @@ const getTierColor = t => {
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
 const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
-const APP_VERSION = "V3";
+const APP_VERSION = "V3.1";
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const normKey   = s => (s||"").trim().toLowerCase();
 
