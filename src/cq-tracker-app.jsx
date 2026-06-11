@@ -5663,6 +5663,7 @@ export default function App() {
   const [showPdfModal,setShowPdfModal] = useState(false);
   const [exportRange,setExportRange] = useState(null);
   const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
+  const [campFilter,setCampFilter] = useState("");
   const [sidebarOpen,setSidebarOpen] = useState(false);
   const [authorView,setAuthorView] = useState(null); // active author detail name
   const sidebarCampaignRef = useRef(null);
@@ -5715,12 +5716,15 @@ export default function App() {
     return ()=>window.removeEventListener("cq-nav-tab", h);
   },[]);
 
-  // Close sidebar campaign dropdown on click outside
+  // Close sidebar campaign popover on click outside / Escape; clear its filter on close
   useEffect(()=>{
     const h = e => { if(sidebarCampaignRef.current&&!sidebarCampaignRef.current.contains(e.target)) setSidebarCampaignOpen(false); };
+    const k = e => { if(e.key==="Escape") setSidebarCampaignOpen(false); };
     document.addEventListener("mousedown",h);
-    return ()=>document.removeEventListener("mousedown",h);
+    window.addEventListener("keydown",k);
+    return ()=>{ document.removeEventListener("mousedown",h); window.removeEventListener("keydown",k); };
   },[]);
+  useEffect(()=>{ if(!sidebarCampaignOpen) setCampFilter(""); },[sidebarCampaignOpen]);
 
   // Listen for browser back/forward
   useEffect(()=>{
@@ -5739,7 +5743,16 @@ export default function App() {
   // so it works regardless of which loads first
   useEffect(()=>{
     if(!user||!programs.length) return;
-    const {cid:hashCid, tab:hashTab, author:hashAuthor} = parseHash();
+    const {cid:hashCid, tab:rawHashTab, author:hashAuthor} = parseHash();
+    // Only honor hash tabs that are valid for this role — a stale/foreign hash
+    // (e.g. "#/c/x/users" for an author, or "#/author" with no name) otherwise
+    // restores a tab that renders nothing → blank screen. Invalid → default to performance.
+    const roleTabs = user.role==="admin"
+      ? ["performance","weekly","analytics","campaign","media","authors","author","campaigns_mgmt","users"]
+      : user.role==="author"
+        ? ["performance","weekly","analytics","campaign","media","authors","author","mine"]
+        : ["performance","weekly","analytics","campaign","media","authors","author"];
+    const hashTab = (rawHashTab && roleTabs.includes(rawHashTab) && !(rawHashTab==="author"&&!hashAuthor)) ? rawHashTab : null;
     if(hashTab==="author" && hashAuthor) setAuthorView(hashAuthor);
     if(user.role==="admin"){
       const mostRecent = [...programs].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0))[0];
@@ -6022,7 +6035,13 @@ export default function App() {
     };
   },[user,programs,campaigns,citations]);
 
-  const handleLogin = (u) => { setUser(u); try{localStorage.setItem("cq_session",u.id);}catch{} };
+  const handleLogin = (u) => {
+    setUser(u);
+    // Fresh login always lands on Performance — clear any stale hash from a prior session.
+    setTab("performance"); setAuthorView(null);
+    try{ window.history.replaceState(null,"","#/performance"); }catch{}
+    try{localStorage.setItem("cq_session",u.id);}catch{}
+  };
   const handleLogout = () => { setUser(null); try{localStorage.removeItem("cq_session");}catch{} };
 
   if(!user && !loading) return (<><style>{css}</style><LoginScreen onLogin={handleLogin}/></>);
@@ -6101,7 +6120,7 @@ export default function App() {
               </div>
             );
             return (
-              <div ref={sidebarCampaignRef} style={{padding:"0 4px",marginBottom:16}}>
+              <div ref={sidebarCampaignRef} style={{padding:"0 4px",marginBottom:16,position:"relative"}}>
                 <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.14em",color:"var(--dim)",textTransform:"uppercase",padding:"0 6px",marginBottom:6}}>Campaign</div>
                 <button onClick={()=>setSidebarCampaignOpen(v=>!v)}
                   style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:sidebarCampaignOpen?"var(--surface3)":"var(--surface2)",border:"1px solid "+(sidebarCampaignOpen?"var(--border)":"var(--border)"),borderRadius:6,cursor:"pointer",transition:"all .15s",textAlign:"left"}}
@@ -6111,25 +6130,43 @@ export default function App() {
                   <span style={{flex:1,fontSize:12,fontWeight:500,color:activeCl?"var(--text)":"var(--dim)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activeCl?.name||"Select…"}</span>
                   <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",transition:"transform .15s",display:"inline-block",transform:sidebarCampaignOpen?"rotate(180deg)":"none"}}>▾</span>
                 </button>
-                {sidebarCampaignOpen&&(
-                  <div style={{marginTop:4,background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",animation:"fadeUp .15s ease",maxHeight:240,overflowY:"auto"}}>
-                    {visibleCampaigns.map((cl,i)=>{
-                      const ia=currentCid===cl.id;
-                      const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
-                      const cc=citations.filter(c=>c.campaignId===cl.id).length;
-                      return (
-                        <button key={cl.id} onClick={()=>{setCid(cl.id);pushHash(tab,cl.id);setSidebarCampaignOpen(false);}}
-                          style={{display:"flex",alignItems:"center",gap:8,padding:"9px 10px",width:"100%",background:ia?"color-mix(in srgb,var(--accent) 12%,transparent)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<visibleCampaigns.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
-                          onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
-                          onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
-                          <div style={{width:7,height:7,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
-                          <span style={{flex:1,fontSize:12,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc+cc}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                {sidebarCampaignOpen&&(()=>{
+                  const q=campFilter.trim().toLowerCase();
+                  const shown=q?visibleCampaigns.filter(c=>(c.name||"").toLowerCase().includes(q)):visibleCampaigns;
+                  return (
+                  <div style={{position:"absolute",left:4,right:4,top:"100%",marginTop:4,zIndex:700,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,overflow:"hidden",animation:"fadeUp .15s ease",boxShadow:"0 16px 48px rgba(0,0,0,0.55)"}}>
+                    {visibleCampaigns.length>6&&(
+                      <div style={{padding:6,borderBottom:"1px solid var(--border)"}}>
+                        <input autoFocus value={campFilter} onChange={e=>setCampFilter(e.target.value)} placeholder="Filter campaigns…"
+                          style={{width:"100%",boxSizing:"border-box",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:12,padding:"6px 9px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)"}}/>
+                      </div>
+                    )}
+                    <div style={{maxHeight:240,overflowY:"auto"}}>
+                      {shown.length===0&&<div style={{padding:"12px",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:12,color:"var(--dim)",textAlign:"center"}}>No matches</div>}
+                      {shown.map((cl,i)=>{
+                        const ia=currentCid===cl.id;
+                        const bc=campaigns.filter(c=>c.campaignId===cl.id).length;
+                        const cc=citations.filter(c=>c.campaignId===cl.id).length;
+                        return (
+                          <button key={cl.id} onClick={()=>{setCid(cl.id);pushHash(tab,cl.id);setSidebarCampaignOpen(false);}}
+                            style={{display:"flex",alignItems:"center",gap:8,padding:"9px 10px",width:"100%",background:ia?"color-mix(in srgb,var(--accent) 12%,transparent)":"transparent",border:"none",borderLeft:`3px solid ${ia?cl.color:"transparent"}`,borderBottom:i<shown.length-1?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .1s",textAlign:"left"}}
+                            onMouseEnter={e=>{if(!ia)e.currentTarget.style.background="var(--surface2)"}}
+                            onMouseLeave={e=>{if(!ia)e.currentTarget.style.background="transparent"}}>
+                            <div style={{width:7,height:7,borderRadius:"50%",background:cl.color,flexShrink:0,opacity:ia?1:0.5}}/>
+                            <span style={{flex:1,fontSize:12,fontWeight:ia?600:400,color:ia?"var(--text)":"var(--muted)",letterSpacing:"-0.01em",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.name}</span>
+                            <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{bc+cc}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {user.role==="admin"&&(
+                      <button onClick={()=>{navigate("campaigns_mgmt");setSidebarCampaignOpen(false);}}
+                        style={{display:"block",width:"100%",padding:"9px 10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--accent)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11.5,fontWeight:600,cursor:"pointer",textAlign:"left"}}>
+                        + Manage campaigns
+                      </button>
+                    )}
+                  </div>);
+                })()}
               </div>
             );
           })()}
