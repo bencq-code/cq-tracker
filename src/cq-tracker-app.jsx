@@ -5900,6 +5900,7 @@ export default function App() {
   const [clientActiveCid,setClientActiveCid] = useState(null);
   const [showPdfModal,setShowPdfModal] = useState(false);
   const [exportRange,setExportRange] = useState(null);
+  const [shareInfo,setShareInfo] = useState(null); // {token, url, name} → share-link modal
   const [sidebarCampaignOpen,setSidebarCampaignOpen] = useState(false);
   const [campFilter,setCampFilter] = useState("");
   const [sidebarOpen,setSidebarOpen] = useState(false);
@@ -6307,7 +6308,7 @@ export default function App() {
     : activeCid;
   const effectiveClient = programs.find(c=>c.id===effectiveCid)||null;
 
-  // Mint (or reuse) a share token for the active campaign and copy the live-report link.
+  // Mint (or reuse) a share token for the active campaign and open the share modal.
   const handleShare = async () => {
     if(!effectiveClient) return;
     try{
@@ -6319,10 +6320,18 @@ export default function App() {
         const {error} = await supabase.from("flags").upsert({key:`share_${token}`, value:effectiveClient.id},{onConflict:"key"});
         if(error) throw error;
       }
-      const url = `${window.location.origin}${window.location.pathname}#/r/${token}`;
-      await navigator.clipboard.writeText(url);
-      showToast("Share link copied ✓");
+      setShareInfo({token, url:`${window.location.origin}${window.location.pathname}#/r/${token}`, name:effectiveClient.name});
     }catch(e){ showToast("Could not create share link","error"); }
+  };
+  const handleRevokeShare = async () => {
+    if(!shareInfo) return;
+    if(!window.confirm(`Revoke the share link for ${shareInfo.name}? Anyone holding the current link will lose access. You can mint a fresh link afterwards.`)) return;
+    try{
+      const {error} = await supabase.from("flags").delete().eq("key",`share_${shareInfo.token}`);
+      if(error) throw error;
+      setShareInfo(null);
+      showToast("Share link revoked");
+    }catch(e){ showToast("Could not revoke link","error"); }
   };
 
   const myAuthorName = (user.displayName||user.username).toLowerCase();
@@ -6347,6 +6356,37 @@ export default function App() {
       <style>{css}</style>
       {toast&&<Toast msg={toast.msg} type={toast.type}/>}
       {showPdfModal&&effectiveClient&&<PdfReportModal campaigns={scopedCampaigns} citations={scopedCitations} campaignName={effectiveClient.name} initialFrom={exportRange?.from} initialTo={exportRange?.to} onClose={()=>setShowPdfModal(false)}/>}
+      {shareInfo&&(
+        <div onClick={()=>setShareInfo(null)} style={{position:"fixed",inset:0,background:"rgba(15,25,35,0.55)",backdropFilter:"blur(6px)",zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,width:"min(var(--modal-md),100%)",boxShadow:"0 24px 64px rgba(0,0,0,0.18)",animation:"modalIn .2s ease"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 24px",borderBottom:"1px solid var(--border)"}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>Share live report</div>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:2}}>{shareInfo.name} · read-only · always current</div>
+              </div>
+              <button onClick={()=>setShareInfo(null)} style={{width:28,height:28,borderRadius:7,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)"}}><Icons.X/></button>
+            </div>
+            <div style={{padding:"20px 24px"}}>
+              <div style={{display:"flex",gap:8,marginBottom:14}}>
+                <input readOnly value={shareInfo.url} onFocus={e=>e.target.select()}
+                  style={{flex:1,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"10px 12px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)",minWidth:0}}/>
+                <button onClick={async()=>{try{await navigator.clipboard.writeText(shareInfo.url);showToast("Link copied ✓");}catch{showToast("Copy failed","error");}}}
+                  style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"10px 16px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:"pointer",fontWeight:650,whiteSpace:"nowrap"}}>COPY</button>
+              </div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--muted)",lineHeight:1.7,padding:"12px 14px",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8}}>
+                Anyone with this link can view a <b style={{color:"var(--text)"}}>read-only live report</b> for {shareInfo.name} — hero numbers, reach curve, top coverage, and tier summary. No login required. The link stays the same until you revoke it.
+              </div>
+            </div>
+            <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"space-between",gap:10}}>
+              <button onClick={handleRevokeShare} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid rgba(220,38,38,0.28)",background:"rgba(220,38,38,0.07)",color:"var(--red)",cursor:"pointer",fontWeight:500}}>Revoke link</button>
+              <div style={{display:"flex",gap:10}}>
+                <a href={shareInfo.url} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",textDecoration:"none"}}>Preview ↗</a>
+                <button onClick={()=>setShareInfo(null)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer"}}>Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* LAYOUT */}
       <div style={{display:"flex",minHeight:"100vh"}}>
