@@ -5660,10 +5660,10 @@ const AuthorDetailTab = ({authorName, campaigns, citations, program, onBack}) =>
 
 // ─────────────────────────────────────────────────────────
 //  SHARE REPORT — public read-only live report at #/r/<token>
-//  Token → campaignId mapping lives in the `flags` table (key "share_<token>").
+//  Renders the REAL Performance page (AnalyticsTab) for one campaign,
+//  wrapped in a CQ-branded shell. Token → campaignId lives in `flags`.
 // ─────────────────────────────────────────────────────────
 const ShareReportPage = ({token}) => {
-  const rcReady = useRecharts();
   const [status,setStatus] = useState("loading"); // loading | notfound | ready
   const [program,setProgram] = useState(null);
   const [bounties,setBounties] = useState([]);
@@ -5676,50 +5676,17 @@ const ShareReportPage = ({token}) => {
       if(!cid || cid==="1"){ setStatus("notfound"); return; }
       const {data:prog} = await supabase.from("campaigns").select("id,name,color").eq("id",cid).maybeSingle();
       if(!prog){ setStatus("notfound"); return; }
-      const fetchAllRows = async(table,cols)=>{ const out=[],size=1000; for(let from=0;;from+=size){ const {data,error}=await supabase.from(table).select(cols).eq("campaign_id",cid).range(from,from+size-1); if(error)throw error; out.push(...(data||[])); if(!data||data.length<size)break; } return out; };
-      const [bs,cs] = await Promise.all([
-        fetchAllRows("bounties","date,title,author,twitter_impressions,telegram_impressions,cq_link"),
-        fetchAllRows("citations","date,media,headline,topic,article_link,media_tier"),
-      ]);
-      setProgram(prog); setBounties(bs); setCitations(cs); setStatus("ready");
+      const [allB,allC] = await Promise.all([db.getCampaigns(), db.getCitations()]);
+      setProgram(prog);
+      setBounties(allB.filter(b=>b.campaignId===cid));
+      setCitations(allC.filter(c=>c.campaignId===cid));
+      setStatus("ready");
     }catch{ setStatus("notfound"); }
   })();},[token]);
 
-  const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1e6); return parseInt(s)||0; };
-  const fNum = n => n>=1e6?`${(n/1e6).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(0)}k`:String(n);
-  const fmtD = iso => { if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
-
-  const R = useMemo(()=>{
-    if(status!=="ready") return null;
-    const totalImpr = bounties.reduce((s,b)=>s+pNum(b.twitter_impressions)+pNum(b.telegram_impressions),0);
-    const outlets = new Set(citations.map(c=>(c.media||"").trim().toLowerCase()).filter(Boolean)).size;
-    const tmap = {};
-    citations.forEach(c=>{ const t=(String(c.media_tier||"").match(/\d/)||[])[0]; if(t) tmap[t]=(tmap[t]||0)+1; });
-    const tierEntries = Object.entries(tmap).sort((a,b)=>a[0].localeCompare(b[0]));
-    const totalTier = tierEntries.reduce((s,[,n])=>s+n,0)||1;
-    const t12 = Math.round(((tmap["1"]||0)+(tmap["2"]||0))/totalTier*100);
-    const allDates = [...bounties.map(b=>b.date),...citations.map(c=>c.date)].filter(Boolean).sort();
-    const period = allDates.length ? `${fmtD(allDates[0])} — ${fmtD(allDates[allDates.length-1])}` : "—";
-    // weekly cumulative reach series
-    const wk = iso => { try{ const d=new Date(iso+"T00:00:00"); if(isNaN(d.getTime()))return null; const mo=new Date(d); mo.setDate(d.getDate()-((d.getDay()+6)%7)); return mo.toISOString().slice(0,10); }catch{ return null; } };
-    const wmap = {};
-    bounties.forEach(b=>{ const k=wk(b.date); if(!k) return; wmap[k]=(wmap[k]||0)+pNum(b.twitter_impressions)+pNum(b.telegram_impressions); });
-    let cum=0;
-    const reachData = Object.keys(wmap).sort().map(k=>{ cum+=wmap[k]; const d=new Date(k+"T00:00:00"); return {label:isNaN(d.getTime())?k:d.toLocaleDateString("en-US",{month:"short",day:"numeric"}), cumReach:cum}; });
-    const topCoverage = citations.filter(c=>c.headline||c.topic)
-      .sort((a,b)=>{ const ta=(String(a.media_tier||"").match(/\d/)||["9"])[0], tb=(String(b.media_tier||"").match(/\d/)||["9"])[0]; return ta!==tb ? ta.localeCompare(tb) : (b.date||"").localeCompare(a.date||""); })
-      .slice(0,6);
-    const topPosts = bounties.map(b=>({...b, reach:pNum(b.twitter_impressions)+pNum(b.telegram_impressions)})).filter(b=>b.reach>0).sort((a,b)=>b.reach-a.reach).slice(0,5);
-    const maxPost = topPosts[0]?.reach||1;
-    return {totalImpr, outlets, tierEntries, totalTier, t12, period, reachData, topCoverage, topPosts, maxPost};
-  },[status,bounties,citations]);
-
-  const lbl = {fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600};
-  const card = {background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",boxShadow:"var(--shadow-sm)"};
-
   if(status==="notfound") return (
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}>
-      <div style={{...card,padding:"40px 48px",textAlign:"center",maxWidth:420}}>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",boxShadow:"var(--shadow-sm)",padding:"40px 48px",textAlign:"center",maxWidth:420}}>
         <div style={{fontSize:30,opacity:.25,marginBottom:14}}>⬡</div>
         <div style={{fontSize:16,fontWeight:650,color:"var(--text)",marginBottom:8}}>Report not found</div>
         <div style={{fontSize:13,color:"var(--muted)",lineHeight:1.6}}>This share link is invalid or has been revoked. Ask your CryptoQuant contact for a fresh link.</div>
@@ -5729,12 +5696,20 @@ const ShareReportPage = ({token}) => {
 
   return (
     <div style={{minHeight:"100vh",background:"var(--bg)",fontFamily:"'Hanken Grotesk',system-ui,sans-serif"}}>
-      <div style={{maxWidth:980,margin:"0 auto",padding:"0 24px 60px"}}>
+      <div style={{maxWidth:1180,margin:"0 auto",padding:"0 28px 60px"}}>
         {/* Top bar */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"22px 0",borderBottom:"1px solid var(--border)",marginBottom:32}}>
-          <div style={{lineHeight:1.15}}>
-            <div style={{fontSize:14,fontWeight:700,color:"var(--text)"}}>CryptoQuant</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",letterSpacing:"0.08em"}}>BOUNTY TRACKER</div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"20px 0",borderBottom:"1px solid var(--border)",marginBottom:26}}>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div style={{lineHeight:1.15}}>
+              <div style={{fontSize:14,fontWeight:700,color:"var(--text)"}}>CryptoQuant</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",letterSpacing:"0.08em"}}>BOUNTY TRACKER</div>
+            </div>
+            {program&&(
+              <div style={{display:"flex",alignItems:"center",gap:8,paddingLeft:14,borderLeft:"1px solid var(--border)"}}>
+                {program.color&&<span style={{width:9,height:9,borderRadius:99,background:program.color}}/>}
+                <span style={{fontSize:14,fontWeight:650,color:"var(--text)",letterSpacing:"-0.01em"}}>{program.name}</span>
+              </div>
+            )}
           </div>
           <span style={{display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 12px",borderRadius:99,border:"1px solid color-mix(in srgb,var(--positive) 30%,transparent)",background:"color-mix(in srgb,var(--positive) 9%,transparent)",color:"var(--positive)",letterSpacing:"0.06em"}}>
             <span style={{width:7,height:7,borderRadius:99,background:"var(--positive)",animation:"pulse 2s ease infinite"}}/>LIVE REPORT
@@ -5743,123 +5718,15 @@ const ShareReportPage = ({token}) => {
 
         {status==="loading" ? (
           <div>
-            <div className="cq-skel" style={{width:280,height:30,marginBottom:10}}/>
-            <div className="cq-skel" style={{width:200,height:12,marginBottom:28}}/>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
-              {[0,1,2,3,4].map(i=><div key={i} style={{...card,padding:"16px 20px",display:"flex",flexDirection:"column",gap:10}}><div className="cq-skel" style={{width:"60%",height:9}}/><div className="cq-skel" style={{width:64,height:26}}/></div>)}
+              {[0,1,2,3,4].map(i=><div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"16px 20px",display:"flex",flexDirection:"column",gap:10}}><div className="cq-skel" style={{width:"60%",height:9}}/><div className="cq-skel" style={{width:64,height:26}}/></div>)}
             </div>
-            <div className="cq-skel" style={{width:"100%",height:260,borderRadius:10}}/>
+            <div className="cq-skel" style={{width:"100%",height:280,borderRadius:10}}/>
           </div>
         ) : (
           <>
-            {/* Hero */}
-            <div style={{marginBottom:28}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:6}}>
-                {program.color&&<span style={{width:10,height:10,borderRadius:99,background:program.color}}/>}
-                <h1 style={{fontSize:27,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)"}}>{program.name}</h1>
-              </div>
-              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,color:"var(--dim)"}}>Campaign performance · {R.period}</div>
-            </div>
-            {/* Hero numbers */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
-              {[
-                {l:"Bounties",v:bounties.length.toLocaleString(),s:"Research published"},
-                {l:"Citations",v:citations.length.toLocaleString(),s:"Earned media pickups"},
-                {l:"Impressions",v:fNum(R.totalImpr),s:"Combined social reach"},
-                {l:"Outlets",v:R.outlets,s:"Unique publications"},
-                {l:"Tier 1–2",v:`${R.t12}%`,s:"Of tiered coverage"},
-              ].map((s,i)=>(
-                <div key={i} style={{...card,padding:"16px 20px"}}>
-                  <div style={{...lbl,marginBottom:8}}>{s.l}</div>
-                  <div className="tabular" style={{fontSize:27,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)",lineHeight:1,fontVariantNumeric:"tabular-nums"}}>{s.v}</div>
-                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:6}}>{s.s}</div>
-                </div>
-              ))}
-            </div>
-            {/* Reach curve */}
-            <div style={{...card,padding:"18px 22px",marginBottom:24}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <span style={lbl}>Cumulative reach</span>
-                <span style={{display:"flex",alignItems:"center",gap:6,fontSize:11.5,color:"var(--muted)"}}><span style={{width:14,height:2,background:"var(--accent)",borderRadius:2,display:"inline-block"}}/>Impressions · running total</span>
-              </div>
-              {(!rcReady||!R.reachData.length)
-                ? <div className="cq-skel" style={{width:"100%",height:240,borderRadius:10}}/>
-                : <ResponsiveContainer width="100%" height={240}>
-                    <AreaChart data={R.reachData} margin={{top:6,right:8,left:0,bottom:0}}>
-                      <defs><linearGradient id="gShare" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity={0.22}/><stop offset="100%" stopColor="var(--accent)" stopOpacity={0.01}/></linearGradient></defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.85} vertical={false}/>
-                      <XAxis dataKey="label" tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} interval={Math.max(0,Math.ceil(R.reachData.length/8)-1)}/>
-                      <YAxis tick={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fill:"var(--dim)"}} axisLine={false} tickLine={false} width={42} tickFormatter={fNum}/>
-                      <Tooltip content={({active,payload,label})=>active&&payload?.length?(
-                        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",boxShadow:"var(--shadow-md)"}}>
-                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:5}}>{label}</div>
-                          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--text)"}}>Reach: {fNum(payload[0].value)}</div>
-                        </div>):null}/>
-                      <Area isAnimationActive={false} type="monotone" dataKey="cumReach" stroke="var(--accent)" strokeWidth={2.2} fill="url(#gShare)" dot={false} activeDot={{r:4}}/>
-                    </AreaChart>
-                  </ResponsiveContainer>}
-            </div>
-            {/* Coverage + tiers */}
-            <div className="cq-2col" style={{display:"grid",gridTemplateColumns:"1.6fr 1fr",gap:14,marginBottom:24}}>
-              <div style={{...card,overflow:"hidden"}}>
-                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Top coverage</div>
-                {R.topCoverage.length===0 && <div style={{padding:18,fontSize:12,color:"var(--dim)"}}>No citations yet</div>}
-                {R.topCoverage.map((c,i)=>{
-                  const tn=(String(c.media_tier||"").match(/\d/)||[])[0];
-                  const tc=tn?getTierColor(tn):null;
-                  const headline=c.headline||c.topic;
-                  return (
-                    <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
-                      <div style={{minWidth:0,flex:1}}>
-                        {c.article_link
-                          ? <a href={c.article_link} target="_blank" rel="noreferrer" style={{display:"block",fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";}} onMouseLeave={e=>{e.currentTarget.style.color="color-mix(in srgb,var(--text) 72%,var(--muted))";}}>{headline} <span style={{fontSize:10,color:"var(--accent)"}}>↗</span></a>
-                          : <div style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{headline}</div>}
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginTop:3}}>{c.media}{c.date?` · ${fmtD(c.date)}`:""}</div>
-                      </div>
-                      {tc&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 7px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap",flexShrink:0}}>Tier {tn}</span>}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{...card,overflow:"hidden",display:"flex",flexDirection:"column"}}>
-                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Coverage by tier</div>
-                <div style={{padding:"16px 18px",display:"flex",flexDirection:"column",gap:14,flex:1,justifyContent:"space-around"}}>
-                  {R.tierEntries.length===0 && <div style={{fontSize:12,color:"var(--dim)"}}>No tier data</div>}
-                  {R.tierEntries.map(([t,n])=>{
-                    const tc=getTierColor(t); const pct=Math.round(n/R.totalTier*100);
-                    return (
-                      <div key={t}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:5,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>TIER {t}</span>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{n} · {pct}%</span>
-                        </div>
-                        <div style={{height:7,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}><div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99}}/></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-            {/* Top social posts */}
-            {R.topPosts.length>0&&(
-              <div style={{...card,overflow:"hidden",marginBottom:24}}>
-                <div style={{...lbl,padding:"13px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>Top social posts · by reach</div>
-                {R.topPosts.map((p,i)=>(
-                  <div key={i} style={{display:"grid",gridTemplateColumns:"22px minmax(0,1fr) 130px",gap:14,alignItems:"center",padding:"11px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:700,color:i===0?"var(--accent)":"var(--dim)",textAlign:"center"}}>{i+1}</div>
-                    <div style={{minWidth:0}}>
-                      <div style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.title||"—"}</div>
-                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:3}}>{p.author}{p.date?` · ${fmtD(p.date)}`:""}</div>
-                    </div>
-                    <div>
-                      <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12.5,fontWeight:700,color:"var(--text)",textAlign:"right",marginBottom:4}}>{fNum(p.reach)}</div>
-                      <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}><div style={{width:`${(p.reach/R.maxPost)*100}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:.85}}/></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* Footer */}
+            {/* The actual Performance page, read-only (no export/share controls) */}
+            <AnalyticsTab campaigns={bounties} citations={citations} dataLoading={false} clientName={program.name} color={program.color||"var(--accent)"} onExport={null} onShare={null}/>
             <div style={{display:"flex",justifyContent:"space-between",paddingTop:18,borderTop:"1px solid var(--border)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>
               <span>CryptoQuant Bounty Program · {program.name}</span>
               <span>Live data · updates automatically</span>
