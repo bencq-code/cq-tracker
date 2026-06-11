@@ -2218,7 +2218,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const medias=useMemo(()=>[...new Set(citations.map(c=>c.media).filter(Boolean))],[citations]);
   const authors=useMemo(()=>[...new Set(citations.map(c=>c.author).filter(Boolean))],[citations]);
   const tiers=useMemo(()=>[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort(),[citations]);
-  const COLS="108px 15% 11% 11% 1fr 72px 54px";
+  const COLS=readOnly?"108px 1fr 15% 12%":"108px 1fr 15% 12% 54px";
   return (
     <>
       {/* Media activity charts */}
@@ -2487,7 +2487,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Media","Reporter","Author","Topic","Link",""].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+              {["Date","Headline","Media","Author",...(readOnly?[]:[""])].map((h,hi)=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -2512,29 +2512,31 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
                           <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
                         </div>
-                        <div style={{display:"flex",alignItems:"center",gap:6,paddingRight:8,minWidth:0}}>
-                          <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:500,flexShrink:0,background:mc.bg,color:mc.color,border:"1px solid var(--border2)"}}>{initials(c.media)}</div>
-                          <span title={c.media||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0}}>{c.media||"—"}</span>
-                        </div>
-                        <div title={c.reporter||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.reporter||"—"}</div>
-                        <div title={c.author||""} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:c.author?"var(--accent)":"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0,cursor:c.author?"pointer":"default",textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author||"—"}</div>
                         <div style={{paddingRight:8,minWidth:0}}>
-                          <div title={c.topic||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{c.topic||"—"}</div>
-                          {c.headline&&<div title={c.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.headline}</div>}
+                          <div style={{marginBottom:2,overflow:"hidden",whiteSpace:"nowrap"}}>
+                            {c.articleLink
+                              ? <a href={c.articleLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title={c.headline||"Open article"} style={{display:"inline-flex",alignItems:"baseline",gap:4,maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"var(--text)",textDecoration:"none"}} onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.textDecoration="underline";}} onMouseLeave={e=>{e.currentTarget.style.color="var(--text)";e.currentTarget.style.textDecoration="none";}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.headline||"View article"}</span><span style={{fontSize:10,color:"var(--accent)",flexShrink:0}}>↗</span></a>
+                              : <span title={c.headline||""} style={{display:"inline-block",maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||"—"}</span>}
+                          </div>
                           <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
                             {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
-                            {c.language&&c.language.toLowerCase()!=="english"&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)"}}>{c.language}</span>}
                           </div>
                         </div>
-                        <div style={{display:"flex",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                          {c.articleLink
-                            ? <a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none",whiteSpace:"nowrap"}}>Article↗</a>
-                            : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
+                        <div style={{paddingRight:8,minWidth:0}}>
+                          <span title={c.media||""} style={{display:"block",fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.media||"—"}</span>
                         </div>
-                        <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
+                        <div style={{minWidth:0}} onClick={e=>e.stopPropagation()}>
+                          {c.author
+                            ? <button onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}))} title={c.author}
+                                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2.5px 9px",borderRadius:99,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",transition:"all .15s"}}
+                                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";}}
+                                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>{c.author}</button>
+                            : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",opacity:.45}}>—</span>}
+                        </div>
+                        {!readOnly&&<div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
                           {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>}
                           {editable&&<RowBtn onClick={()=>setConfId(c.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
-                        </div>
+                        </div>}
                       </div>
                     );
                   })
@@ -4757,17 +4759,28 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
     return `${y}-${mo}-${da}`;
   };
   const parseCSV = (text) => {
-    const lines = text.split("\n").map(l=>l.replace(/\r$/,"")).filter(l=>l.trim());
-    const firstCol = l => l.split(",")[0].replace(/^"|"$/g,"").replace(/\*/g,"").trim().toLowerCase();
-    const headerIdx = lines.findIndex(l=>firstCol(l)==="date"||firstCol(l)==="no");
+    // RFC-4180 parse: quoted cells may contain commas, escaped quotes ("") AND
+    // line breaks — splitting on "\n" first truncated such rows (lost columns
+    // after a multi-line headline, e.g. the article link).
+    const records=[]; let row=[], cur="", inQ=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i];
+      if(inQ){
+        if(ch==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else inQ=false; }
+        else cur+=ch;
+      } else if(ch==='"'){ inQ=true; }
+      else if(ch===','){ row.push(cur); cur=""; }
+      else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n')i++; row.push(cur); if(row.some(v=>v.trim())) records.push(row); row=[]; cur=""; }
+      else cur+=ch;
+    }
+    row.push(cur); if(row.some(v=>v.trim())) records.push(row);
+    const clean = v => (v||"").replace(/\*/g,"").trim().toLowerCase();
+    const headerIdx = records.findIndex(r=>clean(r[0])==="date"||clean(r[0])==="no");
     if(headerIdx===-1) return [];
-    const headers = lines[headerIdx].split(",").map(h=>h.replace(/^"|"$/g,"").replace(/\*/g,"").trim().toLowerCase());
-    return lines.slice(headerIdx+1).map(line=>{
-      const vals=[]; let cur="",inQ=false;
-      for(let ch of line){if(ch==='"'){inQ=!inQ;}else if(ch===","&&!inQ){vals.push(cur.trim());cur="";}else{cur+=ch;}}
-      vals.push(cur.trim());
-      return Object.fromEntries(headers.map((h,i)=>[h,vals[i]?.replace(/^"|"$/g,"")||""]));
-    }).filter(r=>{const d=(r["date"]||"").trim();const n=(r["no"]||"").trim();if(n&&isNaN(Number(n)))return false;return d&&!d.toLowerCase().startsWith("yyyy")&&!d.toLowerCase().startsWith("date");});
+    const headers = records[headerIdx].map(clean);
+    return records.slice(headerIdx+1).map(r=>
+      Object.fromEntries(headers.map((h,i)=>[h,(r[i]||"").replace(/\s*\n\s*/g," ").trim()]))
+    ).filter(r=>{const d=(r["date"]||"").trim();const n=(r["no"]||"").trim();if(n&&isNaN(Number(n)))return false;return d&&!d.toLowerCase().startsWith("yyyy")&&!d.toLowerCase().startsWith("date");});
   };
   const doSync = async() => {
     console.log("doSync called, isSyncing:", isSyncing.current, "campaign:", program.name, "id:", program.id, "bounties URL:", program.sheetBounties, "media URL:", program.sheetMedia, "darkMode:", darkMode);
