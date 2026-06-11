@@ -151,6 +151,9 @@ const getTierColor = t => {
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
 const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
 const APP_VERSION = "V3.1";
+// Captured once at page load — a share URL renders the public report for the whole
+// page lifetime, immune to the app's hash-sync rewriting the URL after login restore.
+const SHARE_TOKEN = (typeof window!=="undefined" && (window.location.hash.match(/^#\/r\/([A-Za-z0-9]{10,})/)||[])[1]) || null;
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const normKey   = s => (s||"").trim().toLowerCase();
 
@@ -5938,8 +5941,8 @@ export default function App() {
     pushHash("author", cid||activeCid, name);
   };
 
-  // Sync state → hash whenever tab or activeCid changes
-  useEffect(()=>{ if(user && tab) pushHash(tab, activeCid, authorView); },[tab, activeCid, authorView]);
+  // Sync state → hash whenever tab or activeCid changes (never in share-link mode)
+  useEffect(()=>{ if(!SHARE_TOKEN && user && tab) pushHash(tab, activeCid, authorView); },[tab, activeCid, authorView]);
 
   // Listen for author-navigation events from nested components
   useEffect(()=>{
@@ -6284,8 +6287,7 @@ export default function App() {
   const handleLogout = () => { setUser(null); try{localStorage.removeItem("cq_session");}catch{} };
 
   // Public share route — renders the live read-only report, no login required.
-  const shareToken = (window.location.hash.match(/^#\/r\/([A-Za-z0-9]{10,})/)||[])[1]||null;
-  if(shareToken) return (<><style>{css}</style><ShareReportPage token={shareToken}/></>);
+  if(SHARE_TOKEN) return (<><style>{css}</style><ShareReportPage token={SHARE_TOKEN}/></>);
 
   if(!user && !loading) return (<><style>{css}</style><LoginScreen onLogin={handleLogin}/></>);
 
