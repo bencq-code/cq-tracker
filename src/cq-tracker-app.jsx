@@ -137,6 +137,7 @@ const getTierColor = t => {
 
 const initials = (n="") => { const p=n.trim().split(/\s+/); return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase(); };
 const fmtDate  = iso => { if(!iso)return"—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; };
+const APP_VERSION = "V3";
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2);
 const normKey   = s => (s||"").trim().toLowerCase();
 
@@ -165,6 +166,11 @@ const css = `
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes shimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+/* Input focus ring — §14 */
+input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent) !important; box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent) !important; }
+/* Skeleton shimmer block — §16 */
+.cq-skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.2s linear infinite;border-radius:6px;}
+@media (prefers-reduced-motion: reduce){.cq-skel{animation:none;}}
 /* Themed hover tooltip — set class="cq-tip" + data-tip="text" */
 .cq-tip{position:relative;}
 .cq-tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(3px);background:var(--surface3);color:var(--text);border:1px solid var(--border2);padding:4px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.02em;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:80;box-shadow:var(--shadow-md);}
@@ -506,10 +512,10 @@ const LoginScreen = ({onLogin}) => {
 
       {/* ambient background */}
       <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0)",backgroundSize:"30px 30px"}}/>
-      <div style={{position:"absolute",width:560,height:560,borderRadius:"50%",background:"#2f5fae",top:-160,left:-120,filter:"blur(90px)",opacity:0.7,pointerEvents:"none"}}/>
-      <div style={{position:"absolute",width:620,height:620,borderRadius:"50%",background:"#1c2a52",bottom:-220,right:-140,filter:"blur(90px)",opacity:0.49,pointerEvents:"none"}}/>
+      <div style={{position:"absolute",width:560,height:560,borderRadius:"50%",background:"#2f5fae",top:-160,left:-120,filter:"blur(90px)",opacity:0.45,pointerEvents:"none"}}/>
+      <div style={{position:"absolute",width:620,height:620,borderRadius:"50%",background:"#1c2a52",bottom:-220,right:-140,filter:"blur(90px)",opacity:0.35,pointerEvents:"none"}}/>
       <svg viewBox="0 0 1440 900" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
-        <defs><linearGradient id="ambLogin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity="0.32"/><stop offset="100%" stopColor="var(--accent)" stopOpacity="0"/></linearGradient></defs>
+        <defs><linearGradient id="ambLogin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22"/><stop offset="100%" stopColor="var(--accent)" stopOpacity="0"/></linearGradient></defs>
         <path d="M0 760 L160 738 L320 706 L480 628 L640 560 L800 452 L960 392 L1120 300 L1280 232 L1440 150 L1440 900 L0 900 Z" fill="url(#ambLogin)"/>
         <path d="M0 800 L160 790 L320 776 L480 742 L640 712 L800 666 L960 632 L1120 588 L1280 548 L1440 506" fill="none" stroke="color-mix(in srgb,var(--dim) 60%,transparent)" strokeWidth="2"/>
         <path d="M0 760 L160 738 L320 706 L480 628 L640 560 L800 452 L960 392 L1120 300 L1280 232 L1440 150" fill="none" stroke="color-mix(in srgb,var(--accent) 85%,transparent)" strokeWidth="2.5"/>
@@ -529,9 +535,8 @@ const LoginScreen = ({onLogin}) => {
       {/* centered card */}
       <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",padding:24,zIndex:2}}>
         <div style={{width:"100%",maxWidth:392,background:"color-mix(in srgb,var(--surface) 80%,transparent)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",border:"1px solid var(--border2)",borderRadius:14,padding:34,boxShadow:"0 28px 80px rgba(0,0,0,.6)",animation:"fadeUp .5s ease both",maxHeight:"calc(100vh - 48px)",overflowY:"auto"}}>
-          <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10.5,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--accent)",fontWeight:600,marginBottom:18}}>Campaign Intelligence</div>
-          <h2 style={{fontSize:24,fontWeight:600,color:"#fff",letterSpacing:"-0.03em",marginBottom:7}}>{isRegister?"Create account":"Welcome back"}</h2>
-          <p style={{fontSize:13.5,color:"var(--dim)",marginBottom:24}}>{isRegister?"Set up your campaign dashboard access.":"Sign in to your campaign dashboard."}</p>
+          <h2 style={{fontSize:25,fontWeight:650,color:"#fff",letterSpacing:"-0.03em",marginBottom:7}}>{isRegister?"Request access":"Welcome back"}</h2>
+          <p style={{fontSize:13.5,color:"var(--muted)",marginBottom:24}}>{isRegister?"New accounts start as Author or Client — an admin activates your access.":"Sign in to your campaign dashboard."}</p>
 
           <div style={{display:"flex",flexDirection:"column",gap:15}}>
             <div>
@@ -554,12 +559,12 @@ const LoginScreen = ({onLogin}) => {
               <div>
                 <label style={lStyle2}>Account Type</label>
                 <div style={{display:"flex",gap:6}}>
-                  {[{id:"author",label:"Author",desc:"Submit bounties"},{id:"admin",label:"Admin",desc:"Full access"},{id:"client",label:"Client",desc:"Read-only"}].map(role=>{
+                  {[{id:"author",label:"Author",desc:"Submit bounties"},{id:"client",label:"Client",desc:"Read-only"}].map(role=>{
                     const active=regRole===role.id;
                     return (
                       <button key={role.id} onClick={()=>setRegRole(role.id)} style={{flex:1,padding:"8px 6px",borderRadius:8,border:`1px solid ${active?"color-mix(in srgb,var(--accent) 55%,transparent)":"var(--border)"}`,background:active?"color-mix(in srgb,var(--accent) 10%,transparent)":"transparent",cursor:"pointer",textAlign:"center",transition:"all .15s"}}>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:500,color:active?"var(--accent)":"var(--muted)",marginBottom:2}}>{role.label}</div>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)"}}>{role.desc}</div>
+                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:12.5,fontWeight:600,color:active?"var(--accent)":"var(--muted)",marginBottom:2}}>{role.label}</div>
+                        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11,color:"var(--dim)"}}>{role.desc}</div>
                       </button>
                     );
                   })}
@@ -3353,64 +3358,75 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
     );
   };
 
-  if (drill) {
+  // §15 — slide-over drill panel (overlays the dashboard instead of replacing it)
+  useEffect(()=>{
+    if(!drill) return;
+    const k=e=>{ if(e.key==="Escape") setDrill(null); };
+    window.addEventListener("keydown",k);
+    return ()=>window.removeEventListener("keydown",k);
+  },[drill]);
+  const drillPanel = drill ? (()=>{
     const items = drill.type==="bounties" ? campaigns : citations;
     const kind = drill.type==="bounties" ? "bounty" : "citation";
     const title = drill.type==="bounties" ? "Bounties" : "Media Citations";
     const sorted = [...items].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-    const visible = drillExpanded ? sorted : sorted.slice(0,10);
     return (
-      <div style={{animation:"fadeUp .4s ease both"}}>
-        <button onClick={()=>setDrill(null)} style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"7px 14px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",marginBottom:20}}>
-          ← Back to Performance
-        </button>
-        <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4}}>{dateRangeLabel}</div>
-        <h3 style={{fontSize:18,fontWeight:600,letterSpacing:"-0.01em",marginBottom:20}}>{title} <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:400,color:"var(--dim)",marginLeft:8}}>{items.length}</span></h3>
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
-          {sorted.length===0
-            ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
-            : <>
-                <div style={{maxHeight:"520px",overflowY:"auto"}}>
-                  {visible.map((item,i)=>{
-                    const link = kind==="bounty" ? item.cqLink : item.articleLink;
-                    return (
-                      <div key={item.id} style={{display:"grid",gridTemplateColumns:"90px 1fr auto",alignItems:"center",gap:12,padding:"11px 20px",borderBottom:i<visible.length-1?"1px solid var(--border)":"none",transition:"background .15s"}}
-                        onMouseEnter={e=>e.currentTarget.style.background="rgba(26,58,92,0.04)"}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.date}</div>
-                        <div style={{minWidth:0}}>
-                          {kind==="bounty"
-                            ? <>
-                                <div title={item.title} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title}</div>
-                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.author}</div>
-                              </>
-                            : <>
-                                <div title={item.topic||item.media} style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.topic||item.media}</div>
-                                {item.headline&&<div title={item.headline} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline}</div>}
-                                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>{item.media}{item.reporter&&item.reporter!=="Publisher"?` · ${item.reporter}`:""}</div>
-                              </>
-                          }
-                        </div>
-                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid rgba(26,58,92,0.1)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+      <div onClick={()=>setDrill(null)} style={{position:"fixed",inset:0,zIndex:600,background:"rgba(4,7,15,0.55)",display:"flex",justifyContent:"flex-end",alignItems:"flex-start",padding:20}}>
+        <div onClick={e=>e.stopPropagation()} style={{width:"min(480px,92vw)",maxHeight:"calc(100vh - 40px)",background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:14,boxShadow:"-24px 0 70px rgba(0,0,0,0.5)",display:"flex",flexDirection:"column",overflow:"hidden",animation:"slideIn .22s cubic-bezier(.2,.7,.3,1)"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,padding:"20px 24px",borderBottom:"1px solid var(--border)",flexShrink:0}}>
+            <div>
+              <div style={{fontSize:16,fontWeight:650,letterSpacing:"-0.01em",color:"var(--text)"}}>{title}</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",marginTop:3}}>{sorted.length} in range · {dateRangeLabel}</div>
+            </div>
+            <button onClick={()=>setDrill(null)} style={{width:36,height:36,borderRadius:9,border:"1px solid var(--border)",background:"var(--surface2)",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--muted)",flexShrink:0}}><Icons.X/></button>
+          </div>
+          <div style={{maxHeight:600,overflowY:"auto"}}>
+            {sorted.length===0
+              ? <div style={{padding:"40px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No activity this period</div>
+              : sorted.map((item,i)=>{
+                  const link = kind==="bounty" ? item.cqLink : item.articleLink;
+                  const reach = kind==="bounty" ? parseNum(item.twitterImpressions)+parseNum(item.telegramImpressions) : 0;
+                  return (
+                    <div key={item.id} style={{display:"grid",gridTemplateColumns:"52px minmax(0,1fr) auto",alignItems:"center",gap:12,padding:"12px 24px",borderBottom:"1px solid var(--border)",transition:"background .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 5%,transparent)"}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",whiteSpace:"nowrap"}}>{item.date?item.date.slice(5):"—"}</div>
+                      <div style={{minWidth:0}}>
+                        {kind==="bounty"
+                          ? <>
+                              <div title={item.title} style={{fontSize:12.5,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.title||"—"}</div>
+                              <div style={{fontSize:11,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.author}</div>
+                            </>
+                          : <>
+                              <div title={item.headline||item.topic||item.media} style={{fontSize:12.5,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:2}}>{item.headline||item.topic||item.media}</div>
+                              <div style={{fontSize:11,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{item.media}{item.author?` · ${item.author}`:""}</div>
+                            </>
+                        }
                       </div>
-                    );
-                  })}
-                </div>
-                {sorted.length>10 && (
-                  <button onClick={()=>setDrillExpanded(v=>!v)}
-                    style={{width:"100%",padding:"10px",border:"none",borderTop:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",fontFamily:"'JetBrains Mono',monospace",fontSize:10,cursor:"pointer",letterSpacing:"0.06em"}}>
-                    {drillExpanded?`▲ SHOW LESS`:`▼ SHOW ALL ${sorted.length} ENTRIES`}
-                  </button>
-                )}
-              </>
-          }
+                      <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                        {kind==="bounty"
+                          ? (reach>0&&<span style={{display:"inline-flex",alignItems:"center",gap:4,fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:"var(--muted)"}}><span style={{color:"var(--dim)",display:"inline-flex"}}><Icons.X s={10}/></span>{fmtNum(reach)}</span>)
+                          : (item.mediaTier&&(()=>{const tc=getTierColor(item.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap"}}>{item.mediaTier}</span>})())}
+                        {link && <a href={link} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"3px 8px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 7%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 18%,transparent)",color:"var(--accent)",textDecoration:"none",flexShrink:0}}>↗</a>}
+                      </div>
+                    </div>
+                  );
+                })}
+          </div>
+          <div style={{padding:"14px 24px",borderTop:"1px solid var(--border)",flexShrink:0,marginTop:"auto"}}>
+            <button onClick={()=>{window.dispatchEvent(new CustomEvent("cq-nav-tab",{detail:{tab:drill.type==="bounties"?"campaign":"media"}}));setDrill(null);}}
+              style={{width:"100%",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"11px",borderRadius:"var(--r-md)",border:"none",background:"var(--accent)",color:"#0B1120",cursor:"pointer"}}>
+              Open full table →
+            </button>
+          </div>
         </div>
       </div>
     );
-  }
+  })() : null;
 
   return (
     <div style={{animation:"fadeUp .5s ease both"}}>
+      {drillPanel}
       {/* Header */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div>
@@ -3459,10 +3475,34 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
       </div>
 
       {chartData.length === 0 ? (
+        dataLoading&&campaignsRaw.length===0&&citationsRaw.length===0 ? (
+          /* §16 skeleton first-load — shaped like the real layout */
+          <div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:14,marginBottom:24}}>
+              {[0,1,2,3,4].map(i=>(
+                <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"16px 20px",display:"flex",flexDirection:"column",gap:10,boxShadow:"var(--shadow-sm)"}}>
+                  <div className="cq-skel" style={{width:"60%",height:9}}/>
+                  <div className="cq-skel" style={{width:64,height:26}}/>
+                  <div className="cq-skel" style={{width:"48%",height:9}}/>
+                </div>
+              ))}
+            </div>
+            {[0,1].map(i=>(
+              <div key={i} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",padding:"18px 22px",marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:14}}>
+                  <div className="cq-skel" style={{width:140,height:10}}/>
+                  <div className="cq-skel" style={{width:80,height:10}}/>
+                </div>
+                <div className="cq-skel" style={{width:"100%",height:i===0?220:150,borderRadius:10}}/>
+              </div>
+            ))}
+          </div>
+        ) : (
         <div style={{textAlign:"center",padding:"60px 20px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
           <div style={{fontSize:28,marginBottom:10,opacity:.25}}>⬡</div>
-          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>{dataLoading&&campaignsRaw.length===0&&citationsRaw.length===0?"Loading data…":"No data in selected range"}</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No data in selected range</div>
         </div>
+        )
       ) : (
         <>
           {/* Combined chart */}
@@ -4472,7 +4512,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
 <div class="page">
   <div class="cover">
     <div class="crow">
-      <div class="brand"><div style="line-height:1.1"><div style="font-size:13px;font-weight:700">CryptoQuant</div><div style="font-size:8px;letter-spacing:.16em;color:#9fb3d6">CAMPAIGN INTELLIGENCE</div></div></div>
+      <div class="brand"><div style="line-height:1.1"><div style="font-size:13px;font-weight:700">CryptoQuant</div><div style="font-size:8px;letter-spacing:.16em;color:#9fb3d6">BOUNTY TRACKER</div></div></div>
       <div class="meta"><div>Period&nbsp; <b>${fmtD(dateFrom)} — ${fmtD(dateTo)}</b></div><div>Generated&nbsp; <b>${fmtD(today)}</b></div><div>Prepared for&nbsp; <b>${cn}</b></div></div>
     </div>
     <div class="kick" style="margin-top:24px">Performance Summary</div>
@@ -5668,6 +5708,13 @@ export default function App() {
     return ()=>window.removeEventListener("cq-nav-author", h);
   },[activeCid]);
 
+  // Listen for tab-navigation events (e.g. drill slide-over "Open full table")
+  useEffect(()=>{
+    const h = e => { const t=e.detail?.tab; if(t) setTab(t); };
+    window.addEventListener("cq-nav-tab", h);
+    return ()=>window.removeEventListener("cq-nav-tab", h);
+  },[]);
+
   // Close sidebar campaign dropdown on click outside
   useEffect(()=>{
     const h = e => { if(sidebarCampaignRef.current&&!sidebarCampaignRef.current.contains(e.target)) setSidebarCampaignOpen(false); };
@@ -6034,7 +6081,7 @@ export default function App() {
         <nav className={`cq-sidebar${sidebarOpen?" open":""}`} style={{width:216,flexShrink:0,background:"var(--surface)",borderRight:"1px solid var(--border)",padding:"20px 8px",display:"flex",flexDirection:"column",gap:2,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
           <div style={{padding:"4px 10px",marginBottom:16}}>
             <div style={{fontSize:13,fontWeight:600,letterSpacing:"-0.01em",color:"var(--text)"}}>CryptoQuant</div>
-            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",letterSpacing:"0.06em",marginTop:1}}>CAMPAIGN INTELLIGENCE</div>
+            <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",letterSpacing:"0.08em",marginTop:1}}>BOUNTY TRACKER</div>
           </div>
 
           {/* CAMPAIGN SELECTOR */}
@@ -6155,7 +6202,7 @@ export default function App() {
       </div>
 
       <footer className="cq-footer" style={{borderTop:"1px solid var(--border)",padding:"14px 36px",background:"var(--surface)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Program</span> · Analytics Suite v2</div>
+        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>CryptoQuant <span style={{color:"var(--accent)"}}>Bounty Tracker</span> · {APP_VERSION}</div>
         <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>
           {footerStats.campaigns} campaign{footerStats.campaigns!==1?"s":""} · {footerStats.bounties} bounties · {footerStats.citations} citations · <span style={{color:"var(--green)"}}>synced</span>
         </div>
