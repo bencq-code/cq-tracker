@@ -165,6 +165,12 @@ const css = `
 @keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:0.4} }
 @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
 @keyframes shimmer  { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+/* Themed hover tooltip — set class="cq-tip" + data-tip="text" */
+.cq-tip{position:relative;}
+.cq-tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(3px);background:var(--surface3);color:var(--text);border:1px solid var(--border2);padding:4px 10px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.02em;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s ease,transform .15s ease;z-index:80;box-shadow:var(--shadow-md);}
+.cq-tip::before{content:"";position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%) rotate(45deg);width:8px;height:8px;background:var(--surface3);border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);opacity:0;pointer-events:none;transition:opacity .15s ease;z-index:81;}
+.cq-tip:hover::after,.cq-tip:hover::before{opacity:1;}
+.cq-tip:hover::after{transform:translateX(-50%) translateY(0);}
 button:focus-visible, a:focus-visible, [role="button"]:focus-visible, input:focus-visible, select:focus-visible { outline:3px solid var(--accent-glow); outline-offset:1px; border-radius:var(--r-md); }
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -909,7 +915,7 @@ const Pagination = ({page, total, onChange}) => {
 // ─────────────────────────────────────────────────────────
 //  BOUNTY DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenerateSummary, citations, onCitedBountyUpdate}) => {
+const BountyDetailModal = ({entry, onEdit, onDelete, onClose, canEdit:isEditable, onGenerateSummary, citations, onCitedBountyUpdate}) => {
   const ac = getAuthorColor(entry.author);
   const normalizeArticleUrl = (url) => {
     if (!url) return "";
@@ -1100,6 +1106,7 @@ const BountyDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, onGenera
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
+          {isEditable&&typeof onDelete==="function"&&<button onClick={onDelete} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(220,38,38,0.28)",background:"rgba(220,38,38,0.07)",color:"var(--red)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,marginRight:"auto"}}><Icons.Trash/> Delete</button>}
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
           {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
@@ -1685,8 +1692,8 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
       })()}
       <div className="cq-table-scroll"><div style={{minWidth:600}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.04)",animation:"fadeUp .5s ease .12s both"}}>
-        <div style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-          {["Date","Title & Links","Author",""].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase"}}>{h}</div>)}
+        <div style={{display:"grid",gridTemplateColumns:"84px 1fr 124px 64px",padding:"11px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+          {["Date","Title & Links","Impressions","Author"].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",textAlign:(h==="Author"||h==="Impressions")?"center":"left"}}>{h}</div>)}
         </div>
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -1710,14 +1717,14 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                 const tgTxt=c.telegramImpressions&&!isNaN(tgN)?tgN.toLocaleString():"—";
                 return (
                   <div key={c.id} onClick={()=>setView(c)}
-                    style={{display:"grid",gridTemplateColumns:"108px 1fr 140px 54px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
+                    style={{display:"grid",gridTemplateColumns:"84px 1fr 124px 64px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
                     onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
                     onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                      <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,letterSpacing:"-0.02em",color:"var(--muted)",whiteSpace:"nowrap"}}>
+                      {c.date?`${dp[0]} '${(dp[1]||"").slice(2)}`:"—"}
                     </div>
                     <div style={{paddingRight:14,minWidth:0}}>
-                      <div title={c.title||""} style={{fontSize:12,fontWeight:500,lineHeight:1.4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.title}</div>
+                      <div title={c.title||""} style={{fontSize:12,fontWeight:500,lineHeight:1.4,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{c.title}</div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap"}} onClick={e=>e.stopPropagation()}>
                         {c.cqLink&&<a href={c.cqLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Quicktake↗</a>}
                         {c.analyticsLink&&<a href={c.analyticsLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Analytics↗</a>}
@@ -1725,17 +1732,20 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
                         {c.authorTelegramLink&&<a href={c.authorTelegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>Author TG↗</a>}
                         {c.cqTwitterLink&&<a href={c.cqTwitterLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ X↗</a>}
                         {c.telegramLink&&<a href={c.telegramLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 6px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none"}}>CQ TG↗</a>}
-                        {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{display:"inline-flex",alignItems:"center",gap:3,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}><Icons.X s={9}/>{imprTxt}</span>}
-                        {tgTxt!=="—"&&<span title={`${tgTxt} Telegram views`} style={{display:"inline-flex",alignItems:"center",gap:3,fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",alignSelf:"center",marginLeft:2,letterSpacing:"0.02em"}}><Icons.Telegram s={9}/>{tgTxt}</span>}
                       </div>
                     </div>
-                    <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0,cursor:c.author?"pointer":"default"}} onClick={e=>{if(c.author){e.stopPropagation();window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}));}}}>
-                      <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:500,flexShrink:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)"}}>{initials(c.author)}</div>
-                      <span title={c.author||""} style={{fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",minWidth:0,textDecoration:c.author?"underline":"none",textDecorationColor:"var(--border2)",textUnderlineOffset:2}}>{c.author}</span>
+                    <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,fontFamily:"'JetBrains Mono',monospace"}}>
+                      {imprTxt!=="—"&&<span title={`${imprTxt} X impressions`} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600}}><span style={{color:"var(--dim)",display:"inline-flex"}}><Icons.X s={10}/></span><span style={{color:"color-mix(in srgb,var(--text) 72%,var(--muted))"}}>{imprTxt}</span></span>}
+                      {tgTxt!=="—"&&<span title={`${tgTxt} Telegram views`} style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600}}><span style={{color:"var(--dim)",display:"inline-flex"}}><Icons.Telegram s={10}/></span><span style={{color:"color-mix(in srgb,var(--text) 72%,var(--muted))"}}>{tgTxt}</span></span>}
+                      {imprTxt==="—"&&tgTxt==="—"&&<span style={{color:"var(--dim)",fontSize:11,opacity:.45}}>—</span>}
                     </div>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
-                      {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>}
-                      {editable&&<RowBtn onClick={()=>setConfId(c.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
+                    <div style={{minWidth:0,display:"flex",justifyContent:"center"}} onClick={e=>e.stopPropagation()}>
+                      {c.author
+                        ? <button onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}))} className="cq-tip" data-tip={c.author}
+                            style={{width:26,height:26,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:600,padding:0,background:ac.bg,color:ac.color,border:"1px solid var(--border2)",cursor:"pointer",transition:"all .15s"}}
+                            onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.transform="scale(1.12)";}}
+                            onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.transform="scale(1)";}}>{initials(c.author)}</button>
+                        : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",opacity:.45}}>—</span>}
                     </div>
                   </div>
                 );
@@ -1822,7 +1832,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         </div>
       )}
       {viewCitation&&<CitationDetailModal entry={citations.find(c=>c.id===viewCitation.id)||viewCitation} canEdit={currentUser.role==="admin"} onEdit={()=>{}} onClose={()=>setViewCitation(null)} bounties={campaigns} onCitedBountyUpdate={onCitedBountyUpdate}/>}
-      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations} onCitedBountyUpdate={onCitedBountyUpdate}/>}
+      {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onDelete={()=>{setConfId(view.id);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
@@ -1832,7 +1842,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
 // ─────────────────────────────────────────────────────────
 //  CITATION DETAIL MODAL
 // ─────────────────────────────────────────────────────────
-const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounties, onCitedBountyUpdate}) => {
+const CitationDetailModal = ({entry, onEdit, onDelete, onClose, canEdit:isEditable, bounties, onCitedBountyUpdate}) => {
   const mc = getPaletteColor(AUTHOR_PALETTE,"media",entry.media||"?");
   const [matchState, setMatchState] = useState({loading:false, result:null, error:null});
   const [savingId, setSavingId] = useState(null);
@@ -2074,6 +2084,7 @@ const CitationDetailModal = ({entry, onEdit, onClose, canEdit:isEditable, bounti
         </div>
         {/* Footer */}
         <div style={{padding:"14px 28px",borderTop:"1px solid var(--border)",display:"flex",justifyContent:"flex-end",gap:8,flexShrink:0}}>
+          {isEditable&&typeof onDelete==="function"&&<button onClick={onDelete} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid rgba(220,38,38,0.28)",background:"rgba(220,38,38,0.07)",color:"var(--red)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6,marginRight:"auto"}}><Icons.Trash/> Delete</button>}
           <button onClick={onClose} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 16px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer"}}>Close</button>
           {isEditable&&<button onClick={onEdit} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"8px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"rgba(26,58,92,0.08)",color:"var(--accent)",cursor:"pointer",fontWeight:500,display:"flex",alignItems:"center",gap:6}}><Icons.Edit/> Edit</button>}
         </div>
@@ -2218,7 +2229,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const medias=useMemo(()=>[...new Set(citations.map(c=>c.media).filter(Boolean))],[citations]);
   const authors=useMemo(()=>[...new Set(citations.map(c=>c.author).filter(Boolean))],[citations]);
   const tiers=useMemo(()=>[...new Set(citations.map(c=>(c.mediaTier||"").trim()).filter(Boolean))].sort(),[citations]);
-  const COLS=readOnly?"108px 1fr 15% 12%":"108px 1fr 15% 12% 54px";
+  const COLS="84px 1fr 15% 70px 64px";
   return (
     <>
       {/* Media activity charts */}
@@ -2487,7 +2498,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
       <div className="cq-table-scroll"><div style={{minWidth:700}}>
       <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,boxShadow:"0 1px 2px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .12s both"}}>
             <div style={{display:"grid",gridTemplateColumns:COLS,padding:"10px 20px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
-              {["Date","Headline","Media","Author",...(readOnly?[]:[""])].map((h,hi)=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</div>)}
+              {["Date","Headline","Media","Tier","Author"].map((h,hi)=><div key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap",textAlign:h==="Author"?"center":"left"}}>{h}</div>)}
             </div>
             {!citations.length
               ? <div style={{textAlign:"center",padding:"60px 20px"}}>
@@ -2509,34 +2520,30 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                       <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:"transparent"}}
                         onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>
-                          <span style={{display:"block",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em"}}>{dp[0]}</span>{dp[1]||""}
+                        <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,letterSpacing:"-0.02em",color:"var(--muted)",whiteSpace:"nowrap"}}>
+                          {c.date?`${dp[0]} '${(dp[1]||"").slice(2)}`:"—"}
                         </div>
                         <div style={{paddingRight:8,minWidth:0}}>
                           <div style={{marginBottom:2,overflow:"hidden",whiteSpace:"nowrap"}}>
                             {c.articleLink
-                              ? <a href={c.articleLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title={c.headline||"Open article"} style={{display:"inline-flex",alignItems:"baseline",gap:4,maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"var(--text)",textDecoration:"none"}} onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.textDecoration="underline";}} onMouseLeave={e=>{e.currentTarget.style.color="var(--text)";e.currentTarget.style.textDecoration="none";}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.headline||"View article"}</span><span style={{fontSize:10,color:"var(--accent)",flexShrink:0}}>↗</span></a>
-                              : <span title={c.headline||""} style={{display:"inline-block",maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||"—"}</span>}
-                          </div>
-                          <div style={{display:"flex",gap:4,flexWrap:"wrap",alignItems:"center"}} onClick={e=>e.stopPropagation()}>
-                            {c.mediaTier&&(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 5px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>{c.mediaTier}</span>})()}
+                              ? <a href={c.articleLink} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} title={c.headline||"Open article"} style={{display:"inline-flex",alignItems:"baseline",gap:4,maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",textDecoration:"none"}} onMouseEnter={e=>{e.currentTarget.style.color="var(--accent)";e.currentTarget.style.textDecoration="underline";}} onMouseLeave={e=>{e.currentTarget.style.color="color-mix(in srgb,var(--text) 72%,var(--muted))";e.currentTarget.style.textDecoration="none";}}><span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",minWidth:0}}>{c.headline||"View article"}</span><span style={{fontSize:10,color:"var(--accent)",flexShrink:0}}>↗</span></a>
+                              : <span title={c.headline||""} style={{display:"inline-block",maxWidth:"100%",verticalAlign:"bottom",fontSize:12,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline||"—"}</span>}
                           </div>
                         </div>
                         <div style={{paddingRight:8,minWidth:0}}>
-                          <span title={c.media||""} style={{display:"block",fontSize:11,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.media||"—"}</span>
+                          <span title={c.media||""} style={{display:"block",fontSize:11,fontWeight:500,color:"color-mix(in srgb,var(--text) 72%,var(--muted))",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.media||"—"}</span>
                         </div>
-                        <div style={{minWidth:0}} onClick={e=>e.stopPropagation()}>
+                        <div>
+                          {c.mediaTier?(()=>{const tc=getTierColor(c.mediaTier);return <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"2px 7px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap"}}>{c.mediaTier}</span>})():<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",opacity:.45}}>—</span>}
+                        </div>
+                        <div style={{minWidth:0,display:"flex",justifyContent:"center"}} onClick={e=>e.stopPropagation()}>
                           {c.author
-                            ? <button onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}))} title={c.author}
-                                style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2.5px 9px",borderRadius:99,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--muted)",cursor:"pointer",maxWidth:"100%",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",transition:"all .15s"}}
-                                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";}}
-                                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>{c.author}</button>
+                            ? (()=>{const acm=getAuthorColor(c.author);return <button onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:{name:c.author,cid:c.campaignId}}))} className="cq-tip" data-tip={c.author}
+                                style={{width:26,height:26,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:600,padding:0,background:acm.bg,color:acm.color,border:"1px solid var(--border2)",cursor:"pointer",transition:"all .15s"}}
+                                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.transform="scale(1.12)";}}
+                                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border2)";e.currentTarget.style.transform="scale(1)";}}>{initials(c.author)}</button>;})()
                             : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",opacity:.45}}>—</span>}
                         </div>
-                        {!readOnly&&<div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:4}} onClick={e=>e.stopPropagation()}>
-                          {editable&&<RowBtn onClick={()=>{setEdit(c);setShowForm(true)}} title="Edit" hb="var(--accent)" hc="var(--accent)" hbg="color-mix(in srgb,var(--accent) 7%,transparent)"><Icons.Edit/></RowBtn>}
-                          {editable&&<RowBtn onClick={()=>setConfId(c.id)} title="Delete" hb="var(--red)" hc="var(--red)" hbg="rgba(220,38,38,0.07)"><Icons.Trash/></RowBtn>}
-                        </div>}
                       </div>
                     );
                   })
@@ -2544,7 +2551,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
         <Pagination page={page} total={sortedFiltered.length} onChange={p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'})}}/>
       </div>
       </div></div>
-      {view&&<CitationDetailModal entry={citations.find(c=>c.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onClose={()=>setView(null)} bounties={bounties} onCitedBountyUpdate={onCitedBountyUpdate}/>}
+      {view&&<CitationDetailModal entry={citations.find(c=>c.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onDelete={()=>{setConfId(view.id);setView(null);}} onClose={()=>setView(null)} bounties={bounties} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {showForm&&<MediaForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}}/>}
       {confirmId&&<ConfirmDelete onConfirm={()=>{onDelete(confirmId);setConfId(null)}} onCancel={()=>setConfId(null)}/>}
     </>
