@@ -834,8 +834,9 @@ const CampForm = ({initial,isEdit,onSave,onClose,currentUser}) => {
           <Field label="Quicktake Link" full><input type="url" value={form.cqLink} onChange={e=>set("cqLink",e.target.value)} placeholder="https://cryptoquant.com/quicktake/…" style={iStyle}/></Field>
           <Field label="Analytics Link" full><input type="url" value={form.analyticsLink||""} onChange={e=>set("analyticsLink",e.target.value)} placeholder="https://cryptoquant.com/community/dashboard/…" style={iStyle}/></Field>
           <Field label="Author Twitter Link" full><input type="url" value={form.authorTwitterLink||""} onChange={e=>set("authorTwitterLink",e.target.value)} placeholder="https://x.com/…" style={iStyle}/></Field>
+          <Field label="Author Telegram Link" full><input type="url" value={form.authorTelegramLink||""} onChange={e=>set("authorTelegramLink",e.target.value)} placeholder="https://t.me/…" style={iStyle}/></Field>
           <Field label="CryptoQuant Twitter Link" full><input type="url" value={form.cqTwitterLink||""} onChange={e=>set("cqTwitterLink",e.target.value)} placeholder="https://x.com/CryptoQuant_IO/…" style={iStyle}/></Field>
-          <Field label="Telegram Link" full><input type="url" value={form.telegramLink||""} onChange={e=>set("telegramLink",e.target.value)} placeholder="https://t.me/cryptoquant_official/…" style={iStyle}/></Field>
+          <Field label="CryptoQuant Telegram Link" full><input type="url" value={form.telegramLink||""} onChange={e=>set("telegramLink",e.target.value)} placeholder="https://t.me/cryptoquant_official/…" style={iStyle}/></Field>
           <div style={{paddingTop:12,borderTop:"1px solid var(--border)",marginTop:4}}>
             <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Campaign-Specific Fields</div>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
