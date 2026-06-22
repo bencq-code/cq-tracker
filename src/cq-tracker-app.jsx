@@ -3163,7 +3163,49 @@ const LeaderboardsSection = ({leaderData, citations, campaigns, fmtNum, parseNum
 
 };
 
-const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport, onShare}) => {
+// Combined report-actions dropdown (Open sheet · Share link · Export PDF).
+const ReportMenu = ({items}) => {
+  const [open,setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(()=>{
+    if(!open) return;
+    const h=e=>{ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); };
+    const k=e=>{ if(e.key==="Escape") setOpen(false); };
+    window.addEventListener("mousedown",h); window.addEventListener("keydown",k);
+    return ()=>{ window.removeEventListener("mousedown",h); window.removeEventListener("keydown",k); };
+  },[open]);
+  const live = items.filter(Boolean);
+  if(!live.length) return null;
+  const itemStyle = {display:"flex",alignItems:"center",gap:11,padding:"8px 10px",borderRadius:7,border:"none",background:"transparent",color:"var(--text)",cursor:"pointer",textAlign:"left",width:"100%",textDecoration:"none",fontFamily:"'Hanken Grotesk',system-ui,sans-serif",transition:"background .12s"};
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <button onClick={()=>setOpen(v=>!v)} title="Report actions"
+        style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:`1px solid ${open?"var(--accent)":"var(--border)"}`,background:open?"var(--accent-light)":"transparent",color:open?"var(--accent)":"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
+        onMouseEnter={e=>{if(!open){e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";}}}
+        onMouseLeave={e=>{if(!open){e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}}>
+        <span style={{fontSize:11}}>↗</span> Report <span style={{fontSize:8,display:"inline-block",transition:"transform .15s",transform:open?"rotate(180deg)":"none"}}>▾</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"calc(100% + 6px)",right:0,minWidth:228,zIndex:90,background:"var(--surface)",border:"1px solid var(--border2)",borderRadius:10,boxShadow:"0 16px 44px rgba(0,0,0,0.45)",padding:6,display:"flex",flexDirection:"column",gap:2}}>
+          {live.map((it,i)=>{
+            const inner = <>
+              <span style={{width:26,height:26,borderRadius:7,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--accent)"}}>{it.icon}</span>
+              <span style={{minWidth:0}}>
+                <span style={{display:"block",fontSize:12.5,fontWeight:600,color:"var(--text)"}}>{it.label}</span>
+                {it.sub&&<span style={{display:"block",fontSize:10.5,color:"var(--dim)",marginTop:1}}>{it.sub}</span>}
+              </span>
+            </>;
+            return it.href
+              ? <a key={i} href={it.href} target="_blank" rel="noreferrer" onClick={()=>setOpen(false)} style={itemStyle} onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 8%,transparent)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{inner}</a>
+              : <button key={i} onClick={()=>{setOpen(false);it.onClick();}} style={itemStyle} onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 8%,transparent)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{inner}</button>;
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport, onShare, sheetUrl}) => {
   const rcReady = useRecharts();
   // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
   const [mode, setMode] = useState("all");
@@ -3481,23 +3523,12 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
               </button>
             ))}
           </div>
-          {/* Export (PDF report) */}
-          {onShare && (
-            <button onClick={onShare} title="Copy a live read-only report link for this campaign"
-              style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
-              <span style={{fontSize:11}}>⤴</span> Share
-            </button>
-          )}
-          {onExport && (
-            <button onClick={()=>onExport(effectiveFrom, effectiveTo)} title="Export PDF report"
-              style={{display:"flex",alignItems:"center",gap:6,fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"6px 12px",borderRadius:7,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",transition:"all .15s"}}
-              onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";e.currentTarget.style.background="var(--accent-light)";}}
-              onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";e.currentTarget.style.background="transparent";}}>
-              <span style={{fontSize:11}}>↓</span> Export
-            </button>
-          )}
+          {/* Combined report actions */}
+          <ReportMenu items={[
+            sheetUrl && {label:"Open Google Sheet", sub:"Source spreadsheet", icon:"⊞", href:sheetUrl},
+            onShare && {label:"Share live link", sub:"Read-only client report", icon:"⤴", onClick:onShare},
+            onExport && {label:"Export PDF", sub:"3-page summary", icon:"↓", onClick:()=>onExport(effectiveFrom, effectiveTo)},
+          ]}/>
         </div>
       </div>
 
@@ -6396,7 +6427,7 @@ export default function App() {
         )}
 
         {/* CONTENT */}
-        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} dataLoading={dataLoading} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null} onShare={user.role==="admin"&&effectiveClient?handleShare:null}/>}
+        {(tab==="performance"||tab==="weekly"||tab==="analytics")&&(effectiveCid||user.role==="client")&&<AnalyticsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations} dataLoading={dataLoading} clientName={user.role==="admin"?effectiveClient?.name||"":user.clientName} color={effectiveClient?.color||"var(--accent)"} onExport={effectiveClient?(from,to)=>{setExportRange({from,to});setShowPdfModal(true);}:null} onShare={user.role==="admin"&&effectiveClient?handleShare:null} sheetUrl={(()=>{ if(user.role!=="admin"||!effectiveClient) return null; const u=effectiveClient.sheetBounties||effectiveClient.sheetMedia||""; const m=u.match(/\/spreadsheets\/d\/([A-Za-z0-9_-]+)/); const g=u.match(/gid=(\d+)/); return m?`https://docs.google.com/spreadsheets/d/${m[1]}/edit${g?`#gid=${g[1]}`:""}`:null; })()}/>}
         {(tab==="campaign")&&(effectiveCid||user.role==="client")&&<CampaignTable campaigns={scopedCampaigns} citations={scopedCitations} onSave={handleSaveCamp} onDelete={handleDeleteCamp} onDeleteAll={handleDeleteAllCamp} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} onBountySummaryUpdate={handleBountySummaryUpdate} onBountyImpressionsUpdate={handleBountyImpressionsUpdate} onBountyTgUpdate={handleBountyTgUpdate} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="media")&&(effectiveCid||user.role==="client")&&<MediaTable citations={scopedCitations} onSave={handleSaveMedia} onDelete={handleDeleteMedia} onDeleteAll={handleDeleteAllMedia} currentUser={user} readOnly={readOnly||(user.role==="author"&&!(user.allowedCampaigns||[]).includes(activeCid))} bounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {(tab==="authors")&&(effectiveCid||user.role==="client")&&<AuthorsTab key={effectiveCid} campaigns={scopedCampaigns} citations={scopedCitations}/>}
