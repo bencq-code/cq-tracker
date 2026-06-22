@@ -2198,11 +2198,13 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
           catch { throw new Error(`Match service unavailable (HTTP ${r.status})`); }
           if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
           const top = data.matches?.[0];
-          const autoSave = top && (
+          const autoSave = top && top.bountyId && (
             data.method === "url" ||
             data.method === "title-match" ||
             data.method === "author-singleton" ||
-            (data.method === "llm" && top.confidence === "high")
+            // High confidence always; a single (unambiguous) medium match too —
+            // common for CQ Research pickups where many bounties share an asset/topic.
+            (data.method === "llm" && (top.confidence === "high" || (top.confidence === "medium" && data.matches.length === 1)))
           );
           if (autoSave) {
             await onCitedBountyUpdate(cit.id, top.bountyId, true);
@@ -2451,7 +2453,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                 ):(
                   <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--muted)"}}>
                     {batch.total>0?`Auto-match done · `:""}
-                    <b style={{color:"var(--accent)"}}>{batch.saved} saved</b> · {batch.skipped} skipped · {batch.errors} errors
+                    <b style={{color:"var(--accent)"}}>{batch.saved} saved</b> · {batch.skipped} skipped{batch.skipped>0&&" (no confident match — link manually in the row)"} · {batch.errors} errors
                     {batch.lastMsg && ` · ${batch.lastMsg}`}
                   </span>
                 )}
