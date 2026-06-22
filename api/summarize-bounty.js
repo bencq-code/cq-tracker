@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 
+// Scrape + LLM summarize can exceed the default 10s on slow articles.
+export const config = { maxDuration: 60 };
+
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://tzoysqzcpivdhkspnhdy.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_kjSTm_bgCQR-Y7pvmp_oGg_YQAqsbCv";
 const RSS_BASE     = "https://cryptoquant.com/rss/insights/quicktake";

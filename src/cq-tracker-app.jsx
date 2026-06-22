@@ -2163,6 +2163,11 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
   const [showFilters,setShowFilters]=useState(false);
   const resetFilters=()=>{setSearch("");setFA("all");setFM("all");setFT("all");setDateFrom("");setDateTo("");setFilterLink("all");setPage(1);};
   const runAutoMatch = async (scope) => {
+    const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])/.test(window.location.hostname);
+    if (isLocal) {
+      setBatch({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:"Auto-match runs only on the deployed site — the /api functions aren't served by the local dev server. Try it on the live URL."});
+      return;
+    }
     const unlinked = scope.filter(c => !c.citedBountyId && c.articleLink && c.campaignId);
     if (!unlinked.length) {
       setBatch({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:"No unlinked citations with an article link."});
@@ -2188,7 +2193,9 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
               citationAsset: cit.asset || "",
             }),
           });
-          const data = await r.json();
+          let data;
+          try { data = await r.json(); }
+          catch { throw new Error(`Match service unavailable (HTTP ${r.status})`); }
           if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
           const top = data.matches?.[0];
           const autoSave = top && (
