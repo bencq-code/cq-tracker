@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 
-// Scrape (ScrapingBee, JS-rendered) + LLM match routinely exceeds the default
-// 10s — without this, slow articles 504 and bulk auto-match fails intermittently.
+// Article fetch (Jina Reader) + LLM match routinely exceeds the default 10s —
+// without this, slow articles 504 and bulk auto-match fails intermittently.
 export const config = { maxDuration: 60 };
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://tzoysqzcpivdhkspnhdy.supabase.co";
@@ -176,19 +176,22 @@ export default async function handler(req, res) {
         clearTimeout(timer);
       }
     };
-    const tryScrapingBee = async (renderJs = false) => {
-      const sbKey = process.env.SCRAPINGBEE_API_KEY;
-      if (!sbKey) return { html: "", err: "SCRAPINGBEE_API_KEY not set" };
-      const sbUrl = `https://app.scrapingbee.com/api/v1/?api_key=${encodeURIComponent(sbKey)}&url=${encodeURIComponent(articleLink)}&render_js=${renderJs?"true":"false"}&premium_proxy=true${renderJs?"&wait=2000":""}`;
+    // Free article-extraction fallback via Jina AI Reader (r.jina.ai) — no API key,
+    // handles JS-rendered pages, returns already-cleaned article text. Replaces
+    // ScrapingBee. Rate-limited/slower, so we only call it when direct fetch fails.
+    const tryJina = async () => {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), renderJs ? 40000 : 25000);
+      const timer = setTimeout(() => controller.abort(), 25000);
       try {
-        const r = await fetch(sbUrl, { signal: controller.signal });
-        if (!r.ok) return { html: "", err: `ScrapingBee HTTP ${r.status}` };
+        const r = await fetch(`https://r.jina.ai/${articleLink}`, {
+          headers: { "Accept": "text/plain", "User-Agent": UA, "X-Return-Format": "text" },
+          signal: controller.signal,
+        });
+        if (!r.ok) return { html: "", err: `Jina HTTP ${r.status}` };
         const text = await r.text();
         return { html: text, err: null };
       } catch (e) {
-        return { html: "", err: e.name === "AbortError" ? "ScrapingBee timeout" : e.message };
+        return { html: "", err: e.name === "AbortError" ? "Jina timeout" : e.message };
       } finally {
         clearTimeout(timer);
       }
@@ -199,19 +202,15 @@ export default async function handler(req, res) {
       html = direct.html;
       const probeText = extractArticleText(direct.html);
       if (probeText.length < 800) {
-        const sbJs = await tryScrapingBee(true);
-        if (sbJs.html && extractArticleText(sbJs.html).length > probeText.length * 1.5) {
-          html = sbJs.html; fetchSource = "scrapingbee+js";
-        }
+        const j = await tryJina();
+        if (j.html && j.html.length > probeText.length * 1.5) { html = j.html; fetchSource = "jina"; }
       }
     } else {
-      const sb = await tryScrapingBee(false);
-      if (sb.html && extractArticleText(sb.html).length >= 800) {
-        html = sb.html; fetchSource = "scrapingbee";
+      const j = await tryJina();
+      if (j.html && j.html.length >= 500) {
+        html = j.html; fetchSource = "jina";
       } else {
-        const sbJs = await tryScrapingBee(true);
-        if (sbJs.html) { html = sbJs.html; fetchSource = "scrapingbee+js"; }
-        else fetchError = `direct: ${direct.err||"blocked"} · sb: ${sb.err||"thin"} · sb+js: ${sbJs.err||"failed"}`;
+        fetchError = `direct: ${direct.err||"blocked"} · jina: ${j.err||"thin"}`;
       }
     }
 
