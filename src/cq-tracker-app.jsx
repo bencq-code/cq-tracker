@@ -140,7 +140,6 @@ const getPaletteColor = (palette, ns, key) => {
   return colorMaps[k];
 };
 const getAuthorColor = n => getPaletteColor(AUTHOR_PALETTE,"author",n||"?");
-const getClientColor = n => getPaletteColor(CLIENT_PALETTE,"client",n||"?");
 const getTierColor = t => {
   const fallback = {bg:"var(--tier-default-bg)",border:"var(--tier-default-border)",color:"var(--tier-default)"};
   if(!t) return fallback;
@@ -1106,7 +1105,6 @@ const BountyDetailModal = ({entry, onEdit, onDelete, onClose, canEdit:isEditable
 const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, currentUser, readOnly=false, onBountySummaryUpdate, onBountyImpressionsUpdate, onBountyTgUpdate, onCitedBountyUpdate}) => {
   const rcReady = useRecharts();
   const bountyById = useMemo(()=>Object.fromEntries((campaigns||[]).map(b=>[b.id,b])),[campaigns]);
-  const [contentMode,setContentMode] = useState("all");
   const [search,setSearch]       = useState("");
   const [filterAuthor,setFA]     = useState("all");
   const [filterDateFrom,setDateFrom] = useState("");
@@ -1228,11 +1226,10 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
     return data;
   };
 
-  const activeCampaigns = contentMode==="cq_research" ? campaigns.filter(c=>(c.author||"").toLowerCase()==="cq research") : campaigns;
-  const activeCitations = contentMode==="cq_research" ? citations.filter(c=>(c.author||"").toLowerCase()==="cq research") : [];
+  const activeCampaigns = campaigns;
 
-  const canAdd  = !readOnly && contentMode==="all";
-  const canEdit = entry => !readOnly && contentMode==="all" && (currentUser.role==="admin" || entry.author===currentUser.displayName||entry.author===currentUser.username);
+  const canAdd  = !readOnly;
+  const canEdit = entry => !readOnly && (currentUser.role==="admin" || entry.author===currentUser.displayName||entry.author===currentUser.username);
 
   const filtered = useMemo(()=>activeCampaigns.filter(c=>{
     const q = search.toLowerCase();
@@ -1256,192 +1253,21 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
   },[filtered,sortKey,sortDir]);
   const paged = useMemo(()=>sortedFiltered.slice((page-1)*PAGE_SIZE, page*PAGE_SIZE),[sortedFiltered,page]);
   const authors = useMemo(()=>[...new Set(activeCampaigns.map(c=>c.author).filter(Boolean))],[activeCampaigns]);
-  const withTw=activeCampaigns.filter(c=>c.twitterLink).length;
-  const clientNames=[...new Set(activeCampaigns.map(c=>c.client).filter(Boolean))];
   const dateRange = useMemo(()=>{
     const sortedDates = activeCampaigns.filter(c=>c.date).map(c=>c.date).sort();
     return sortedDates.length?(sortedDates[0]===sortedDates[sortedDates.length-1]?fmtDate(sortedDates[0]):`${fmtDate(sortedDates[0]).split(",")[0]} – ${fmtDate(sortedDates[sortedDates.length-1]).split(",")[0]}`):"—";
   },[activeCampaigns]);
 
   // CQ Research analytics data
-  const cqResearchData = useMemo(()=>{
-    if(contentMode!=="cq_research") return null;
-    const cits = activeCitations;
-    const uniqueOutlets = [...new Set(cits.map(c=>c.media).filter(Boolean))];
-
-    const outletMap={};
-    cits.forEach(c=>{const m=(c.media||"").trim();if(m){const mk=m.toLowerCase();if(!outletMap[mk])outletMap[mk]={label:m,count:0};outletMap[mk].count++;}});
-    const topOutlets=Object.values(outletMap).sort((a,b)=>b.count-a.count).slice(0,6);
-    const maxOutlet=topOutlets[0]?.count||1;
-
-    const headlineMap={};
-    cits.forEach(c=>{const h=((c.headline||c.topic)||"").trim();if(!h)return;const hk=h.toLowerCase();if(!headlineMap[hk])headlineMap[hk]={label:h,count:0};headlineMap[hk].count++;});
-    const topHeadlines=Object.values(headlineMap).sort((a,b)=>b.count-a.count).slice(0,6);
-    const maxHeadline=topHeadlines[0]?.count||1;
-
-    const tierMap={};
-    cits.forEach(c=>{const t=(c.mediaTier||"").trim();if(t)tierMap[t]=(tierMap[t]||0)+1;});
-    const tierEntries=Object.entries(tierMap).sort((a,b)=>a[0].localeCompare(b[0]));
-
-    const bountyCiteCount={};
-    cits.forEach(c=>{const id=c.citedBountyId;if(id)bountyCiteCount[id]=(bountyCiteCount[id]||0)+1;});
-    const topBounties=activeCampaigns
-      .map(b=>({bounty:b,count:bountyCiteCount[b.id]||0}))
-      .filter(x=>x.count>0)
-      .sort((a,b)=>b.count-a.count)
-      .slice(0,8);
-    const maxBountyCount=topBounties[0]?.count||1;
-
-    return {uniqueOutlets,topOutlets,maxOutlet,topHeadlines,maxHeadline,tierEntries,topBounties,maxBountyCount,cits};
-  },[contentMode,activeCampaigns,activeCitations]);
 
   // CQ Research citations pagination + tier filter
-  const [cqCitPage,setCqCitPage] = useState(1);
-  const [cqTierFilter,setCqTierFilter] = useState("all");
-  const [cqOutletFilter,setCqOutletFilter] = useState("all");
   const [viewCitation,setViewCitation] = useState(null);
-  const cqCitRef = useRef(null);
-  const cqCitsFiltered = useMemo(()=>{
-    if (!cqResearchData) return [];
-    return cqResearchData.cits.filter(c =>
-      (cqTierFilter==="all" || (c.mediaTier||"").trim() === cqTierFilter) &&
-      (cqOutletFilter==="all" || (c.media||"").trim() === cqOutletFilter)
-    );
-  },[cqResearchData,cqTierFilter,cqOutletFilter]);
-  const pagedCqCits = cqCitsFiltered.slice((cqCitPage-1)*PAGE_SIZE, cqCitPage*PAGE_SIZE);
 
   return (
     <>
-      {/* Stat cards */}
-      {contentMode!=="all" && (
-        <div className="cq-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28,animation:"fadeUp .5s ease both"}}>
-          <StatCard label="Bounties" value={activeCampaigns.length} sub="Bounties published" c="var(--accent)"/>
-          <StatCard label="Media Citations" value={activeCitations.length} sub="Total coverage" c="var(--accent)"/>
-          <StatCard label="Media Outlets" value={cqResearchData?.uniqueOutlets.length||0} sub="Unique publications" c="var(--accent)"/>
-        </div>
-      )}
-
-      {/* CQ Research analytics */}
-      {contentMode==="cq_research"&&cqResearchData&&(<>
-        {/* Leaderboards */}
-        {cqResearchData.topBounties.length>0&&(
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 22px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",marginBottom:16,animation:"fadeUp .5s ease .06s both"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Performing Bounties</div>
-              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topBounties.length} cited</span>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",gap:10}}>
-              {cqResearchData.topBounties.map((tb,i)=>{
-                const b=tb.bounty;
-                return (
-                  <div key={b.id} onClick={()=>setView(b)}
-                    style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
-                    onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,gap:10}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0,flex:1}}>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
-                        <span title={b.title||""} style={{fontSize:12,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</span>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",flexShrink:0}}>· {fmtDate(b.date)}</span>
-                      </div>
-                      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--accent)",fontWeight:600,flexShrink:0}}>{tb.count} <span style={{color:"var(--dim)",fontWeight:400,fontSize:9}}>cite{tb.count!==1?"s":""}</span></span>
-                    </div>
-                    <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden",marginLeft:22}}>
-                      <div style={{width:`${(tb.count/cqResearchData.maxBountyCount)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        {(cqResearchData.topHeadlines.length>0||cqResearchData.topOutlets.length>0||cqResearchData.tierEntries.length>0)&&(
-          <div className="cq-3col" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:14,marginBottom:16,animation:"fadeUp .5s ease .08s both"}}>
-            {/* Top Headlines */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Headlines</div>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.topHeadlines.length}</span>
-              </div>
-              {cqResearchData.topHeadlines.length===0
-                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
-                :<div style={{display:"flex",flexDirection:"column",gap:9}}>
-                  {cqResearchData.topHeadlines.map((h,i)=>(
-                    <div key={h.label}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-                        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
-                          <span title={h.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{h.label}</span>
-                        </div>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{h.count}</span>
-                      </div>
-                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                        <div style={{width:`${(h.count/cqResearchData.maxHeadline)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              }
-            </div>
-            {/* Top Outlets */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Top Outlets</div>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.uniqueOutlets.length}</span>
-              </div>
-              {cqResearchData.topOutlets.length===0
-                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No data</div>
-                :<div style={{display:"flex",flexDirection:"column",gap:9}}>
-                  {cqResearchData.topOutlets.map((o,i)=>(
-                    <div key={o.label}>
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-                        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:0}}>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",width:14,flexShrink:0,textAlign:"right"}}>{i+1}</span>
-                          <span title={o.label} style={{fontSize:11,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{o.label}</span>
-                        </div>
-                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--accent)",fontWeight:600,flexShrink:0,marginLeft:8}}>{o.count}</span>
-                      </div>
-                      <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                        <div style={{width:`${(o.count/cqResearchData.maxOutlet)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              }
-            </div>
-            {/* Media Tier */}
-            <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:"18px 20px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>Media Tier</div>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{cqResearchData.cits.length} total</span>
-              </div>
-              {cqResearchData.tierEntries.length===0
-                ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No tier data</div>
-                :<div style={{display:"flex",flexDirection:"column",gap:10}}>
-                  {cqResearchData.tierEntries.map(([tier,count])=>{
-                    const tc=getTierColor(tier);
-                    const pct=(count/cqResearchData.cits.length)*100;
-                    return (
-                      <div key={tier}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color}}>Tier {tier}</span>
-                          <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,fontWeight:600,color:tc.color}}>{count} <span style={{color:"var(--dim)",fontWeight:400}}>({Math.round(pct)}%)</span></span>
-                        </div>
-                        <div style={{height:3,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                          <div style={{width:`${pct}%`,height:"100%",background:tc.color,borderRadius:99,transition:"width .4s"}}/>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              }
-            </div>
-          </div>
-        )}
-      </>)}
 
       {/* Bounty activity chart (All mode only) */}
-      {contentMode==="all"&&activeCampaigns.length > 1 && (()=>{
+      {activeCampaigns.length > 1 && (()=>{
         const GranularityToggle = ({value, onChange}) => (
           <div style={{display:"flex",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2,gap:1}}>
             {[["weekly","Wk"],["daily","Day"]].map(([val,lbl])=>(
@@ -1534,7 +1360,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         return <BountyChart/>;
       })()}
       {/* Summary stat strip — readout under the chart (chart-first, like Performance) */}
-      {contentMode==="all" && (()=>{
+      {(()=>{
         const total = activeCampaigns.length;
         const valid = activeCampaigns.map(c=>c.date).filter(Boolean).sort();
         let weeks = 1;
@@ -1577,7 +1403,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
               {hasFilters&&<button onClick={resetFilters} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"8px 12px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>Clear</button>}
               <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginLeft:4}}>{filtered.length} result{filtered.length!==1?"s":""}</span>
               {(()=>{
-                const isAdmin = currentUser.role==="admin"&&contentMode==="all";
+                const isAdmin = currentUser.role==="admin";
                 const unsumCount = filtered.filter(b=>!b.summary && b.cqLink).length;
                 const tweetsIn = (arr)=>arr.reduce((n,b)=>n+(b.authorTwitterLink?1:0)+(b.cqTwitterLink?1:0),0); // count tweets, not rows
                 const newRows  = filtered.filter(b=>(b.authorTwitterLink||b.cqTwitterLink)&&!String(b.twitterImpressions||"").trim());
@@ -1702,7 +1528,7 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         {!activeCampaigns.length
           ? <div style={{textAlign:"center",padding:"60px 20px"}}>
               <div style={{fontSize:32,marginBottom:12,opacity:.3}}>⬡</div>
-              <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>{contentMode==="cq_research"?"No CQ Research entries":"No entries yet"}</div>
+              <div style={{fontSize:14,fontWeight:500,color:"var(--muted)",marginBottom:6}}>No entries yet</div>
               {canAdd&&<button onClick={()=>{setEdit(null);setShowForm(true)}} style={{marginTop:16,display:"inline-flex",alignItems:"center",gap:7,fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"9px 18px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 22%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",cursor:"pointer"}}><Icons.Plus/>ADD FIRST ENTRY</button>}
             </div>
           : filtered.length===0
@@ -1714,7 +1540,6 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
             : paged.map((c,i)=>{
                 const ac=getAuthorColor(c.author);
                 const dp=fmtDate(c.date).split(", ");
-                const editable=canEdit(c);
                 const imprN=Number(String(c.twitterImpressions||"").replace(/,/g,""));
                 const imprTxt=c.twitterImpressions&&!isNaN(imprN)?imprN.toLocaleString():"—";
                 const tgN=Number(String(c.telegramImpressions||"").replace(/,/g,""));
@@ -1758,83 +1583,6 @@ const CampaignTable = ({campaigns, citations=[], onSave, onDelete, onDeleteAll, 
         <Pagination page={page} total={sortedFiltered.length} onChange={p=>{setPage(p);window.scrollTo({top:0,behavior:'smooth'})}}/>
       </div>
       </div></div>
-      {/* CQ Research citations table */}
-      {contentMode==="cq_research"&&cqResearchData&&cqResearchData.cits.length>0&&(
-        <div ref={cqCitRef} style={{marginTop:20}}>
-          <div className="cq-table-scroll"><div style={{minWidth:500}}>
-          <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",animation:"fadeUp .5s ease .16s both"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 22px",borderBottom:"2px solid var(--border)",background:"var(--surface3)",gap:14,flexWrap:"wrap"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,textTransform:"uppercase",letterSpacing:"0.12em",color:"var(--muted)",fontWeight:600}}>Media Citations</div>
-                <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--dim)"}}>{cqCitsFiltered.length}{cqCitsFiltered.length!==cqResearchData.cits.length?` of ${cqResearchData.cits.length}`:""}</span>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-                <div style={{display:"flex",gap:4,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:2}}>
-                  <button onClick={()=>{setCqTierFilter("all");setCqCitPage(1);}}
-                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:cqTierFilter==="all"?"var(--surface)":"transparent",color:cqTierFilter==="all"?"var(--accent)":"var(--dim)",cursor:"pointer",fontWeight:cqTierFilter==="all"?600:400}}>ALL TIERS</button>
-                  {cqResearchData.tierEntries.map(([tier,count])=>{
-                    const tc=getTierColor(tier);
-                    const active=cqTierFilter===tier;
-                    return <button key={tier} onClick={()=>{setCqTierFilter(active?"all":tier);setCqCitPage(1);}}
-                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 10px",borderRadius:4,border:"none",background:active?tc.bg:"transparent",color:active?tc.color:"var(--dim)",cursor:"pointer",fontWeight:active?600:400,display:"flex",alignItems:"center",gap:4}}>
-                      Tier {tier} <span style={{opacity:0.7,fontWeight:400}}>{count}</span>
-                    </button>;
-                  })}
-                </div>
-                {cqResearchData.uniqueOutlets.length>1 && (
-                  <select value={cqOutletFilter} onChange={e=>{setCqOutletFilter(e.target.value);setCqCitPage(1);}}
-                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"5px 8px",borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:cqOutletFilter==="all"?"var(--dim)":"var(--accent)",cursor:"pointer",fontWeight:cqOutletFilter==="all"?400:500}}>
-                    <option value="all">All outlets</option>
-                    {cqResearchData.uniqueOutlets.sort().map(o=><option key={o} value={o}>{o}</option>)}
-                  </select>
-                )}
-                {(cqTierFilter!=="all"||cqOutletFilter!=="all") && (
-                  <button onClick={()=>{setCqTierFilter("all");setCqOutletFilter("all");setCqCitPage(1);}}
-                    style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"4px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>clear</button>
-                )}
-              </div>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"10px 20px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-              {["Date","Media","Headline / Topic","Reporter","Bounty","Link"].map(h=><div key={h} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase"}}>{h}</div>)}
-            </div>
-            {pagedCqCits.map((c,i)=>{
-              const tc=getTierColor(c.mediaTier);
-              const cb = c.citedBountyId && bountyById[c.citedBountyId];
-              return (
-                <div key={c.id} onClick={()=>setViewCitation(c)}
-                  style={{display:"grid",gridTemplateColumns:"100px 1fr 1fr 110px 64px 60px",padding:"14px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",cursor:"pointer",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,background:"transparent"}}
-                  onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
-                  onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                  <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--muted)"}}>{c.date||"—"}</div>
-                  <div style={{minWidth:0}}>
-                    <div style={{fontSize:12,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</div>
-                    {c.mediaTier&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8,padding:"1px 5px",borderRadius:3,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,marginTop:2,display:"inline-block"}}>Tier {c.mediaTier}</span>}
-                  </div>
-                  <div style={{minWidth:0}}>
-                    {c.headline&&<div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.headline}</div>}
-                    {c.topic&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.topic}</div>}
-                    {!c.headline&&!c.topic&&<span style={{color:"var(--dim)",fontSize:11,opacity:0.45}}>—</span>}
-                  </div>
-                  <div style={{fontSize:11,color:"var(--muted)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reporter||"—"}</div>
-                  <div onClick={e=>e.stopPropagation()}>
-                    {cb && cb.cqLink
-                      ? <a href={cb.cqLink} target="_blank" rel="noreferrer" title={cb.title||""} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"3px 8px",borderRadius:5,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 24%,transparent)",color:"var(--accent)",textDecoration:"none",whiteSpace:"nowrap"}}>Bounty↗</a>
-                      : <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",opacity:0.45}}>—</span>}
-                  </div>
-                  <div onClick={e=>e.stopPropagation()}>
-                    {c.articleLink?<a href={c.articleLink} target="_blank" rel="noopener noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--accent)",textDecoration:"none"}}>↗ Read</a>:<span style={{color:"var(--dim)",fontSize:10,opacity:0.45}}>—</span>}
-                  </div>
-                </div>
-              );
-            })}
-            {cqCitsFiltered.length===0 && (
-              <div style={{padding:"40px 20px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>No citations match the current filters</div>
-            )}
-            <Pagination page={cqCitPage} total={cqCitsFiltered.length} onChange={p=>{setCqCitPage(p);cqCitRef.current?.scrollIntoView({behavior:"smooth",block:"start"});}}/>
-          </div>
-          </div></div>
-        </div>
-      )}
       {viewCitation&&<CitationDetailModal entry={citations.find(c=>c.id===viewCitation.id)||viewCitation} canEdit={currentUser.role==="admin"} onEdit={()=>{}} onClose={()=>setViewCitation(null)} bounties={campaigns} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {view&&<BountyDetailModal entry={campaigns.find(b=>b.id===view.id)||view} canEdit={canEdit(view)} onEdit={()=>{setEdit(view);setShowForm(true);setView(null);}} onDelete={()=>{setConfId(view.id);setView(null);}} onClose={()=>setView(null)} onGenerateSummary={onBountySummaryUpdate?generateSummaryOne:null} citations={citations} onCitedBountyUpdate={onCitedBountyUpdate}/>}
       {showForm&&<CampForm initial={editEntry} isEdit={!!editEntry} onSave={async f=>{await onSave(f,editEntry);setShowForm(false);setEdit(null)}} onClose={()=>{setShowForm(false);setEdit(null)}} currentUser={currentUser}/>}
@@ -2146,7 +1894,6 @@ const MediaForm = ({initial,isEdit,onSave,onClose}) => {
 
 const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,bounties,onCitedBountyUpdate}) => {
   const rcReady = useRecharts();
-  const bountyById = useMemo(()=>Object.fromEntries((bounties||[]).map(b=>[b.id,b])),[bounties]);
   const [batch,setBatch] = useState({running:false, total:0, processed:0, saved:0, skipped:0, errors:0, lastMsg:""});
   const [search,setSearch]=useState("");
   const [filterAuthor,setFA]=useState("all");
@@ -2545,9 +2292,7 @@ const MediaTable = ({citations,onSave,onDelete,onDeleteAll,currentUser,readOnly,
                     <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>Try clearing filters or widening the date range</div>
                   </div>
                 : paged.map((c,i)=>{
-                    const mc=getPaletteColor(AUTHOR_PALETTE,"media",c.media||"?");
                     const dp=fmtDate(c.date).split(", ");
-                    const editable=canEdit(c);
                     return (
                       <div key={c.id} onClick={()=>setView(c)} style={{display:"grid",gridTemplateColumns:COLS,padding:"12px 20px",borderBottom:"1px solid var(--border)",alignItems:"center",transition:"background .15s",animation:`rowIn .3s ease ${i*.025}s both`,cursor:"pointer",background:"transparent"}}
                         onMouseEnter={e=>e.currentTarget.style.background="color-mix(in srgb,var(--accent) 6%,transparent)"}
@@ -3386,7 +3131,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
     } catch { return null; }
   };
 
-  const {chartData, allWeeks, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
+  const {chartData, uniqueAuthors, uniqueOutlets, totalImpressions, totalTwitter, totalTelegram, tweetCount, tgPostCount} = useMemo(()=>{
     const bucketMap = {};
     const pNum = v => { if(!v) return 0; const s=String(v).replace(/,/g,"").trim(); if(/k$/i.test(s)) return Math.round(parseFloat(s)*1000); if(/m$/i.test(s)) return Math.round(parseFloat(s)*1000000); return parseInt(s)||0; };
     const addTo = (iso, key) => {
@@ -4402,7 +4147,6 @@ const WeeklySummaryTab = ({campaigns, citations, color}) => {
               ?<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",padding:"12px 0"}}>No author activity</div>
               :<div style={{display:"flex",flexDirection:"column",gap:9}}>
                 {topAuthors.map((a,i)=>{
-                  const total=a.bounties+a.citations;
                   return (
                     <div key={a.name} onClick={()=>window.dispatchEvent(new CustomEvent("cq-nav-author",{detail:a.name}))}
                       style={{cursor:"pointer",borderRadius:6,padding:"4px 6px",margin:"-4px -6px",transition:"background .15s"}}
@@ -4522,16 +4266,14 @@ const PdfReportModal = ({campaigns, citations, campaignName, initialFrom, initia
     const tierEntries=Object.entries(tmap).sort((a,z)=>a[0].localeCompare(z[0]));
     const totalTierCits=tierEntries.reduce((s,[,n])=>s+n,0)||1;
     const t12pct=Math.round(((tmap["1"]||0)+(tmap["2"]||0))/totalTierCits*100);
-    const reporters=[...new Set(c.map(x=>(x.reporter||"").trim().toLowerCase()).filter(r=>r&&r!=="publisher"))].length;
     const pickup=b.length?(c.length/b.length).toFixed(1):"0.0";
 
     // ── social ──
     const posts=b.map(x=>{const tw=parseNum(x.twitterImpressions),tg=parseNum(x.telegramImpressions);return{title:x.title||"—",author:x.author||"",date:x.date||"",reach:tw+tg,tw,tg,link:x.cqLink||x.cqTwitterLink||x.telegramLink||x.authorTwitterLink||""};}).filter(p=>p.reach>0).sort((a,z)=>z.reach-a.reach);
     const maxReach=posts[0]?.reach||1;
-    const nPosts=posts.length, avgPost=nPosts?Math.round(totalImpr/nPosts):0;
+    const nPosts=posts.length;
     // peak post reach — the best single post (posts[] is sorted desc), a strong honest headline number
     const peakPost=posts[0]?.reach||0;
-    const twPct=totalImpr?Math.round(totalTwitter/totalImpr*100):0, tgPct=totalImpr?100-twPct:0;
 
     const xMark='<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>';
 
@@ -4544,12 +4286,9 @@ const PdfReportModal = ({campaigns, citations, campaignName, initialFrom, initia
     const weeks=weekKeys.map(k=>wmap[k]);
     let _cb=0,_cc=0,_ci=0;const cumB=[],cumC=[],cumI=[];
     weeks.forEach(w=>{_cb+=w.b;_cc+=w.c;_ci+=w.imp;cumB.push(_cb);cumC.push(_cc);cumI.push(_ci);});
-    const CWp=760,CHp=150,BB=20,PL=8,GR=44,topY=12,baseY=CHp-BB,PR=CWp-GR;
+    const CWp=760,CHp=150,BB=20,PL=8,GR=44,PR=CWp-GR;
     const Xp=(i,n)=>n<=1?PL+(PR-PL)/2:PL+(i/(n-1))*(PR-PL);
-    const mkPaths=(vals,maxV)=>{if(!vals.length)return null;const n=vals.length;const Y=v=>baseY-(maxV?v/maxV:0)*(baseY-topY);const line=vals.map((v,i)=>`${i?"L":"M"}${Xp(i,n).toFixed(1)} ${Y(v).toFixed(1)}`).join(" ");return{line,area:`${line} L${PR} ${baseY} L${PL} ${baseY} Z`};};
-    const maxCum=Math.max(1,_cb,_cc),maxImpr=Math.max(1,_ci),pB=mkPaths(cumB,maxCum),pC=mkPaths(cumC,maxCum),pI=mkPaths(cumI,maxImpr);
     const fmtAxis=v=>{const a=Math.round(v);return a>=1000000?`${(a/1000000).toFixed(a>=1e7?0:1)}M`:a>=1000?`${Math.round(a/1000)}k`:String(a);};
-    const axes=maxV=>{let out="";[0,0.25,0.5,0.75,1].forEach(p=>{const y=baseY-p*(baseY-topY);out+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${PR}" y2="${y.toFixed(1)}" stroke="#243056" stroke-width="1" stroke-dasharray="3 3"/>`;out+=`<text x="${PR+6}" y="${(y+3).toFixed(1)}" text-anchor="start" font-family="'JetBrains Mono',monospace" font-size="8" fill="#6088b5">${fmtAxis(p*maxV)}</text>`;});const n=weekKeys.length;if(n){const step=Math.max(1,Math.ceil(n/7));weekKeys.forEach((k,i)=>{if(i%step!==0&&i!==n-1)return;const x=Xp(i,n);const anchor=i===0?"start":i===n-1?"end":"middle";out+=`<text x="${x.toFixed(1)}" y="${CHp-5}" text-anchor="${anchor}" font-family="'JetBrains Mono',monospace" font-size="8.5" fill="#5f6c91">${fmtMD(k)}</text>`;});}return out;};
     // ── daily series for the activity chart (mirrors the on-site Performance chart) ──
     const dmap={};
     b.forEach(x=>{if(!x.date)return;(dmap[x.date]=dmap[x.date]||{b:0,c:0});dmap[x.date].b++;});
@@ -5129,7 +4868,6 @@ const CampaignsPanel = ({programs,campaigns,citations,onSave,onDelete,onSaveCamp
         const CampaignRow = ({cl, i, total}) => {
           const campCount = campaigns.filter(c=>c.campaignId===cl.id).length;
           const citeCount = citations.filter(c=>c.campaignId===cl.id).length;
-          const isLast = i === total - 1;
           return (
             <div onClick={()=>{if(onSelectCampaign) onSelectCampaign(cl.id)}}
               style={{display:"grid",gridTemplateColumns:"auto minmax(0,1fr) 64px 64px 300px 18px",alignItems:"center",gap:16,padding:"13px 18px",borderTop:i?"1px solid var(--border)":"none",cursor:"pointer",transition:"background .12s"}}
@@ -5328,7 +5066,6 @@ const AuthorsTab = ({campaigns, citations}) => {
     return sorted;
   },[authors, sort, search]);
 
-  const maxTotal = authors.reduce((m,a)=>Math.max(m,a.total),1);
 
   // Summary metrics
   const totalBounties = useMemo(()=>authors.reduce((s,a)=>s+a.bounties,0),[authors]);
@@ -5864,11 +5601,10 @@ const ShareReportPage = ({token}) => {
 // ─────────────────────────────────────────────────────────
 export default function App() {
   // Light mode disabled for now — force dark.
-  const [theme, setTheme] = useState("dark");
+  const [theme] = useState("dark");
   useEffect(()=>{
     document.documentElement.dataset.theme = "dark";
   },[theme]);
-  const toggleTheme = () => {};
 
   useEffect(()=>{
     document.title = "CryptoQuant Bounty Tracker";
@@ -6217,7 +5953,6 @@ export default function App() {
   };
 
   // ── ACTIVE CAMPAIGN OBJECT ──
-  const activeClient = programs.find(c=>c.id===activeCid)||null;
 
   // ── SCOPED DATA ──
   const clientAllowedIds = useMemo(()=>{
