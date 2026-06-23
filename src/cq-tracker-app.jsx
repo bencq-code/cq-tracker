@@ -3083,51 +3083,6 @@ const LeaderboardsSection = ({leaderData, citations, campaigns, fmtNum, parseNum
                     </>);
                   })()}
 
-                  {/* CQ Research — research content with citations & impressions */}
-                  {(()=>{
-                    const research = campaigns.filter(b=>(b.author||"").toLowerCase()==="cq research");
-                    if(!research.length) return null;
-                    const citeMap={};
-                    citations.forEach(c=>{ const bid=c.citedBountyId; if(bid) citeMap[bid]=(citeMap[bid]||0)+1; });
-                    const rows=research.map(b=>({...b, cites:citeMap[b.id]||0, impressions:parseNum(b.twitterImpressions)+parseNum(b.telegramImpressions)}))
-                      .sort((a,b)=>b.impressions-a.impressions || b.cites-a.cites);
-                    const maxImp=Math.max(1,...rows.map(r=>r.impressions));
-                    const maxCit=Math.max(1,...rows.map(r=>r.cites));
-                    const show=rows.slice(0,10);
-                    const gcols="minmax(0,1fr) 150px 170px 44px";
-                    const Metric=({value,pct,dim})=>(
-                      <div style={{minWidth:0}}>
-                        <div className="tabular" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:13,fontWeight:700,color:dim?"var(--border2)":"var(--text)",textAlign:"right",marginBottom:5}}>{value}</div>
-                        <div style={{height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}>
-                          <div style={{width:`${pct}%`,height:"100%",borderRadius:99,background:"var(--accent)",opacity:.85}}/>
-                        </div>
-                      </div>
-                    );
-                    return (<>
-                      <SectionLabel>CQ Research · Content</SectionLabel>
-                      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
-                        <div style={{display:"grid",gridTemplateColumns:gcols,gap:20,padding:"11px 18px",borderBottom:"1px solid var(--border)",background:"var(--surface2)"}}>
-                          {[["Content","left"],["Citations","right"],["Impressions","right"],["Link","center"]].map(([h,al],i)=><span key={i} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:8,letterSpacing:"0.1em",color:"var(--dim)",textTransform:"uppercase",textAlign:al}}>{h}</span>)}
-                        </div>
-                        {show.map((t,i)=>(
-                          <div key={t.id||t.title} style={{display:"grid",gridTemplateColumns:gcols,gap:20,alignItems:"center",padding:"13px 18px",borderTop:i?"1px solid var(--border)":"none"}}>
-                            <div style={{minWidth:0}}>
-                              <div title={t.title} style={{fontSize:13,fontWeight:500,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title||"(untitled)"}</div>
-                              {t.date&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:3}}>{t.date}</div>}
-                            </div>
-                            <Metric value={t.cites} pct={(t.cites/maxCit)*100} dim={!t.cites}/>
-                            <Metric value={fmtNum(t.impressions)} pct={(t.impressions/maxImp)*100}/>
-                            <div style={{display:"flex",justifyContent:"center"}}>
-                              {t.cqLink
-                                ? <a href={t.cqLink} target="_blank" rel="noopener noreferrer" title={t.title||"Open content"} style={{display:"flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,border:"1px solid var(--border)",background:"var(--surface)",color:"var(--dim)",textDecoration:"none",fontSize:11}}>↗</a>
-                                : <span style={{color:"var(--dim)",opacity:.4,fontSize:11}}>—</span>}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>);
-                  })()}
-
                   {modal==="topics" && (
                     <AllModal title={`All Topics (${allTopics.length})`} onClose={()=>setModal(null)}>
                       {allTopics.map((r,i)=><ModalRow key={r.topic} rank={i+1} label={r.topic} value={r.count} pct={(r.count/maxTopic)*100} color="var(--accent)"/>)}
@@ -3210,6 +3165,130 @@ const ReportMenu = ({items}) => {
           })}
         </div>
       )}
+    </div>
+  );
+};
+
+// Expandable CQ Research content explorer — each research bounty opens to reveal
+// its summary and the full list of media citations that referenced it.
+const CQResearchExplorer = ({campaigns, citations, fmtNum, parseNum}) => {
+  const [expanded,setExpanded] = useState(()=>new Set());
+  const fmtD = iso => { if(!iso) return "—"; const [y,m,d]=iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, '${y.slice(2)}`; };
+  const items = useMemo(()=>{
+    const research = (campaigns||[]).filter(b => (b.author||"").toLowerCase()==="cq research");
+    if(!research.length) return [];
+    return research.map(b=>{
+      const cits = (citations||[]).filter(c=>c.citedBountyId===b.id).sort((a,z)=>(z.date||"").localeCompare(a.date||""));
+      const impr = parseNum(b.twitterImpressions)+parseNum(b.telegramImpressions);
+      return {b, cits, impr};
+    }).sort((a,z)=> z.cits.length - a.cits.length || z.impr - a.impr);
+  },[campaigns,citations,parseNum]);
+  if(!items.length) return null;
+  const toggle = id => setExpanded(s=>{ const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n; });
+  const totalCited = items.reduce((s,it)=>s+it.cits.length,0);
+  const maxCites = Math.max(1, ...items.map(it=>it.cits.length));
+  return (
+    <div style={{marginTop:28}}>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+        <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600}}>CQ Research · Content</span>
+        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"1px 7px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)"}}>{items.length} bounties · {totalCited} citations</span>
+      </div>
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
+        <div style={{display:"grid",gridTemplateColumns:"18px minmax(0,1fr) 84px 104px 44px",gap:12,padding:"10px 18px",borderBottom:"2px solid var(--border)",background:"var(--surface3)"}}>
+          {[{l:"",a:"left"},{l:"Content",a:"left"},{l:"Citations",a:"right"},{l:"Impressions",a:"right"},{l:"Link",a:"center"}].map((h,hi)=>(
+            <span key={hi} style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.08em",color:"var(--muted)",textTransform:"uppercase",whiteSpace:"nowrap",textAlign:h.a}}>{h.l}</span>
+          ))}
+        </div>
+        {items.map(({b,cits,impr},i)=>{
+          const open = expanded.has(b.id);
+          return (
+            <div key={b.id} style={{borderTop:i?"1px solid var(--border)":"none"}}>
+              <div onClick={()=>toggle(b.id)} role="button" style={{display:"grid",gridTemplateColumns:"18px minmax(0,1fr) 84px 104px 44px",gap:12,alignItems:"center",width:"100%",textAlign:"left",padding:"13px 18px",background:open?"color-mix(in srgb,var(--accent) 5%,transparent)":"transparent",cursor:"pointer",transition:"background .12s"}}
+                onMouseEnter={e=>{if(!open)e.currentTarget.style.background="var(--surface2)"}}
+                onMouseLeave={e=>{if(!open)e.currentTarget.style.background="transparent"}}>
+                <span style={{fontSize:10,color:"var(--dim)",transition:"transform .15s",transform:open?"rotate(90deg)":"none",display:"inline-block"}}>▶</span>
+                <span style={{minWidth:0}}>
+                  <span style={{display:"block",fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 80%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.title||"(untitled)"}</span>
+                  <span style={{display:"block",fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,color:"var(--dim)",marginTop:2,marginBottom:5}}>{fmtD(b.date)}</span>
+                  <span style={{display:"block",height:4,borderRadius:99,background:"var(--surface2)",overflow:"hidden"}}><span style={{display:"block",width:`${(cits.length/maxCites)*100}%`,height:"100%",background:"var(--accent)",opacity:.7,borderRadius:99,transition:"width .4s"}}/></span>
+                </span>
+                <span style={{justifySelf:"end",fontFamily:"'JetBrains Mono',monospace",fontSize:12,fontWeight:600,color:cits.length?"var(--accent)":"var(--dim)"}}>{cits.length}</span>
+                <span style={{justifySelf:"end",fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,fontWeight:600,color:"var(--muted)"}} title="Twitter + Telegram combined">{fmtNum(impr)}</span>
+                <span style={{justifySelf:"center"}} onClick={e=>e.stopPropagation()}>
+                  {b.cqLink
+                    ? <a href={b.cqLink} target="_blank" rel="noreferrer" title="View bounty on CryptoQuant" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:24,height:24,borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 18%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",textDecoration:"none",fontSize:11}}>↗</a>
+                    : <span style={{color:"var(--dim)",opacity:.45,fontSize:11}}>–</span>}
+                </span>
+              </div>
+              {open && (
+                <div style={{padding:"4px 18px 16px 48px",background:"color-mix(in srgb,var(--accent) 5%,transparent)"}}>
+                  {b.summary
+                    ? <p style={{fontSize:12.5,lineHeight:1.6,color:"var(--muted)",marginBottom:14}}>{b.summary}</p>
+                    : <p style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)",marginBottom:14}}>No summary available for this bounty.</p>}
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+                    {[
+                      b.cqLink&&{l:"Quicktake",h:b.cqLink},
+                      b.analyticsLink&&{l:"Analytics",h:b.analyticsLink},
+                      b.cqTwitterLink&&{l:"CQ X",h:b.cqTwitterLink},
+                      b.telegramLink&&{l:"CQ TG",h:b.telegramLink},
+                      b.authorTwitterLink&&{l:"Author X",h:b.authorTwitterLink},
+                      b.authorTelegramLink&&{l:"Author TG",h:b.authorTelegramLink},
+                    ].filter(Boolean).map((lk,li)=>(
+                      <a key={li} href={lk.h} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"3px 8px",borderRadius:5,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",textDecoration:"none",whiteSpace:"nowrap"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--accent)";e.currentTarget.style.color="var(--accent)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>{lk.l}↗</a>
+                    ))}
+                    {!(b.cqLink||b.analyticsLink||b.cqTwitterLink||b.telegramLink||b.authorTwitterLink||b.authorTelegramLink)&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)"}}>No links available</span>}
+                  </div>
+                  {cits.length>0&&(()=>{
+                    const tierCounts={},outletCounts={};
+                    cits.forEach(c=>{ const t=(String(c.mediaTier||"").match(/\d/)||[])[0]; if(t)tierCounts[t]=(tierCounts[t]||0)+1; const m=(c.media||"").trim(); if(m)outletCounts[m]=(outletCounts[m]||0)+1; });
+                    const tiers=Object.entries(tierCounts).sort((a,b)=>a[0].localeCompare(b[0]));
+                    const outlets=Object.entries(outletCounts).sort((a,b)=>b[1]-a[1]);
+                    const subLbl={fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:7};
+                    return (
+                      <div style={{display:"flex",gap:28,flexWrap:"wrap",marginBottom:16,padding:"12px 14px",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8}}>
+                        <div style={{minWidth:0}}>
+                          <div style={subLbl}>Tiers</div>
+                          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                            {tiers.length?tiers.map(([t,n])=>{const tc=getTierColor(t);return <span key={t} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"2px 8px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap"}}>T{t} · {n}</span>;}):<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)"}}>—</span>}
+                          </div>
+                        </div>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={subLbl}>Outlets ({outlets.length})</div>
+                          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                            {outlets.map(([m,n])=><span key={m} title={`${m} · ${n} citation${n!==1?"s":""}`} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9.5,padding:"2px 8px",borderRadius:4,background:"var(--surface2)",border:"1px solid var(--border)",color:"var(--muted)",whiteSpace:"nowrap",maxWidth:200,overflow:"hidden",textOverflow:"ellipsis"}}>{m}{n>1&&<span style={{color:"var(--dim)"}}> ×{n}</span>}</span>)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:9.5,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,marginBottom:8}}>Media citations ({cits.length})</div>
+                  {cits.length===0
+                    ? <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,color:"var(--dim)"}}>No media has cited this bounty yet.</div>
+                    : <div style={{maxHeight:cits.length>7?300:undefined,overflowY:cits.length>7?"auto":"visible",border:"1px solid var(--border)",borderRadius:8,background:"var(--surface)"}}>
+                        {cits.map((c,ci)=>{
+                          const tn=(String(c.mediaTier||"").match(/\d/)||[])[0];
+                          const tc=tn?getTierColor(tn):null;
+                          return (
+                            <div key={c.id||ci} style={{display:"grid",gridTemplateColumns:"66px minmax(0,1fr) auto",gap:10,alignItems:"center",padding:"9px 12px",borderTop:ci?"1px solid var(--border)":"none"}}>
+                              <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",whiteSpace:"nowrap"}}>{c.date?fmtD(c.date):"—"}</span>
+                              <span style={{minWidth:0}}>
+                                <span style={{display:"block",fontSize:11.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 78%,var(--muted))",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.media||"—"}</span>
+                                {(c.headline||c.topic)&&<span style={{display:"block",fontSize:10.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginTop:1}}>{c.headline||c.topic}</span>}
+                              </span>
+                              <span style={{display:"inline-flex",alignItems:"center",gap:8,justifySelf:"end"}}>
+                                {tc&&<span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,padding:"1px 6px",borderRadius:4,background:tc.bg,border:`1px solid ${tc.border}`,color:tc.color,whiteSpace:"nowrap"}}>T{tn}</span>}
+                                {c.articleLink&&<a href={c.articleLink} target="_blank" rel="noreferrer" style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"3px 7px",borderRadius:4,background:"color-mix(in srgb,var(--accent) 8%,transparent)",border:"1px solid color-mix(in srgb,var(--accent) 18%,transparent)",color:"var(--accent)",textDecoration:"none"}}>↗</a>}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -3794,6 +3873,7 @@ const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoa
           })()}
           {/* Leaderboards — 3-column compact grid */}
           <LeaderboardsSection leaderData={leaderData} citations={citations} campaigns={campaigns} fmtNum={fmtNum} parseNum={parseNum}/>
+          <CQResearchExplorer campaigns={campaigns} citations={citations} fmtNum={fmtNum} parseNum={parseNum}/>
         </>
       )}
     </div>
