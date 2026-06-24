@@ -29,6 +29,25 @@ const stripHtml = (s) => decode(s)
 const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
 const uniq = (arr) => [...new Set(arr.filter(Boolean))];
 const quote = (s) => `"${String(s || "").replace(/"/g, "").trim()}"`;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Run an async fn over items with a bounded number of concurrent workers.
+const mapLimit = async (items, limit, fn) => {
+  const out = new Array(items.length);
+  let i = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length || 1) }, async () => {
+    while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx], idx); }
+  });
+  await Promise.all(workers);
+  return out;
+};
+
+// GDELT over-ANDs long quoted queries → reduce to its 2 strongest phrases (drops the `after:` token).
+const simplifyForGdelt = (q) => {
+  const phrases = q.match(/"[^"]+"/g);
+  if (phrases && phrases.length) return phrases.slice(0, 2).join(" ");
+  return q.replace(/\s+\bafter:\d{4}-\d{2}-\d{2}\b/gi, "").trim();
+};
 
 const cleanCampaignName = (campaignName) => (campaignName || "")
   .replace(/\b(marketing|campaign)\b/gi, "")
@@ -41,6 +60,8 @@ const canonicalUrl = (raw) => {
   if (!raw) return "";
   try {
     const u = new URL(raw);
+    // Google News <link> values are opaque redirects, not the real article URL — useless as a dedup key.
+    if (/(^|\.)news\.google\.com$/i.test(u.hostname)) return "";
     ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid", "mc_cid", "mc_eid"].forEach((p) => u.searchParams.delete(p));
     u.hash = "";
     return u.toString().replace(/\/$/, "");
@@ -150,7 +171,7 @@ const fetchGoogleNews = async (q) => {
   }
 };
 
-const fetchGdelt = async (q) => {
+const fetchGdelt = async (q, { after } = {}) => {
   const gdeltQuery = q.replace(/\s+\bafter:\d{4}-\d{2}-\d{2}\b/gi, "").trim();
   const params = new URLSearchParams({
     query: gdeltQuery,
@@ -159,12 +180,20 @@ const fetchGdelt = async (q) => {
     maxrecords: "25",
     sort: "datedesc",
   });
+  // GDELT doesn't understand `after:` — use its native absolute date range instead.
+  if (after) {
+    params.set("startdatetime", `${after.replace(/-/g, "")}000000`);
+    params.set("enddatetime", new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14));
+  }
   try {
     const r = await fetch(`https://api.gdeltproject.org/api/v2/doc/doc?${params.toString()}`, {
       headers: { "User-Agent": UA, "Accept": "application/json" },
     });
     if (!r.ok) return [];
-    const data = await r.json();
+    // On rate-limit / bad query GDELT returns plain text, not JSON — don't let that throw.
+    const text = await r.text();
+    let data;
+    try { data = JSON.parse(text); } catch { return []; }
     return (data.articles || []).map((a) => ({
       title: a.title || "",
       link: a.url || "",
@@ -286,26 +315,43 @@ export default async function handler(req, res) {
     const existingTitles = new Set(existing.map((c) => norm(c.headline || c.topic)).filter(Boolean));
     const existingUrls = new Set(existing.map((c) => canonicalUrl(c.article_link)).filter(Boolean));
     const merged = new Map();
+    const afterMs = after ? new Date(after).getTime() : null;
 
-    for (const q of queries) {
-      const providerResults = [];
-      if (providerList.includes("google_news")) providerResults.push(...(await fetchGoogleNews(q)));
-      if (providerList.includes("gdelt")) providerResults.push(...(await fetchGdelt(q)));
-      for (const item of providerResults) {
-        if (after && item.pubDate) {
-          const t = parseDateMs(item.pubDate);
-          if (!Number.isNaN(t) && t < new Date(after).getTime()) continue;
-        }
-        mergeCandidate(merged, { ...item, query: q }, { aliases, existingTitles, existingUrls });
+    // Google News: independent requests → fan out (capped to avoid throttling).
+    const gnLists = providerList.includes("google_news")
+      ? await mapLimit(queries, 5, (q) => fetchGoogleNews(q).then((items) => items.map((it) => ({ ...it, query: q }))))
+      : [];
+
+    // GDELT enforces a hard 1-request-per-5s limit (returns a plain-text scolding otherwise) and
+    // over-ANDs long queries → throttle a small, simplified set and degrade quietly when it balks.
+    const gdItems = [];
+    if (providerList.includes("gdelt")) {
+      const gdQueries = uniq(queries.map(simplifyForGdelt)).slice(0, 4);
+      for (let i = 0; i < gdQueries.length; i++) {
+        if (i) await sleep(5000);
+        const items = await fetchGdelt(gdQueries[i], { after });
+        for (const it of items) gdItems.push({ ...it, query: gdQueries[i] });
       }
     }
 
-    const candidates = [...merged.values()]
-      .sort((a, b) =>
-        (Number(a.already) - Number(b.already)) ||
-        (b.score - a.score) ||
-        ((parseDateMs(b.pubDate) || 0) - (parseDateMs(a.pubDate) || 0))
-      );
+    for (const item of [...gnLists.flat(), ...gdItems]) {
+      if (afterMs && item.pubDate) {
+        const t = parseDateMs(item.pubDate);
+        if (!Number.isNaN(t) && t < afterMs) continue;
+      }
+      mergeCandidate(merged, item, { aliases, existingTitles, existingUrls });
+    }
+
+    // Auto mode: drop pure noise that mentions neither CryptoQuant nor the client anywhere.
+    // Custom queries are trusted as-is (the user may search a topic that never names CryptoQuant).
+    const isCustom = !!(customQuery && customQuery.trim());
+    let candidates = [...merged.values()];
+    if (!isCustom) candidates = candidates.filter((c) => c.already || c.mentionsCQ || c.mentionsClient);
+    candidates.sort((a, b) =>
+      (Number(a.already) - Number(b.already)) ||
+      (b.score - a.score) ||
+      ((parseDateMs(b.pubDate) || 0) - (parseDateMs(a.pubDate) || 0))
+    );
 
     return res.status(200).json({
       campaignName: name,
