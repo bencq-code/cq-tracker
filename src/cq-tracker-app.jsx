@@ -3039,7 +3039,7 @@ const CQResearchExplorer = ({campaigns, citations, fmtNum, parseNum}) => {
 };
 
 // ── BETA: automatic citation discovery (Google News RSS → review queue) ──
-const DiscoveryTab = ({campaignName, campaignId}) => {
+const DiscoveryTab = ({campaignName, campaignId, firstDate}) => {
   const [status,setStatus] = useState("idle"); // idle | loading | done | error
   const [result,setResult] = useState(null);
   const [errMsg,setErrMsg] = useState("");
@@ -3053,7 +3053,7 @@ const DiscoveryTab = ({campaignName, campaignId}) => {
     if(!query.trim()){ setStatus("error"); setErrMsg("Enter a search query."); return; }
     setStatus("loading"); setErrMsg("");
     try{
-      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,customQuery:query.trim()})});
+      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,customQuery:query.trim(),afterDate:firstDate||undefined})});
       let data; try{ data=await r.json(); }catch{ throw new Error(`Discovery service unavailable (HTTP ${r.status})`); }
       if(!r.ok) throw new Error(data.error||`HTTP ${r.status}`);
       setResult(data); setStatus("done");
@@ -3088,6 +3088,7 @@ const DiscoveryTab = ({campaignName, campaignId}) => {
             <button key={i} onClick={()=>setQuery(s)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"3px 9px",borderRadius:99,border:"1px solid var(--border)",background:query===s?"color-mix(in srgb,var(--accent) 10%,transparent)":"var(--surface2)",color:query===s?"var(--accent)":"var(--muted)",cursor:"pointer",whiteSpace:"nowrap"}}>{s}</button>
           ))}
         </div>
+        {firstDate&&<div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:11,color:"var(--dim)",marginTop:9,display:"flex",alignItems:"center",gap:5}}><Icons.News/> Only news published after <b style={{color:"var(--muted)",fontWeight:600}}>{firstDate}</b> (campaign's first bounty).</div>}
       </div>
 
       {status==="error" && <div style={{...card,padding:"14px 18px",borderColor:"rgba(220,38,38,0.3)",color:"var(--red)",fontFamily:"'JetBrains Mono',monospace",fontSize:11.5}}>{errMsg}</div>}
@@ -6348,7 +6349,7 @@ export default function App() {
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid} allBounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {tab==="author"&&authorView&&(effectiveCid||user.role==="client")&&<AuthorDetailTab key={authorView+"|"+effectiveCid} authorName={authorView} campaigns={scopedCampaigns} citations={scopedCitations} program={effectiveClient} onBack={()=>{ if(window.history.length>1) window.history.back(); else navigate("performance"); }}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations} onSelectCampaign={(cid)=>navigate("performance",cid)}/>}
-        {tab==="discovery"&&user.role==="admin"&&<DiscoveryTab key={effectiveCid} campaignName={effectiveClient?.name||""} campaignId={effectiveCid}/>}
+        {tab==="discovery"&&user.role==="admin"&&<DiscoveryTab key={effectiveCid} campaignName={effectiveClient?.name||""} campaignId={effectiveCid} firstDate={scopedCampaigns.reduce((min,c)=>c.date&&(!min||c.date<min)?c.date:min,"")}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
         {/* cq_research merged into Content tab */}
         </main>

@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
   try {
-    const { campaignId, campaignName, customQuery, extraTerms } = req.body || {};
+    const { campaignId, campaignName, customQuery, extraTerms, afterDate } = req.body || {};
 
     // Clean the client name (drop trailing "(2025-2026)" / "Marketing" noise) for the query.
     const name = (campaignName || "").replace(/\b(marketing|campaign)\b/gi, "").replace(/\s*\(.*?\)\s*/g, "").replace(/\s*\d{4}(-\d{4})?\s*/g, "").replace(/\s+/g, " ").trim();
@@ -66,6 +66,10 @@ export default async function handler(req, res) {
     } else {
       return res.status(400).json({ error: "Provide a customQuery or a campaignName" });
     }
+
+    // Don't search for coverage that predates the campaign — Google News supports an `after:` operator.
+    const after = /^\d{4}-\d{2}-\d{2}$/.test(afterDate || "") ? afterDate : null;
+    if (after) queries = queries.map((q) => (/\bafter:/i.test(q) ? q : `${q} after:${after}`));
 
     // Existing citations for this campaign → dedupe set.
     let existing = [];
@@ -90,6 +94,8 @@ export default async function handler(req, res) {
       for (const it of parseRssItems(xml)) {
         const key = norm(it.title);
         if (!key || seen.has(key)) continue;
+        // Belt-and-suspenders: drop anything published before the campaign started.
+        if (after && it.pubDate) { const d = new Date(it.pubDate); if (!isNaN(d) && d < new Date(after)) continue; }
         seen.add(key);
         // Light relevance heuristic: title or source should plausibly relate.
         const hay = norm(`${it.title} ${it.source}`);
@@ -103,6 +109,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       campaignName: name,
       queries,
+      afterDate: after,
       existingCount: existing.length,
       total: candidates.length,
       newCount: candidates.filter((c) => !c.already).length,
