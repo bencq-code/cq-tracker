@@ -3038,7 +3038,7 @@ const CQResearchExplorer = ({campaigns, citations, fmtNum, parseNum}) => {
   );
 };
 
-// ── BETA: automatic citation discovery (Google News RSS → review queue) ──
+// ── BETA: automatic citation discovery (free news sources → review queue) ──
 const DiscoveryTab = ({campaignName, campaignId, firstDate}) => {
   const [status,setStatus] = useState("idle"); // idle | loading | done | error
   const [result,setResult] = useState(null);
@@ -3047,13 +3047,15 @@ const DiscoveryTab = ({campaignName, campaignId, firstDate}) => {
   const defaultQuery = cleanName ? `"CryptoQuant" "${cleanName}"` : `"CryptoQuant"`;
   const [query,setQuery] = useState(defaultQuery);
   const fmtAgo = (d) => { if(!d) return ""; const t=new Date(d); if(isNaN(t)) return ""; const days=Math.round((Date.now()-t)/86400000); return days<=0?"today":days===1?"1 day ago":`${days} days ago`; };
-  const scan = async () => {
+  const scan = async (useDefault=false) => {
     const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])/.test(window.location.hostname);
     if(isLocal){ setStatus("error"); setErrMsg("Discovery runs only on the deployed site — the /api functions aren't served by the local dev server."); return; }
-    if(!query.trim()){ setStatus("error"); setErrMsg("Enter a search query."); return; }
+    if(!useDefault&&!query.trim()){ setStatus("error"); setErrMsg("Enter a search query."); return; }
     setStatus("loading"); setErrMsg("");
     try{
-      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,customQuery:query.trim(),afterDate:firstDate||undefined})});
+      const body = {campaignId,campaignName,afterDate:firstDate||undefined};
+      if(!useDefault) body.customQuery = query.trim();
+      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
       let data; try{ data=await r.json(); }catch{ throw new Error(`Discovery service unavailable (HTTP ${r.status})`); }
       if(!r.ok) throw new Error(data.error||`HTTP ${r.status}`);
       setResult(data); setStatus("done");
@@ -3067,20 +3069,25 @@ const DiscoveryTab = ({campaignName, campaignId, firstDate}) => {
         <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"color-mix(in srgb,var(--yellow) 14%,transparent)",border:"1px solid color-mix(in srgb,var(--yellow) 32%,transparent)",color:"var(--yellow)",letterSpacing:"0.08em"}}>BETA</span>
       </div>
       <p style={{fontSize:13,color:"var(--muted)",lineHeight:1.6,marginBottom:20,maxWidth:680}}>
-        Scans Google News for articles mentioning <b style={{color:"var(--text)"}}>CryptoQuant</b> + <b style={{color:"var(--text)"}}>{campaignName||"this campaign"}</b>, then shows candidates not already in your citations. A prototype review queue — nothing is saved automatically; open a result to verify, then add it in the Media Citations tab.
+        Scans Google News RSS and GDELT for articles mentioning <b style={{color:"var(--text)"}}>CryptoQuant</b> + <b style={{color:"var(--text)"}}>{campaignName||"this campaign"}</b>, using campaign aliases and recent bounty data where available. Nothing is saved automatically; open a result to verify, then add it in the Media Citations tab.
       </p>
       <div style={{...card,padding:"16px 18px",marginBottom:20}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
-          <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600}}>Search query <span style={{textTransform:"none",letterSpacing:0,color:"var(--dim)",fontWeight:400}}>· edit freely (Google News syntax)</span></span>
+          <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600}}>Discovery scan <span style={{textTransform:"none",letterSpacing:0,color:"var(--dim)",fontWeight:400}}>· broad scan or one custom query</span></span>
           {query!==defaultQuery&&<button onClick={()=>setQuery(defaultQuery)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>↺ reset</button>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
           <input value={query} onChange={e=>setQuery(e.target.value)} placeholder={'e.g. "CryptoQuant" "Nexo" stablecoin'}
-            onKeyDown={e=>e.key==="Enter"&&status!=="loading"&&scan()}
+            onKeyDown={e=>e.key==="Enter"&&status!=="loading"&&scan(false)}
             style={{flex:1,minWidth:240,fontFamily:"'JetBrains Mono',monospace",fontSize:12.5,padding:"10px 12px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)"}}/>
-          <button onClick={scan} disabled={status==="loading"}
+          <button onClick={()=>scan(true)} disabled={status==="loading"||!cleanName}
+            title="Generate campaign, alias, and bounty-based queries"
+            style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"10px 16px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:status==="loading"?"default":"pointer",opacity:(status==="loading"||!cleanName) ? .7 : 1,whiteSpace:"nowrap"}}>
+            {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Scan All</>}
+          </button>
+          <button onClick={()=>scan(false)} disabled={status==="loading"}
             style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"10px 18px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:status==="loading"?"default":"pointer",opacity:status==="loading"?.7:1,whiteSpace:"nowrap"}}>
-            {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Search</>}
+            {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Search Query</>}
           </button>
         </div>
         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
@@ -3105,19 +3112,25 @@ const DiscoveryTab = ({campaignName, campaignId, firstDate}) => {
               </div>
             ))}
           </div>
-          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:10}}>Queries: {result.queries.map((q,i)=><span key={i} style={{marginRight:10}}>“{q}”</span>)}</div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:10,lineHeight:1.6}}>
+            Sources: {(result.providers||[]).join(", ")||"—"} · Aliases: {(result.aliases||[]).join(", ")||"—"} · Bounties used: {result.bountiesUsed||0}<br/>
+            Queries: {result.queries.map((q,i)=><span key={i} style={{marginRight:10}}>“{q}”</span>)}
+          </div>
           <div style={{...card,overflow:"hidden"}}>
             {result.candidates.length===0
               ? <div style={{padding:"30px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No candidates found. Try different extra terms.</div>
               : result.candidates.map((c,i)=>(
-                  <div key={i} style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 120px 44px",gap:14,alignItems:"center",padding:"12px 18px",borderTop:i?"1px solid var(--border)":"none",background:c.already?"transparent":"color-mix(in srgb,var(--positive) 4%,transparent)"}}>
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 138px 44px",gap:14,alignItems:"center",padding:"12px 18px",borderTop:i?"1px solid var(--border)":"none",background:c.already?"transparent":"color-mix(in srgb,var(--positive) 4%,transparent)"}}>
                     <div style={{minWidth:0}}>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,fontWeight:700,padding:"1px 6px",borderRadius:99,whiteSpace:"nowrap",background:c.already?"var(--surface2)":"color-mix(in srgb,var(--positive) 14%,transparent)",border:`1px solid ${c.already?"var(--border)":"color-mix(in srgb,var(--positive) 30%,transparent)"}`,color:c.already?"var(--dim)":"var(--positive)"}}>{c.already?"TRACKED":"NEW"}</span>
+                        <span title={(c.reasons||[]).join(" · ")} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,fontWeight:700,padding:"1px 6px",borderRadius:99,whiteSpace:"nowrap",background:"var(--surface2)",border:"1px solid var(--border)",color:c.score>=70?"var(--positive)":c.score>=45?"var(--yellow)":"var(--dim)"}}>{c.score||0}</span>
                         <a href={c.link} target="_blank" rel="noreferrer" style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 80%,var(--muted))",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="color-mix(in srgb,var(--text) 80%,var(--muted))"}>{c.title}</a>
                       </div>
+                      {c.description&&<div style={{fontSize:11,color:"var(--dim)",marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.description}</div>}
+                      {(c.reasons||[]).length>0&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.reasons.slice(0,3).join(" · ")}</div>}
                     </div>
-                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.source}{c.pubDate?<><br/><span style={{opacity:.7}}>{fmtAgo(c.pubDate)}</span></>:""}</div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.source||"—"}{c.pubDate?<><br/><span style={{opacity:.7}}>{fmtAgo(c.pubDate)}</span></>:""}<br/><span style={{opacity:.7}}>{(c.providers||[c.provider]).join("+")}</span></div>
                     <a href={c.link} target="_blank" rel="noreferrer" title="Open article" style={{justifySelf:"center",display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 18%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",textDecoration:"none",fontSize:12}}>↗</a>
                   </div>
                 ))}
