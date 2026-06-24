@@ -3038,6 +3038,81 @@ const CQResearchExplorer = ({campaigns, citations, fmtNum, parseNum}) => {
   );
 };
 
+// ── BETA: automatic citation discovery (Google News RSS → review queue) ──
+const DiscoveryTab = ({campaignName, campaignId}) => {
+  const [status,setStatus] = useState("idle"); // idle | loading | done | error
+  const [result,setResult] = useState(null);
+  const [errMsg,setErrMsg] = useState("");
+  const [extraTerms,setExtraTerms] = useState("");
+  const fmtAgo = (d) => { if(!d) return ""; const t=new Date(d); if(isNaN(t)) return ""; const days=Math.round((Date.now()-t)/86400000); return days<=0?"today":days===1?"1 day ago":`${days} days ago`; };
+  const scan = async () => {
+    const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])/.test(window.location.hostname);
+    if(isLocal){ setStatus("error"); setErrMsg("Discovery runs only on the deployed site — the /api functions aren't served by the local dev server."); return; }
+    setStatus("loading"); setErrMsg("");
+    try{
+      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,extraTerms:extraTerms.trim()||undefined})});
+      let data; try{ data=await r.json(); }catch{ throw new Error(`Discovery service unavailable (HTTP ${r.status})`); }
+      if(!r.ok) throw new Error(data.error||`HTTP ${r.status}`);
+      setResult(data); setStatus("done");
+    }catch(e){ setErrMsg(e.message); setStatus("error"); }
+  };
+  const card={background:"var(--surface)",border:"1px solid var(--border)",borderRadius:"var(--r-lg)",boxShadow:"var(--shadow-sm)"};
+  return (
+    <div style={{animation:"fadeUp .4s ease both",maxWidth:920}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:6}}>
+        <h2 style={{fontSize:21,fontWeight:650,letterSpacing:"-0.02em",color:"var(--text)"}}>Citation Discovery</h2>
+        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:99,background:"color-mix(in srgb,var(--yellow) 14%,transparent)",border:"1px solid color-mix(in srgb,var(--yellow) 32%,transparent)",color:"var(--yellow)",letterSpacing:"0.08em"}}>BETA</span>
+      </div>
+      <p style={{fontSize:13,color:"var(--muted)",lineHeight:1.6,marginBottom:20,maxWidth:680}}>
+        Scans Google News for articles mentioning <b style={{color:"var(--text)"}}>CryptoQuant</b> + <b style={{color:"var(--text)"}}>{campaignName||"this campaign"}</b>, then shows candidates not already in your citations. A prototype review queue — nothing is saved automatically; open a result to verify, then add it in the Media Citations tab.
+      </p>
+      <div style={{...card,padding:"16px 18px",marginBottom:20,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+        <input value={extraTerms} onChange={e=>setExtraTerms(e.target.value)} placeholder="Optional extra terms (e.g. stablecoin, loan book)…"
+          onKeyDown={e=>e.key==="Enter"&&status!=="loading"&&scan()}
+          style={{flex:1,minWidth:200,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,padding:"9px 12px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)"}}/>
+        <button onClick={scan} disabled={status==="loading"||!campaignId}
+          style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"10px 18px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:status==="loading"?"default":"pointer",opacity:status==="loading"||!campaignId?.7:1,whiteSpace:"nowrap"}}>
+          {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Scan for citations</>}
+        </button>
+      </div>
+
+      {status==="error" && <div style={{...card,padding:"14px 18px",borderColor:"rgba(220,38,38,0.3)",color:"var(--red)",fontFamily:"'JetBrains Mono',monospace",fontSize:11.5}}>{errMsg}</div>}
+
+      {status==="loading" && [0,1,2,3].map(i=><div key={i} className="cq-skel" style={{height:58,borderRadius:8,marginBottom:8}}/>)}
+
+      {status==="done" && result && (
+        <>
+          <div style={{display:"flex",gap:14,marginBottom:16,flexWrap:"wrap"}}>
+            {[{l:"Candidates found",v:result.total},{l:"Not yet tracked",v:result.newCount,hot:true},{l:"Already in citations",v:result.total-result.newCount}].map((s,i)=>(
+              <div key={i} style={{...card,padding:"12px 18px",minWidth:150}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600,marginBottom:6}}>{s.l}</div>
+                <div className="tabular" style={{fontSize:24,fontWeight:650,color:s.hot&&s.v>0?"var(--positive)":"var(--text)"}}>{s.v}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:"var(--dim)",marginBottom:10}}>Queries: {result.queries.map((q,i)=><span key={i} style={{marginRight:10}}>“{q}”</span>)}</div>
+          <div style={{...card,overflow:"hidden"}}>
+            {result.candidates.length===0
+              ? <div style={{padding:"30px",textAlign:"center",fontFamily:"'JetBrains Mono',monospace",fontSize:12,color:"var(--dim)"}}>No candidates found. Try different extra terms.</div>
+              : result.candidates.map((c,i)=>(
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 120px 44px",gap:14,alignItems:"center",padding:"12px 18px",borderTop:i?"1px solid var(--border)":"none",background:c.already?"transparent":"color-mix(in srgb,var(--positive) 4%,transparent)"}}>
+                    <div style={{minWidth:0}}>
+                      <div style={{display:"flex",alignItems:"center",gap:8}}>
+                        <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:8.5,fontWeight:700,padding:"1px 6px",borderRadius:99,whiteSpace:"nowrap",background:c.already?"var(--surface2)":"color-mix(in srgb,var(--positive) 14%,transparent)",border:`1px solid ${c.already?"var(--border)":"color-mix(in srgb,var(--positive) 30%,transparent)"}`,color:c.already?"var(--dim)":"var(--positive)"}}>{c.already?"TRACKED":"NEW"}</span>
+                        <a href={c.link} target="_blank" rel="noreferrer" style={{fontSize:12.5,fontWeight:500,color:"color-mix(in srgb,var(--text) 80%,var(--muted))",textDecoration:"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.color="var(--accent)"} onMouseLeave={e=>e.currentTarget.style.color="color-mix(in srgb,var(--text) 80%,var(--muted))"}>{c.title}</a>
+                      </div>
+                    </div>
+                    <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10.5,color:"var(--dim)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.source}{c.pubDate?<><br/><span style={{opacity:.7}}>{fmtAgo(c.pubDate)}</span></>:""}</div>
+                    <a href={c.link} target="_blank" rel="noreferrer" title="Open article" style={{justifySelf:"center",display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:6,border:"1px solid color-mix(in srgb,var(--accent) 18%,transparent)",background:"color-mix(in srgb,var(--accent) 8%,transparent)",color:"var(--accent)",textDecoration:"none",fontSize:12}}>↗</a>
+                  </div>
+                ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 const AnalyticsTab = ({campaigns: campaignsRaw, citations: citationsRaw, dataLoading, clientName, color, onExport, onShare, sheetUrl}) => {
   const rcReady = useRecharts();
   // mode: "all" | "3" | "6" | "12" (months back) | "weekly" | "custom"
@@ -6071,6 +6146,7 @@ export default function App() {
     {id:"authors",     label:"Authors",          icon:<Icons.Users/>,     accent:"var(--accent)", count:scopedAuthorsCount},
     ...(user.role==="author"?[{id:"mine", label:"My Submissions", icon:<Icons.User/>, accent:"var(--accent)", count:myBounties.length+myCitations.length}]:[]),
     ...(user.role==="admin"?[
+      {id:"discovery",      label:"Discovery",     icon:<Icons.Search/>,    accent:"var(--accent)", count:"beta"},
       {id:"campaigns_mgmt", label:"Campaigns",     icon:<Icons.Brief/>,     accent:"var(--accent)", count:programs.length},
       {id:"users",          label:"Users & Access", icon:<Icons.Users/>,     accent:"var(--accent)", count:users.length},
     ]:[]),
@@ -6258,6 +6334,7 @@ export default function App() {
         {tab==="mine"&&user.role==="author"&&<MyCreationsTab myBounties={myBounties} myCitations={myCitations} onSaveCamp={handleSaveCamp} onDeleteCamp={handleDeleteCamp} onSaveMedia={handleSaveMedia} onDeleteMedia={handleDeleteMedia} currentUser={user} activeCid={activeCid} allBounties={scopedCampaigns} onCitedBountyUpdate={handleCitedBountyUpdate}/>}
         {tab==="author"&&authorView&&(effectiveCid||user.role==="client")&&<AuthorDetailTab key={authorView+"|"+effectiveCid} authorName={authorView} campaigns={scopedCampaigns} citations={scopedCitations} program={effectiveClient} onBack={()=>{ if(window.history.length>1) window.history.back(); else navigate("performance"); }}/>}
         {tab==="campaigns_mgmt"&&user.role==="admin"&&<CampaignsPanel programs={programs} campaigns={campaigns} citations={citations} onSave={handleSaveProgram} onDelete={handleDeleteProgram} onSaveCamp={(f,ex,cid)=>handleSaveCamp(f,ex,cid)} onDeleteCamp={handleDeleteCamp} onSaveMedia={(f,ex,cid)=>handleSaveMedia(f,ex,cid)} onDeleteMedia={handleDeleteMedia} currentUser={user} showToast={showToast} setCampaigns={setCampaigns} setCitations={setCitations} onSelectCampaign={(cid)=>navigate("performance",cid)}/>}
+        {tab==="discovery"&&user.role==="admin"&&<DiscoveryTab key={effectiveCid} campaignName={effectiveClient?.name||""} campaignId={effectiveCid}/>}
         {tab==="users"&&user.role==="admin"&&<UsersPanel users={users} campaigns={campaigns} citations={citations} campaignsList={programs} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showToast={showToast} currentUser={user}/>}
         {/* cq_research merged into Content tab */}
         </main>
