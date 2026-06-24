@@ -3043,14 +3043,17 @@ const DiscoveryTab = ({campaignName, campaignId}) => {
   const [status,setStatus] = useState("idle"); // idle | loading | done | error
   const [result,setResult] = useState(null);
   const [errMsg,setErrMsg] = useState("");
-  const [extraTerms,setExtraTerms] = useState("");
+  const cleanName = (campaignName||"").replace(/\b(marketing|campaign)\b/gi,"").replace(/\s*\(.*?\)\s*/g,"").replace(/\s*\d{4}(-\d{4})?\s*/g,"").replace(/\s+/g," ").trim();
+  const defaultQuery = cleanName ? `"CryptoQuant" "${cleanName}"` : `"CryptoQuant"`;
+  const [query,setQuery] = useState(defaultQuery);
   const fmtAgo = (d) => { if(!d) return ""; const t=new Date(d); if(isNaN(t)) return ""; const days=Math.round((Date.now()-t)/86400000); return days<=0?"today":days===1?"1 day ago":`${days} days ago`; };
   const scan = async () => {
     const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])/.test(window.location.hostname);
     if(isLocal){ setStatus("error"); setErrMsg("Discovery runs only on the deployed site — the /api functions aren't served by the local dev server."); return; }
+    if(!query.trim()){ setStatus("error"); setErrMsg("Enter a search query."); return; }
     setStatus("loading"); setErrMsg("");
     try{
-      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,extraTerms:extraTerms.trim()||undefined})});
+      const r = await fetch("/api/discover-citations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campaignId,campaignName,customQuery:query.trim()})});
       let data; try{ data=await r.json(); }catch{ throw new Error(`Discovery service unavailable (HTTP ${r.status})`); }
       if(!r.ok) throw new Error(data.error||`HTTP ${r.status}`);
       setResult(data); setStatus("done");
@@ -3066,14 +3069,25 @@ const DiscoveryTab = ({campaignName, campaignId}) => {
       <p style={{fontSize:13,color:"var(--muted)",lineHeight:1.6,marginBottom:20,maxWidth:680}}>
         Scans Google News for articles mentioning <b style={{color:"var(--text)"}}>CryptoQuant</b> + <b style={{color:"var(--text)"}}>{campaignName||"this campaign"}</b>, then shows candidates not already in your citations. A prototype review queue — nothing is saved automatically; open a result to verify, then add it in the Media Citations tab.
       </p>
-      <div style={{...card,padding:"16px 18px",marginBottom:20,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-        <input value={extraTerms} onChange={e=>setExtraTerms(e.target.value)} placeholder="Optional extra terms (e.g. stablecoin, loan book)…"
-          onKeyDown={e=>e.key==="Enter"&&status!=="loading"&&scan()}
-          style={{flex:1,minWidth:200,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,padding:"9px 12px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)"}}/>
-        <button onClick={scan} disabled={status==="loading"||!campaignId}
-          style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"10px 18px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:status==="loading"?"default":"pointer",opacity:status==="loading"||!campaignId?.7:1,whiteSpace:"nowrap"}}>
-          {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Scan for citations</>}
-        </button>
+      <div style={{...card,padding:"16px 18px",marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+          <span style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,letterSpacing:"0.08em",color:"var(--dim)",textTransform:"uppercase",fontWeight:600}}>Search query <span style={{textTransform:"none",letterSpacing:0,color:"var(--dim)",fontWeight:400}}>· edit freely (Google News syntax)</span></span>
+          {query!==defaultQuery&&<button onClick={()=>setQuery(defaultQuery)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"2px 8px",borderRadius:5,border:"1px solid var(--border)",background:"transparent",color:"var(--dim)",cursor:"pointer"}}>↺ reset</button>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          <input value={query} onChange={e=>setQuery(e.target.value)} placeholder={'e.g. "CryptoQuant" "Nexo" stablecoin'}
+            onKeyDown={e=>e.key==="Enter"&&status!=="loading"&&scan()}
+            style={{flex:1,minWidth:240,fontFamily:"'JetBrains Mono',monospace",fontSize:12.5,padding:"10px 12px",borderRadius:8,border:"1px solid var(--border)",background:"var(--surface2)",color:"var(--text)"}}/>
+          <button onClick={scan} disabled={status==="loading"}
+            style={{display:"flex",alignItems:"center",gap:7,fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:13,fontWeight:650,padding:"10px 18px",borderRadius:8,border:"none",background:"var(--accent)",color:"#0B1120",cursor:status==="loading"?"default":"pointer",opacity:status==="loading"?.7:1,whiteSpace:"nowrap"}}>
+            {status==="loading"?<><Icons.Spin/>Scanning…</>:<><Icons.Search/> Search</>}
+          </button>
+        </div>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
+          {[cleanName&&`"CryptoQuant" "${cleanName}"`, cleanName&&`CryptoQuant ${cleanName} on-chain`, cleanName&&`${cleanName} CryptoQuant data`].filter(Boolean).map((s,i)=>(
+            <button key={i} onClick={()=>setQuery(s)} style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,padding:"3px 9px",borderRadius:99,border:"1px solid var(--border)",background:query===s?"color-mix(in srgb,var(--accent) 10%,transparent)":"var(--surface2)",color:query===s?"var(--accent)":"var(--muted)",cursor:"pointer",whiteSpace:"nowrap"}}>{s}</button>
+          ))}
+        </div>
       </div>
 
       {status==="error" && <div style={{...card,padding:"14px 18px",borderColor:"rgba(220,38,38,0.3)",color:"var(--red)",fontFamily:"'JetBrains Mono',monospace",fontSize:11.5}}>{errMsg}</div>}

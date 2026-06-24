@@ -48,16 +48,24 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
   try {
-    const { campaignId, campaignName, extraTerms } = req.body || {};
-    if (!campaignName) return res.status(400).json({ error: "campaignName required" });
+    const { campaignId, campaignName, customQuery, extraTerms } = req.body || {};
 
     // Clean the client name (drop trailing "(2025-2026)" / "Marketing" noise) for the query.
-    const name = campaignName.replace(/\b(marketing|campaign)\b/gi, "").replace(/\s*\(.*?\)\s*/g, "").replace(/\s*\d{4}(-\d{4})?\s*/g, "").replace(/\s+/g, " ").trim();
-    const queries = [
-      `"CryptoQuant" "${name}"`,
-      `CryptoQuant ${name} on-chain data`,
-      ...(extraTerms ? [`"CryptoQuant" ${name} ${extraTerms}`] : []),
-    ];
+    const name = (campaignName || "").replace(/\b(marketing|campaign)\b/gi, "").replace(/\s*\(.*?\)\s*/g, "").replace(/\s*\d{4}(-\d{4})?\s*/g, "").replace(/\s+/g, " ").trim();
+
+    // A custom query is used verbatim (full control); otherwise build defaults from the campaign.
+    let queries;
+    if (customQuery && customQuery.trim()) {
+      queries = [customQuery.trim()];
+    } else if (name) {
+      queries = [
+        `"CryptoQuant" "${name}"`,
+        `CryptoQuant ${name} on-chain data`,
+        ...(extraTerms ? [`"CryptoQuant" ${name} ${extraTerms}`] : []),
+      ];
+    } else {
+      return res.status(400).json({ error: "Provide a customQuery or a campaignName" });
+    }
 
     // Existing citations for this campaign → dedupe set.
     let existing = [];
