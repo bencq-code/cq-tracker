@@ -4668,6 +4668,12 @@ const DrillSync = ({program, drillCamps, drillCites, setCampaigns, setCitations,
   const [result,setResult]   = useState(null);
   const [phase,setPhase]     = useState("");
   const isSyncing = useRef(false);
+  // Auto-dismiss the "✓ N added / skipped" badge so it doesn't linger until a page refresh.
+  useEffect(()=>{
+    if(!result) return;
+    const t = setTimeout(()=>setResult(null), 6000);
+    return ()=>clearTimeout(t);
+  },[result]);
   const norm = s => (s||'').trim().toLowerCase();
   const normalizeDate = (d) => {
     const s = (d||"").trim();
