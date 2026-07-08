@@ -4577,7 +4577,7 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   const [sheetLink,setSheetLink] = useState(initial?.sheetLink||"");
   const [dataMode,setDataMode] = useState(initial?.sheetBounties||initial?.sheetMedia?"sheets":"manual");
   const [saving,setSaving] = useState(false);
-  const [sheetUrl,setSheetUrl] = useState("");
+  const [sheetUrl,setSheetUrl] = useState(initial?.sheetLink||"");
   const [detecting,setDetecting] = useState(false);
   const [detectMsg,setDetectMsg] = useState(null); // {ok, text}
   // One-link flow: fetch the sheet's public htmlview (via our proxy — Google sends
@@ -4609,7 +4609,11 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   };
   const handleSave = async () => {
     if (!name.trim()){alert("Campaign name required.");return;}
-    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?normalizeSheetUrl(sheetBounties):"",sheetMedia:dataMode==="sheets"?normalizeSheetUrl(sheetMedia):"",sheetLink}); setSaving(false);
+    // In sheets mode the general link is derived from the spreadsheet — no separate field needed.
+    const sid = (u)=>((u||"").match(/\/spreadsheets\/d\/([\w-]+)/)||[])[1];
+    const ssId = sid(sheetUrl)||sid(sheetBounties)||sid(sheetMedia);
+    const finalSheetLink = dataMode==="sheets" ? (ssId?`https://docs.google.com/spreadsheets/d/${ssId}/edit`:sheetLink) : sheetLink;
+    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?normalizeSheetUrl(sheetBounties):"",sheetMedia:dataMode==="sheets"?normalizeSheetUrl(sheetMedia):"",sheetLink:finalSheetLink}); setSaving(false);
   };
   return (
     <Portal>
@@ -4679,17 +4683,19 @@ const CampaignForm = ({initial,onSave,onClose}) => {
                   <input value={sheetMedia} onChange={e=>setSheetMedia(e.target.value)} placeholder="Auto-filled by Detect — or paste the Media tab link" style={iStyle}/>
                 </Field>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
-                  Paste the spreadsheet link above and hit Detect — both tab URLs fill in automatically (tabs named "Bounties" and "Media"). Manual paste still works; /edit links are converted on save. Sheet must be "Anyone with the link can view".
+                  Paste the spreadsheet link above and hit Detect — both tab URLs fill in automatically (tabs named "Bounties" and "Media"), and it doubles as the campaign's Sheet↗ link. Manual paste still works; /edit links are converted on save. Sheet must be "Anyone with the link can view".
                 </div>
               </div>
             )}
-            <div style={{paddingTop:14,borderTop:"1px solid var(--border)"}}>
-              <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>General Spreadsheet Link</div>
-              <Field label="Google Sheet URL" full>
-                <input value={sheetLink} onChange={e=>setSheetLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/..." style={iStyle}/>
-              </Field>
-              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6}}>A direct link to the full Google Sheet for this campaign (visible to all users).</div>
-            </div>
+            {dataMode==="manual"&&(
+              <div style={{paddingTop:14,borderTop:"1px solid var(--border)"}}>
+                <div style={{fontFamily:"'Hanken Grotesk',system-ui,sans-serif",fontSize:10,color:"var(--dim)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>General Spreadsheet Link</div>
+                <Field label="Google Sheet URL" full>
+                  <input value={sheetLink} onChange={e=>setSheetLink(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/..." style={iStyle}/>
+                </Field>
+                <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",marginTop:6}}>A direct link to the full Google Sheet for this campaign (visible to all users).</div>
+              </div>
+            )}
             {false&&(
               <span/>
             )}
