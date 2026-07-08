@@ -4556,6 +4556,17 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:#d6dcec;font-size:1
 // ─────────────────────────────────────────────────────────
 //  CAMPAIGNS PANEL (Admin only)
 // ─────────────────────────────────────────────────────────
+// Accept any Google Sheets URL (an /edit link with #gid, or an export URL) and
+// return the /export?format=csv&gid= form the sync expects.
+const normalizeSheetUrl = (raw) => {
+  const url = (raw||"").trim();
+  if(!url) return "";
+  const id = (url.match(/\/spreadsheets\/d\/([\w-]+)/)||[])[1];
+  if(!id) return url; // not a Sheets URL — pass through
+  const gid = (url.match(/[#?&]gid=(\d+)/)||[])[1] || "0";
+  return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+};
+
 const CampaignForm = ({initial,onSave,onClose}) => {
   const isEdit = !!initial?.id;
   const [name,setName] = useState(initial?.name||"");
@@ -4566,9 +4577,39 @@ const CampaignForm = ({initial,onSave,onClose}) => {
   const [sheetLink,setSheetLink] = useState(initial?.sheetLink||"");
   const [dataMode,setDataMode] = useState(initial?.sheetBounties||initial?.sheetMedia?"sheets":"manual");
   const [saving,setSaving] = useState(false);
+  const [sheetUrl,setSheetUrl] = useState("");
+  const [detecting,setDetecting] = useState(false);
+  const [detectMsg,setDetectMsg] = useState(null); // {ok, text}
+  // One-link flow: fetch the sheet's public htmlview (via our proxy — Google sends
+  // no CORS headers) and read the tab name→gid map out of it, then fill both
+  // fields with proper /export?format=csv&gid= URLs. No Google API key needed.
+  const detectTabs = async () => {
+    const id = ((sheetUrl||"").match(/\/spreadsheets\/d\/([\w-]+)/)||[])[1];
+    if(!id){ setDetectMsg({ok:false,text:"That doesn't look like a Google Sheets link."}); return; }
+    if(/^(localhost|127\.0\.0\.1)/.test(window.location.hostname)){ setDetectMsg({ok:false,text:"Auto-detect needs the deployed site (the /api proxy isn't served by local dev). Paste the two tab links below instead."}); return; }
+    setDetecting(true); setDetectMsg(null);
+    try{
+      const r = await fetch(`/api/sheet-proxy?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${id}/htmlview?widget=true`)}`);
+      if(!r.ok) throw new Error(`HTTP ${r.status} — is the sheet shared as "Anyone with the link can view"?`);
+      const html = await r.text();
+      const tabs = {}; // lowercased tab name -> gid
+      for(const m of html.matchAll(/\{name: "([^"]+)"[^}]*?gid: "(\d+)"/g)) tabs[m[1].toLowerCase()] = m[2];
+      const find = (...keys)=>{ for(const k of Object.keys(tabs)) if(keys.some(key=>k.includes(key))) return tabs[k]; return null; };
+      const bGid = find("bounti"), mGid = find("media","citation");
+      const mk = g=>`https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${g}`;
+      if(bGid) setSheetBounties(mk(bGid));
+      if(mGid) setSheetMedia(mk(mGid));
+      setDetectMsg(bGid&&mGid
+        ? {ok:true,text:"✓ Both tabs found — URLs filled in below."}
+        : bGid||mGid
+          ? {ok:false,text:`Only found the ${bGid?"Bounties":"Media"} tab — paste the other link manually.`}
+          : {ok:false,text:Object.keys(tabs).length?`No Bounties/Media tabs found. Tabs in this sheet: ${Object.keys(tabs).join(", ")}`:`Couldn't read tabs — is the sheet shared as "Anyone with the link can view"?`});
+    }catch(e){ setDetectMsg({ok:false,text:`Detect failed: ${e.message}`}); }
+    setDetecting(false);
+  };
   const handleSave = async () => {
     if (!name.trim()){alert("Campaign name required.");return;}
-    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?sheetBounties:"",sheetMedia:dataMode==="sheets"?sheetMedia:"",sheetLink}); setSaving(false);
+    setSaving(true); await onSave({name:name.trim(),color,status,sheetBounties:dataMode==="sheets"?normalizeSheetUrl(sheetBounties):"",sheetMedia:dataMode==="sheets"?normalizeSheetUrl(sheetMedia):"",sheetLink}); setSaving(false);
   };
   return (
     <Portal>
@@ -4621,14 +4662,24 @@ const CampaignForm = ({initial,onSave,onClose}) => {
             )}
             {dataMode==="sheets"&&(
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
-                <Field label="Bounties Sheet CSV URL">
-                  <input value={sheetBounties} onChange={e=>setSheetBounties(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv&gid=..." style={iStyle}/>
+                <Field label="Campaign Spreadsheet Link">
+                  <div style={{display:"flex",gap:8}}>
+                    <input value={sheetUrl} onChange={e=>{setSheetUrl(e.target.value);setDetectMsg(null);}} onKeyDown={e=>e.key==="Enter"&&!detecting&&detectTabs()} placeholder="Paste the Google Sheet link — tabs are detected automatically" style={{...iStyle,flex:1}}/>
+                    <button onClick={detectTabs} disabled={detecting||!sheetUrl.trim()}
+                      style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11,padding:"0 14px",borderRadius:8,border:"1px solid color-mix(in srgb,var(--accent) 30%,transparent)",background:"color-mix(in srgb,var(--accent) 10%,transparent)",color:"var(--accent)",cursor:detecting?"default":"pointer",whiteSpace:"nowrap",opacity:!sheetUrl.trim()?.5:1}}>
+                      {detecting?"Detecting…":"Detect tabs"}
+                    </button>
+                  </div>
                 </Field>
-                <Field label="Media Citations Sheet CSV URL">
-                  <input value={sheetMedia} onChange={e=>setSheetMedia(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv&gid=..." style={iStyle}/>
+                {detectMsg&&<div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:10,color:detectMsg.ok?"var(--positive)":"var(--yellow)",padding:"6px 10px",background:detectMsg.ok?"color-mix(in srgb,var(--positive) 7%,transparent)":"color-mix(in srgb,var(--yellow) 7%,transparent)",borderRadius:6,lineHeight:1.5}}>{detectMsg.text}</div>}
+                <Field label="Bounties Sheet URL">
+                  <input value={sheetBounties} onChange={e=>setSheetBounties(e.target.value)} placeholder="Auto-filled by Detect — or paste the Bounties tab link" style={iStyle}/>
+                </Field>
+                <Field label="Media Citations Sheet URL">
+                  <input value={sheetMedia} onChange={e=>setSheetMedia(e.target.value)} placeholder="Auto-filled by Detect — or paste the Media tab link" style={iStyle}/>
                 </Field>
                 <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:9,color:"var(--dim)",padding:"8px 10px",background:"var(--surface2)",borderRadius:6,lineHeight:1.6}}>
-                  Sheet must be "Anyone with the link can view". Change /edit to /export?format=csv in the URL.
+                  Paste the spreadsheet link above and hit Detect — both tab URLs fill in automatically (tabs named "Bounties" and "Media"). Manual paste still works; /edit links are converted on save. Sheet must be "Anyone with the link can view".
                 </div>
               </div>
             )}
